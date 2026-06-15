@@ -5,38 +5,35 @@ using GeneralUpdate.Core.Enum;
 string updateUrl = args.Length > 0 ? args[0] : "https://your-server.com/api";
 string secretKey = args.Length > 1 ? args[1] : "your-secret-key";
 
-Console.WriteLine($"[Client] 启动版本检查: {updateUrl}");
-Console.WriteLine($"[Client] 当前版本: {GetCurrentVersion()}");
+Console.WriteLine($"[Client] Starting version check: {updateUrl}");
+Console.WriteLine($"[Client] Current version: {GetCurrentVersion()}");
 
 var result = await new GeneralUpdateBootstrap()
     .SetSource(updateUrl, secretKey)
     .SetOption(Option.AppType, AppType.Client)
     .AddListenerUpdateInfo((_, e) =>
-        Console.WriteLine($"[Client] 发现新版本: {e.Version} ({e.Size} bytes)"))
+        Console.WriteLine($"[Client] Found version: {e.Version} ({e.Size} bytes)"))
     .AddListenerMultiDownloadStatistics((_, e) =>
-        Console.WriteLine($"[Client] 下载进度: {e.ProgressValue}% | {e.Speed}/s"))
+        Console.WriteLine($"[Client] Download: {e.ProgressValue}% | {e.Speed}/s"))
     .AddListenerMultiDownloadCompleted((_, e) =>
-        Console.WriteLine($"[Client] 版本 {e.Versions?.LastOrDefault()?.Version} 下载完成"))
+        Console.WriteLine($"[Client] Version {e.Versions?.LastOrDefault()?.Version} downloaded"))
     .AddListenerMultiAllDownloadCompleted((_, e) =>
-        Console.WriteLine("[Client] 全部下载完成，即将启动升级程序"))
+        Console.WriteLine("[Client] All downloads complete, starting Upgrade process"))
     .AddListenerException((_, e) =>
-        Console.WriteLine($"[Client] 错误: {e.Message}"))
+        Console.WriteLine($"[Client] Error: {e.Message}"))
     .LaunchAsync();
 
 if (result)
-{
-    Console.WriteLine("[Client] 更新完成，应用重启中...");
-}
+    Console.WriteLine("[Client] Update complete, restarting...");
 else
 {
-    Console.WriteLine("[Client] 已是最新版本");
-    Console.WriteLine("按任意键退出...");
+    Console.WriteLine("[Client] Already latest version");
+    Console.WriteLine("Press any key to exit...");
     Console.ReadKey();
 }
 
 static string GetCurrentVersion()
 {
-    var version = System.Reflection.Assembly.GetEntryAssembly()
-        ?.GetName()?.Version;
-    return version?.ToString() ?? "1.0.0.0";
+    return System.Reflection.Assembly.GetEntryAssembly()
+        ?.GetName()?.Version?.ToString(4) ?? "1.0.0.0";
 }

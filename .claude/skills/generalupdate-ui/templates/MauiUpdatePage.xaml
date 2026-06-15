@@ -1,12 +1,12 @@
 <!--
-【Skill 自动生成】MAUI Android 更新页面
-基于 .NET MAUI + CommunityToolkit.Mvvm
-自动支持深色/浅色模式（AppThemeBinding）
+[Skill Auto-generated] MAUI Android Update Page
+Based on .NET MAUI + CommunityToolkit.Mvvm
+Supports Dark/Light mode via AppThemeBinding
 
-使用方式：
-  1. 安装 NuGet: GeneralUpdate.Maui.Android
-  2. 添加本页面到 Pages/ 目录
-  3. 在 MauiProgram.cs 注册 DI
+Usage:
+  1. Install NuGet: GeneralUpdate.Maui.Android
+  2. Add this page to Pages/ directory
+  3. Register DI in MauiProgram.cs
 -->
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
@@ -14,7 +14,7 @@
              xmlns:vm="clr-namespace:MauiUpdate.ViewModels"
              x:Class="MauiUpdate.Pages.UpdatePage"
              x:DataType="vm:UpdateViewModel"
-             Title="软件更新"
+             Title="Software Update"
              BackgroundColor="{AppThemeBinding Light={StaticResource White},
                                                Dark={StaticResource Black}}">
 
@@ -22,7 +22,7 @@
     <VerticalStackLayout Spacing="20" Padding="24"
                          VerticalOptions="Center">
 
-      <!-- 图标 -->
+      <!-- Icon -->
       <Border StrokeShape="RoundRectangle 32"
               BackgroundColor="{AppThemeBinding Light={StaticResource Primary},
                                                 Dark={StaticResource PrimaryDark}}"
@@ -33,20 +33,20 @@
                VerticalOptions="Center" />
       </Border>
 
-      <!-- 标题 -->
-      <Label Text="发现新版本"
+      <!-- Title -->
+      <Label Text="New Version Available"
              FontSize="24" FontAttributes="Bold"
              HorizontalOptions="Center"
              TextColor="{AppThemeBinding Light={StaticResource Black},
                                           Dark={StaticResource White}}" />
 
-      <!-- 版本号 -->
+      <!-- Version Number -->
       <Label Text="{Binding VersionText}"
              FontSize="14"
              HorizontalOptions="Center"
              TextColor="{AppThemeBinding Light=Gray, Dark=#AAAAAA}" />
 
-      <!-- 更新说明 -->
+      <!-- Release Notes -->
       <Border StrokeShape="RoundRectangle 8"
               Padding="16"
               BackgroundColor="{AppThemeBinding Light=#F5F5F5,
@@ -57,26 +57,26 @@
                                             Dark=#CCCCCC}" />
       </Border>
 
-      <!-- 进度条 -->
+      <!-- Progress Bar -->
       <ProgressBar Progress="{Binding ProgressValue}"
                    ProgressColor="{AppThemeBinding Light={StaticResource Primary},
                                                     Dark={StaticResource PrimaryDark}}"
                    HeightRequest="8" />
 
-      <!-- 进度文本 -->
+      <!-- Progress Text -->
       <Label Text="{Binding StatusText}"
              FontSize="14"
              HorizontalOptions="Center"
              TextColor="{AppThemeBinding Light=Gray, Dark=#AAAAAA}" />
 
-      <!-- 速度 -->
+      <!-- Speed -->
       <Label Text="{Binding SpeedText}"
              FontSize="12"
              HorizontalOptions="Center"
              TextColor="{AppThemeBinding Light=#999999, Dark=#777777}" />
 
-      <!-- 按钮 -->
-      <Button Text="开始更新"
+      <!-- Button -->
+      <Button Text="Start Update"
               Command="{Binding StartUpdateCommand}"
               BackgroundColor="{AppThemeBinding Light={StaticResource Primary},
                                                 Dark={StaticResource PrimaryDark}}"
