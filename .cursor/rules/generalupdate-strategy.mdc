@@ -1,0 +1,28 @@
+---
+description: "GeneralUpdate update strategies — decision tree, 6 strategies, mixed combinations, platform differences"
+globs: ["**/*.cs", "**/*.csproj"]
+alwaysApply: false
+---
+
+# GeneralUpdate 更新策略
+
+## 决策树
+有后端 -> 需要推送? -> SignalR -> 常驻后台? -> 静默 -> 大应用? -> 差分 -> 标准
+无后端 -> OSS
+
+## 6 种策略
+1. 标准客户端-服务端: 有后端, 中复杂
+2. OSS 对象存储: 无后端, 低成本
+3. 静默更新: 后台轮询, 退出时更新
+4. 差分更新: 增量补丁, 省带宽
+5. 跨版本 CVP: 跳中间版本
+6. SignalR 推送: 服务端主动
+
+## 混合策略
+- OSS+静默: 无服务器+常驻后台
+- 标准+差分: 大应用+有服务器
+- CVP+链式兜底: 跳过版本+可回退
+
+## 平台差异
+Windows: Hash->解压->Patch+Bowl+Drivelution
+Linux/macOS: Hash->解压->Patch(无Bowl,需UnixPermissionHooks)
