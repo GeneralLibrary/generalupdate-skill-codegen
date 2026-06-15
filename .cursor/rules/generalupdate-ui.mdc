@@ -1,0 +1,27 @@
+---
+description: "GeneralUpdate update UI generation — auto-detect UI framework, generate update windows with real GeneralUpdate.Core progress bindings"
+globs: ["**/*.xaml", "**/*.axaml", "**/*.cs", "**/*.csproj"]
+alwaysApply: false
+---
+
+# GeneralUpdate 更新界面生成
+
+## 框架检测
+Semi.Avalonia -> SemiUrsa 模板
+LayUI.Wpf -> LayUI 模板
+WPFDevelopers -> WPFDevelopers 模板
+AntdUI -> AntdUI 模板
+Microsoft.Maui -> MAUI 模板
+
+## UI 状态机 (11 种状态)
+Idle->Checking->FoundUpdate->Downloading->Paused->DownloadError->Applying->UpgradeProgress->Success->Failed->RollingBack->AlreadyLatest
+
+## 核心桥接: RealDownloadService
+将 GeneralUpdate.Core 事件映射到 IDownloadService 接口, 替换 MockDownloadService
+
+## 事件到状态映射
+UpdateInfo -> FoundUpdate/AlreadyLatest
+MultiDownloadStatistics -> Downloading
+MultiDownloadError -> DownloadError
+MultiAllDownloadCompleted -> UpgradeProgress -> Success
+Exception -> Failed

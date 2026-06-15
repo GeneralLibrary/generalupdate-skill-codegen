@@ -1,0 +1,19 @@
+---
+description: "GeneralUpdate advanced customization — 10+ extension points, 4 IPC providers, Bowl crash daemon, AOT"
+globs: ["**/*.cs", "**/*.csproj"]
+alwaysApply: false
+---
+
+# GeneralUpdate 高级定制
+
+## 10+ 扩展点
+Hooks, Strategy, UpdateReporter, DownloadSource, DownloadOrchestrator, DownloadPolicy, DownloadExecutor, DownloadPipeline, SslValidationPolicy, HttpAuthProvider
+
+## 4 种 IPC
+EncryptedFile(默认), NamedPipe, SharedMemory, AutoFallback
+
+## Bowl 崩溃守护
+Phase1: procdump准备 -> Phase2: 监控 -> Phase3: 检查dump -> Phase4: MiniDump+故障报告+系统诊断+AutoRestore+OnCrash
+
+## AOT/Trim
+v5.0+ 支持。SignalR用JSON协议+JsonSerializerContext

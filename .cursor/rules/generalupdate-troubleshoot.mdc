@@ -1,0 +1,30 @@
+---
+description: "GeneralUpdate troubleshooting — 50+ known issues classified by severity C/H/M/L, traced to GitHub/Gitee issues"
+globs: ["**/*.cs", "**/*.csproj", "**/*.json"]
+alwaysApply: false
+---
+
+# GeneralUpdate 故障排查
+
+## 诊断流程
+1. NuGet版本一致?
+2. manifest正确?
+3. UpgradeApp存在?
+4. 策略可访问?
+5. 日志有异常?
+
+## C级(致命)
+C1: 升级没启动 -> UpgradeApp未随主程序发布
+C2: Method not found -> NuGet版本不一致
+C3: 路径超长 -> 备份嵌套(#501)
+C4: IPC暴露 -> AES硬编码
+C5: 跨租户泄露 -> 服务端11处漏洞
+
+## H级(高)
+H1: 静默不生效 -> ProcessExit不触发(#484)
+H2: 无限循环 -> 未WriteBack(#475)
+H3: OSS无更新 -> 不区分场景(#485)
+
+## 诊断命令
+curl -X POST https://server/Upgrade/Verification -H "Content-Type: application/json" -d '{...}'
+cat generalupdate.manifest.json | python3 -m json.tool
