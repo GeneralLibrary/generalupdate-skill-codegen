@@ -2,104 +2,96 @@
 
 **Claude Code 技能套件** — 帮助 .NET 开发者在 5 分钟内将 [GeneralUpdate](https://github.com/GeneralLibrary/GeneralUpdate) 自动更新系统集成到任意 .NET 应用中。
 
+覆盖 50+ 真实 Issue 发现的已知问题，提供即用型代码生成 + 深度故障排查。
+
 ## 技能总览
 
-| 技能 | 命令 | 一句话功能 |
-|------|------|-----------|
-| 🚀 `generalupdate-init` | `/generalupdate-init` | 生成双项目脚手架 + Bootstrap 配置，三行代码集成 |
-| 🎨 `generalupdate-ui` | `/generalupdate-ui` | 自动识别 UI 框架，生成带真实进度绑定的更新窗口（无需写 UI） |
-| ⚙️ `generalupdate-strategy` | `/generalupdate-strategy` | 按场景配置 6 种更新策略（标准/OSS/静默/差分/CVP/推送） |
-| 🔧 `generalupdate-advanced` | `/generalupdate-advanced` | 高级定制：Hooks、自定义策略、Bowl守护、IPC、插件 |
-| 🩺 `generalupdate-troubleshoot` | `/generalupdate-troubleshoot` | 20+ 真实 Issue 驱动的故障排查清单 |
+| 技能 | 命令 | 一句话功能 | 覆盖量 |
+|------|------|-----------|--------|
+| 🚀 `generalupdate-init` | `/generalupdate-init` | 双项目脚手架 + Bootstrap 配置（3种方式） | 4 大场景 + 3 种配置方式 + 完整 API |
+| 🎨 `generalupdate-ui` | `/generalupdate-ui` | 自动识别 UI 框架，生成全状态更新窗口（11种状态） | 6 UI 框架 + 全状态机 + 桥接代码 |
+| ⚙️ `generalupdate-strategy` | `/generalupdate-strategy` | 6 种策略决策树 + 混合组合 + 平台差异 | 6 策略 + 4 组合 + 平台对照 |
+| 🔧 `generalupdate-advanced` | `/generalupdate-advanced` | 10+ 扩展点 + 4 种 IPC + Bowl + AOT | 10+ 扩展点 + 完整架构图 |
+| 🩺 `generalupdate-troubleshoot` | `/generalupdate-troubleshoot` | 50+ 已知问题诊断 + 6 步通用排查 | 8 致命 + 11 高 + 20 中 + 12 低 |
 
 ## 快速开始
 
-````bash
-# 在 Claude Code 中，只需描述你的需求：
+在 Claude Code 中，只需描述你的需求：
+
+```
 "给我的 WPF 应用添加自动更新"
-# → 自动激活 generalupdate-init + generalupdate-ui
+→ 自动激活 generalupdate-init + generalupdate-ui
 
 "更新成功了但启动报错"
-# → 自动激活 generalupdate-troubleshoot
+→ 自动激活 generalupdate-troubleshoot
 
 "配置 OSS 静默更新"
-# → 自动激活 generalupdate-strategy
+→ 自动激活 generalupdate-strategy
 
-"添加 Bowl 崩溃守护"
-# → 自动激活 generalupdate-advanced
-````
+"添加 Bowl 崩溃守护 + 自定义 Hooks"
+→ 自动激活 generalupdate-advanced
+```
 
-## 技能触发方式
+## 数据来源
 
-1. **自动触发** — 描述中包含触发词，Claude 自动加载对应技能
-2. **手动触发** — 输入 `/skill-name` 后面跟具体描述
+所有技能的内容基于以下真实数据：
 
-## 前置知识
-
-- **目标用户**：已有一个 .NET 项目，希望添加自动更新功能
-- **GeneralUpdate 版本**：推荐使用最新 NuGet 包（≥ v5.0.0）
-- **支持框架**：WPF (.NET 6+/Core)、WinForms、Avalonia、MAUI、控制台应用
-- **支持平台**：Windows、Linux、macOS
+- **GitHub Issues**: #308–#517（重构、Bug、功能、测试）
+- **Gitee Issues**: 30 个真实用户反馈（中文社区痛点）
+- **全面代码审计**: 17 CRITICAL/HIGH + 14 MEDIUM + 10 INFO 发现
+- **Samples 源码**: CompleteUpdateSample、SilentUpdateSample、OssSample、DifferentialSample、PushSample、BowlSample、ExtensionSample、CompressSample、ImDiskQuickInstallSample
+- **UI Samples**: SemiUrsa、LayUI、AntdUI、WPFDevelopers、MauiUpdate、AndroidUpdate
 
 ## 技能文件结构
 
 ```
 .claude/skills/
-├── generalupdate-init/
-│   ├── SKILL.md              ← 技能定义 + 执行流程
-│   ├── templates/
-│   │   ├── MinimalIntegration.cs     ← 三行代码最小集成
-│   │   ├── FullIntegration.cs        ← 完整配置集成
-│   │   └── UpgradeProject.csproj     ← Upgrade 项目模板
-│   ├── project-scaffold/
-│   │   ├── ClientApp.csproj          ← 客户端项目模板
-│   │   ├── UpgradeApp.csproj         ← 升级端项目模板
-│   │   ├── ClientProgram.cs          ← 客户端入口
-│   │   └── UpgradeProgram.cs         ← 升级端入口
-│   └── reference.md          ← NuGet版本、API速查
-│
-├── generalupdate-ui/
-│   ├── SKILL.md              ← UI框架检测 + 代码生成逻辑
+├── generalupdate-init/         (7 files)
+│   ├── SKILL.md                     ← 4大场景 + 3种配置 + API详解
+│   ├── reference.md                 ← NuGet/API/协议/框架兼容性
 │   └── templates/
-│       ├── LayUIStyle.cs              ← WPF+LayUI 更新窗口
-│       ├── WPFDevelopersStyle.cs      ← WPF+WPFDevelopers
-│       ├── AntdUIStyle.cs             ← WinForms+AntdUI
-│       ├── SemiUrsaClientView.axaml   ← Avalonia 客户端视图
-│       ├── SemiUrsaUpgradeView.axaml  ← Avalonia 升级视图
-│       ├── MauiUpdatePage.xaml        ← MAUI 更新页面
-│       ├── RealDownloadService.cs     ← 核心桥接: Mock→真实
-│       └── DownloadViewModels.cs      ← MVVM ViewModel 模板
+│       ├── MinimalIntegration.cs    ← 3行代码 + 注释说明
+│       ├── FullIntegration.cs       ← 完整配置 + Upgrade进程 + appsettings
+│       ├── generalupdate.manifest.json
+│       └── project-scaffold/
+│           ├── ClientApp.csproj / ClientProgram.cs
+│           └── UpgradeApp.csproj / UpgradeProgram.cs
 │
-├── generalupdate-strategy/
-│   ├── SKILL.md
+├── generalupdate-ui/           (10 files)
+│   ├── SKILL.md                     ← 11状态UI状态机 + 框架检测逻辑
+│   └── templates/
+│       ├── RealDownloadService.cs   ← ★ 核心桥接 Mock→GeneralUpdate
+│       ├── DownloadViewModels.cs    ← 全状态MVVM ViewModel
+│       ├── SemiUrsaClientView.axaml ← Avalonia全状态窗口
+│       ├── SemiUrsaUpgradeView.axaml
+│       ├── LayUIStyle.xaml          ← WPF+LayUI
+│       ├── WPFDevelopersStyle.xaml  ← WPF+WPFDevelopers
+│       ├── AntdUIStyle.cs           ← WinForms+AntdUI
+│       └── MauiUpdatePage.xaml/.cs  ← MAUI
+│
+├── generalupdate-strategy/     (7 files)
+│   ├── SKILL.md                     ← 决策树 + 6策略详解 + 混合 + 平台对照
 │   └── examples/
-│       ├── ClientServerStrategy.cs
-│       ├── OssStrategy.cs
-│       ├── SilentStrategy.cs
-│       ├── DifferentialStrategy.cs
-│       ├── CrossVersionStrategy.cs
-│       └── PushStrategy.cs
+│       ├── ClientServerStrategy.cs  ← 标准服务端模式
+│       ├── OssStrategy.cs           ← 对象存储模式
+│       ├── SilentStrategy.cs        ← 静默轮询模式
+│       ├── DifferentialStrategy.cs  ← 差分更新模式
+│       ├── CrossVersionStrategy.cs  ← 跨版本CVP模式
+│       └── PushStrategy.cs          ← SignalR推送模式
 │
-├── generalupdate-advanced/
-│   ├── SKILL.md
-│   ├── templates/
-│       ├── CustomHooks.cs
-│       ├── CustomStrategy.cs
-│       ├── BowlIntegration.cs
-│       └── NamedPipeIPC.cs
-│   └── reference.md
+├── generalupdate-advanced/     (6 files)
+│   ├── SKILL.md                     ← 10+扩展点 + 4 IPC + Bowl + 事件系统
+│   ├── reference.md                 ← 扩展点速查 + Bowl选项
+│   └── templates/
+│       ├── CustomHooks.cs           ← 完整IUpdateHooks + Unix权限
+│       ├── CustomStrategy.cs        ← 自定义平台策略
+│       ├── BowlIntegration.cs       ← 崩溃守护配置
+│       └── NamedPipeIPC.cs          ← 命名管道IPC替换
 │
-└── generalupdate-troubleshoot/
-    ├── SKILL.md
-    └── reference.md           ← 症状→根因→修复 清单
+└── generalupdate-troubleshoot/ (2 files)
+    ├── SKILL.md                     ← 诊断工作流
+    └── reference.md                 ← ★ 50+症状清单（C/H/M/L四级）
 ```
-
-## 设计原则
-
-1. **生成即用代码** — 所有输出可直接粘贴到 .NET 项目中
-2. **场景驱动** — 不需要懂 GeneralUpdate 内部架构，描述你的场景就行
-3. **内嵌知识库** — 已知 Bug 和规避方案直接写入 skill 内容
-4. **模板 + 桥接** — UI 技能自动检测开发者所用框架并桥接到真实更新引擎
 
 ## 许可证
 
