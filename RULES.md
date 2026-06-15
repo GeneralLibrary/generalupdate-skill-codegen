@@ -6,7 +6,7 @@
 - IPC: Encrypted file(AES, default), NamedPipe, SharedMemory, AutoFallback
 
 ## Bootstrap
-- Minimal: SetSource(url, key) -> SetOption(Client) -> LaunchAsync()
+- Minimal: SetSource(url, key) -> SetOption(AppType.Client) -> LaunchAsync()
 - Standard: SetConfig(UpdateRequest) -> SetOption() -> AddListener*() -> LaunchAsync()
 - From config: LoadFromConfiguration(config.GetSection("GeneralUpdate"))
 
@@ -46,7 +46,7 @@ Hooks, Strategy, UpdateReporter, DownloadSource, DownloadOrchestrator, DownloadP
 
 ## Diagnostics
 1. NuGet versions match
-2. manifest.json valid
+2. generalupdate.manifest.json valid
 3. UpgradeApp.exe exists
 4. Server API reachable
 5. Logs in Logs/generalupdate-trace *.log

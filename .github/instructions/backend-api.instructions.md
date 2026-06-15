@@ -9,7 +9,7 @@ applyTo: "**/*.cs"
 ## Verification Endpoint
 POST /Upgrade/Verification
 Request: appKey, appType, clientVersion, productId, platform, tenantId
-Response: body[{ id, version, url, hash, size, name, appType, isCrossVersion }]
+Response: { code, message, body: [{ id, version, url, hash, size, name, appType, isCrossVersion }] }
 
 ## Report Endpoint
 POST /Upgrade/Report
