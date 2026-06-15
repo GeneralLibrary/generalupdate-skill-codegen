@@ -69,10 +69,10 @@ tags: ["dotnet", "generalupdate"]
 
 ```bash
 # 测试 API 是否可访问
-curl -v -X POST "http://your-server/Upgrade/Verification" -H "Content-Type: application/json" -d '{"appKey":"xxx","appType":1,"clientVersion":"1.0.0.1","productId":"xxx","platform":"windows","tenantId":"default"}'
+curl -v -X POST "http://your-server/Upgrade/Verification" -H "Content-Type: application/json" -d '{"appKey":"xxx","appType":0,"clientVersion":"1.0.0.1","productId":"xxx","platform":"windows","tenantId":"default"}'
 
-# 验证 manifest.json 内容
-cat /path/to/app/manifest.json | jq .
+# 验证 generalupdate.manifest.json 内容
+cat /path/to/app/generalupdate.manifest.json | jq .
 
 # 检查 UpgradeApp 是否存在
 ls -la /path/to/app/Upgrade/Upgrade.exe

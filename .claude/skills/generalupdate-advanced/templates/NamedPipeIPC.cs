@@ -20,7 +20,8 @@ using System.Text.Json;
 /// </summary>
 public class NamedPipeIpcProvider : IAsyncDisposable
 {
-    private const string PipeName = "GeneralUpdate_IPC_";
+    // Unique pipe name per client process — prevents collisions between parallel instances
+    private readonly string _pipeName = $"GeneralUpdate_IPC_{Environment.ProcessId}";
     private NamedPipeServerStream? _server;
     private NamedPipeClientStream? _client;
     private readonly CancellationTokenSource _cts = new();
@@ -28,10 +29,21 @@ public class NamedPipeIpcProvider : IAsyncDisposable
     /// <summary>Called by Client process: create server pipe, wait for Upgrade.</summary>
     public async Task<string> ServerWaitAsync(int timeoutMs = 30000)
     {
-        _server = new NamedPipeServerStream(PipeName, PipeDirection.InOut,
+        _server = new NamedPipeServerStream(_pipeName, PipeDirection.InOut,
             maxNumberOfServerInstances: 1, TransmissionMode.Byte, PipeOptions.Asynchronous);
-        await _server.WaitForConnectionAsync(_cts.Token);
-        return PipeName;
+
+        // Enforce caller-supplied timeout via CancellationTokenSource
+        using var timeoutCts = new CancellationTokenSource(timeoutMs);
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(timeoutCts.Token, _cts.Token);
+        try
+        {
+            await _server.WaitForConnectionAsync(linkedCts.Token);
+        }
+        catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
+        {
+            throw new TimeoutException($"Upgrade process did not connect within {timeoutMs}ms");
+        }
+        return _pipeName;
     }
 
     /// <summary>Called by Upgrade process: connect to Client pipe.</summary>
