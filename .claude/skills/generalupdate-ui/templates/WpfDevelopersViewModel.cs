@@ -4,8 +4,8 @@ using Common.Avalonia.Models;
 namespace Upgrade.WPF.ViewModels;
 
 /// <summary>
-/// 【Skill 自动生成】WPF + WPFDevelopers 专用 ViewModel
-/// 包含圆形进度条所需的 SpeedText 属性
+/// [Skill Auto-generated] WPF + WPFDevelopers-specific ViewModel
+/// Contains SpeedText property required by circular progress bar
 /// </summary>
 public partial class WpfDevelopersUpdateViewModel : ObservableObject
 {
@@ -13,7 +13,7 @@ public partial class WpfDevelopersUpdateViewModel : ObservableObject
 
     [ObservableProperty] private DownloadStatistics _statistics;
     [ObservableProperty] private DownloadStatus _status;
-    [ObservableProperty] private string _statusText = "准备就绪";
+    [ObservableProperty] private string _statusText = "Ready";
     [ObservableProperty] private string _speedText = "";
 
     public WpfDevelopersUpdateViewModel(IDownloadService downloadService)
@@ -43,9 +43,9 @@ public partial class WpfDevelopersUpdateViewModel : ObservableObject
             Status = status;
             StatusText = status switch
             {
-                DownloadStatus.Downloading => "正在下载...",
-                DownloadStatus.Completed => "更新完成！",
-                DownloadStatus.Paused => "已暂停",
+                DownloadStatus.Downloading => "Downloading...",
+                DownloadStatus.Completed => "Update Completed!",
+                DownloadStatus.Paused => "Paused",
                 _ => ""
             };
         });

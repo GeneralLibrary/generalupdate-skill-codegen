@@ -1,19 +1,19 @@
 <!--
-【Skill 自动生成】WPF + LayUI.Wpf 更新窗口
-基于 LayUI.Wpf 皮肤库，替换 MockDownloadService → RealDownloadService 即可真实驱动更新
+[Skill Auto-generated] WPF + LayUI.Wpf Update Window
+Based on LayUI.Wpf skin library. Replace MockDownloadService with RealDownloadService for real update drive.
 
-使用方式：
-  1. 安装 NuGet: LayUI.Wpf
-  2. 添加 RealDownloadService_Wpf.cs（从 RealDownloadService.cs 改编）
-  3. 在 App.xaml 中引用 LayUI.Wpf 主题
-  4. 将本文件添加到 Views/
+Usage:
+  1. Install NuGet: LayUI.Wpf
+  2. Add RealDownloadService_Wpf.cs (adapted from RealDownloadService.cs)
+  3. Reference LayUI.Wpf theme in App.xaml
+  4. Add this file to Views/
 -->
 <lui:LayWindow x:Class="Upgrade.WPF.Views.UpdateWindow"
                xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                xmlns:lui="clr-namespace:LayUI.Wpf.Controls;assembly=LayUI.Wpf"
                xmlns:vm="clr-namespace:Upgrade.WPF.ViewModels"
-               Title="软件更新"
+               Title="Software Update"
                Height="350" Width="500"
                WindowStartupLocation="CenterScreen"
                ResizeMode="CanMinimize"
@@ -35,30 +35,30 @@
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
 
-    <!-- 标题区域 -->
+    <!-- Title Area -->
     <Border Grid.Row="0" Height="60"
             Background="{DynamicResource PrimaryBrush}"
             Padding="20,0">
       <StackPanel VerticalAlignment="Center">
-        <TextBlock Text="发现新版本"
+        <TextBlock Text="New Version Available"
                    FontSize="20" FontWeight="Bold"
                    Foreground="White" />
-        <TextBlock Text="{Binding Statistics.Version, StringFormat='版本: {0}'}"
+        <TextBlock Text="{Binding Statistics.Version, StringFormat='Version: {0}'}"
                    FontSize="13"
                    Foreground="#CCFFFFFF" />
       </StackPanel>
     </Border>
 
-    <!-- 内容区域 -->
+    <!-- Content Area -->
     <StackPanel Grid.Row="1" Margin="32,24" Spacing="16"
                 VerticalAlignment="Center">
 
-      <!-- 进度状态 -->
+      <!-- Progress Status -->
       <TextBlock Text="{Binding StatusText}"
                  FontSize="16" FontWeight="SemiBold"
                  HorizontalAlignment="Center" />
 
-      <!-- 进度条 (LayUI 风格) -->
+      <!-- Progress Bar (LayUI Style) -->
       <Border Height="8" CornerRadius="4"
               Background="#E8E8E8">
         <Border Height="8" CornerRadius="4"
@@ -66,20 +66,20 @@
                 Background="{DynamicResource PrimaryBrush}" />
       </Border>
 
-      <!-- 统计信息 -->
+      <!-- Statistics Info -->
       <Grid Margin="0,8,0,0">
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="*" />
           <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <StackPanel Grid.Column="0">
-          <TextBlock Text="下载速度"
+          <TextBlock Text="Download Speed"
                      Style="{StaticResource InfoText}" />
           <TextBlock Text="{Binding Statistics.Speed, StringFormat='{0:F1} MB/s'}"
                      FontSize="16" FontWeight="Bold" />
         </StackPanel>
         <StackPanel Grid.Column="1">
-          <TextBlock Text="剩余时间"
+          <TextBlock Text="Remaining Time"
                      Style="{StaticResource InfoText}"
                      HorizontalAlignment="Right" />
           <TextBlock Text="{Binding Statistics.Remaining, StringFormat='{0:mm\\:ss}'}"
@@ -89,17 +89,17 @@
       </Grid>
     </StackPanel>
 
-    <!-- 按钮区域 -->
+    <!-- Button Area -->
     <Border Grid.Row="2" Height="50"
             Background="#F5F5F5" Padding="16,0">
       <StackPanel Orientation="Horizontal"
                   HorizontalAlignment="Right" Spacing="8">
         <lui:LayButton Command="{Binding StartCommand}"
-                       Content="开始更新"
+                       Content="Start Update"
                        Type="Primary"
                        Width="100" Height="32" />
         <lui:LayButton Command="{Binding RestartCommand}"
-                       Content="重新下载"
+                       Content="Restart Download"
                        Width="90" Height="32" />
       </StackPanel>
     </Border>

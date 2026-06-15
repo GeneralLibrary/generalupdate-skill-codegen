@@ -133,11 +133,10 @@ Content-Type: application/json
 
 ## 框架兼容性矩阵
 
-| 框架 | 最低版本 | AOT 兼容 | SignalR 支持 |
-|------|---------|---------|------------|
-| WPF (.NET Framework) | .NET 8 | ✅ | ✅ (JSON协议) |
-| WPF (.NET Core) | .NET 8 | ✅ | ✅ |
-| WinForms | .NET 8 | ✅ | ✅ |
+| 框架 | 最低 SDK 版本 | AOT 兼容 | SignalR 支持 |
+|------|:------------:|:---------:|:-----------:|
+| WPF (Windows) | .NET 8 (`net8.0-windows`) | ✅ | ✅ (JSON协议) |
+| WinForms (Windows) | .NET 8 (`net8.0-windows`) | ✅ | ✅ |
 | Avalonia | .NET 8 | ✅ | ✅ |
 | MAUI | .NET 10 | ✅ | ❌ (无 SignalR) |
 | 控制台 | .NET 8 | ✅ | ✅ |

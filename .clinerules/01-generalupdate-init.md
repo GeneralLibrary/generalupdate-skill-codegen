@@ -13,7 +13,7 @@ SetSource(url, key) -> SetOption(AppType.Client) -> LaunchAsync()
 
 ## 4 大场景: None/UpgradeOnly/MainOnly/Both
 
-## manifest.json 字段
+## generalupdate.manifest.json 字段
 MainAppName, UpdateAppName, ProductId, InstallPath, UpdatePath, ClientVersion, UpgradeClientVersion
 
 ## 关键: UpgradeApp须随首个版本发布, 双进程AppSecretKey一致, 版本4段式

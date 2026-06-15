@@ -47,9 +47,12 @@ public static class MinimalIntegration
  * 3. 文件放错目录（必须和 .exe 同级）
  * 4. UpdatePath 写成了相对路径但当前目录不对
  *
- * ⚠️ 版本号规则：必须是 4 段式，如 "1.0.0.0"
- *   "1.0" 会被 System.Version 解析为 1.0.0.0（未指定段为 -1）
- *   但服务器可能返回 1.0.0.0 → 版本比较可能出错
+ * ⚠️ Version format: Must use 4 segments, e.g. "1.0.0.0"
+ *   new Version("1.0") parses to 1.0.-1.-1 (Build=-1, Revision=-1),
+ *   NOT 1.0.0.0. When the server returns 1.0.0.0 (Build=0, Revision=0),
+ *   new Version("1.0") < new Version("1.0.0.0") is TRUE,
+ *   causing a false "update available" detection → infinite upgrade loop.
+ *   ALWAYS use 4-segment version strings everywhere.
  *
  * ⚠️ 路径规则：
  *   InstallPath: 可写 "."（表示 exe 所在目录）或绝对路径

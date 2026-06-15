@@ -1,6 +1,9 @@
+using System.Text.Json;
 using GeneralUpdate.Core;
 using GeneralUpdate.Core.Configuration;
 using GeneralUpdate.Core.Enum;
+using GeneralUpdate.Core.Event;
+using Microsoft.Extensions.Configuration;
 
 /// <summary>
 /// GeneralUpdate 完整集成示例 — 包含所有配置选项、事件监听和 4 种场景处理
@@ -134,7 +137,7 @@ public static class FullIntegration
             {
                 var type = v.IsCrossVersion ? "跨版本" : (v.FromVersion == null ? "全量" : "增量");
                 Console.WriteLine($"  ├─ {v.Version} [{type}] {v.Name}");
-                Console.WriteLine($"  │  Hash: {v.Hash?[..16]}...");
+                Console.WriteLine($"  │  Hash: {(v.Hash?.Length >= 16 ? v.Hash[..16] : v.Hash ?? "N/A")}...");
                 Console.WriteLine($"  │  AppType: {v.AppType} (0=Client, 1=Upgrade)");
                 // ⚠️ AppType 决定场景判断（#465），Client 包 → HasMainUpdate，Upgrade 包 → HasUpgradeUpdate
             }
@@ -145,10 +148,10 @@ public static class FullIntegration
     private static void OnDownloadStats(object? sender, MultiDownloadStatisticsEventArgs e)
     {
         // e.ProgressValue: 0-100
-        // e.Speed: 格式如 "2.5 MB/s"
+        // e.Speed: 格式如 "2.5 MB/s"（已包含单位）
         // e.Remaining: TimeSpan
         // e.Version: VersionEntry?（当前下载的版本）
-        Console.Write($"\r[下载] {e.ProgressPercentage:F0}% | {e.Speed}/s | " +
+        Console.Write($"\r[下载] {e.ProgressPercentage:F0}% | {e.Speed} | " +
             $"剩余 {e.Remaining:hh\\:mm\\:ss}");
     }
 

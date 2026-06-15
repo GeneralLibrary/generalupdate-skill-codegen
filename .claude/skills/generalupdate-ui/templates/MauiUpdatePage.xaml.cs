@@ -7,8 +7,8 @@ using GeneralUpdate.Core.Enum;
 namespace MauiUpdate.ViewModels;
 
 /// <summary>
-/// 【Skill 自动生成】MAUI 更新页面 ViewModel
-/// 使用 GeneralUpdate.Maui.Android 或 GeneralUpdate.Core
+/// [Skill Auto-generated] MAUI Update Page ViewModel
+/// Uses GeneralUpdate.Maui.Android or GeneralUpdate.Core
 /// </summary>
 public partial class UpdateViewModel : ObservableObject
 {
@@ -16,10 +16,10 @@ public partial class UpdateViewModel : ObservableObject
     private readonly string _secretKey;
     private CancellationTokenSource? _cts;
 
-    [ObservableProperty] private string _versionText = "检测中...";
+    [ObservableProperty] private string _versionText = "Checking...";
     [ObservableProperty] private string _releaseNotes = "";
     [ObservableProperty] private double _progressValue;
-    [ObservableProperty] private string _statusText = "准备就绪";
+    [ObservableProperty] private string _statusText = "Ready";
     [ObservableProperty] private string _speedText = "";
     [ObservableProperty] private bool _isUpdating;
 
@@ -39,7 +39,7 @@ public partial class UpdateViewModel : ObservableObject
 
         try
         {
-            StatusText = "正在连接服务器...";
+            StatusText = "Connecting to server...";
 
             var bootstrap = new GeneralUpdateBootstrap()
                 .SetSource(_updateUrl, _secretKey)
@@ -48,7 +48,7 @@ public partial class UpdateViewModel : ObservableObject
                 {
                     MainThread.BeginInvokeOnMainThread(() =>
                     {
-                        VersionText = e.Version ?? "未知版本";
+                        VersionText = e.Version ?? "Unknown version";
                     });
                 })
                 .AddListenerMultiDownloadStatistics((_, e) =>
@@ -64,21 +64,21 @@ public partial class UpdateViewModel : ObservableObject
                 {
                     MainThread.BeginInvokeOnMainThread(() =>
                     {
-                        StatusText = "下载完成，正在安装...";
+                        StatusText = "Download completed, installing...";
                     });
                 })
                 .AddListenerMultiAllDownloadCompleted((_, e) =>
                 {
                     MainThread.BeginInvokeOnMainThread(() =>
                     {
-                        StatusText = "更新完成！";
+                        StatusText = "Update Completed!";
                     });
                 })
                 .AddListenerException((_, e) =>
                 {
                     MainThread.BeginInvokeOnMainThread(() =>
                     {
-                        StatusText = $"错误: {e.Message}";
+                        StatusText = $"Error: {e.Message}";
                     });
                 });
 
@@ -86,7 +86,7 @@ public partial class UpdateViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            StatusText = $"更新失败: {ex.Message}";
+            StatusText = $"Update failed: {ex.Message}";
         }
         finally
         {
