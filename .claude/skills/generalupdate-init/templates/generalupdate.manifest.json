@@ -1,0 +1,9 @@
+{
+  "MainAppName": "MyApp.exe",
+  "UpdateAppName": "UpgradeApp.exe",
+  "ProductId": "my-product-001",
+  "InstallPath": ".",
+  "UpdatePath": "update",
+  "ClientVersion": "1.0.0.0",
+  "UpgradeClientVersion": "1.0.0.0"
+}

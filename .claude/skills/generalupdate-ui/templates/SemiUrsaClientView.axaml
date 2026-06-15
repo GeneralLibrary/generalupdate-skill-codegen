@@ -1,0 +1,123 @@
+<!--
+【Skill 自动生成】Avalonia + SemiUrsa 客户端更新窗口
+基于 Semi.Avalonia + CommunityToolkit.Mvvm
+替换 MockDownloadService → RealDownloadService 即可真实驱动更新
+
+使用方式：
+  1. 安装 NuGet: Semi.Avalonia
+  2. 添加 RealDownloadService.cs（由 Skill 生成）
+  3. 在 DI 中注册：services.AddSingleton<IDownloadService, RealDownloadService>();
+  4. 将本文件添加到 Views/ 目录
+-->
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:Client.Avalonia.ViewModels"
+        xmlns:models="clr-namespace:Common.Avalonia.Models"
+        xmlns:semi="https://github.com/irihitech/Semi.Avalonia"
+        x:Class="Client.Avalonia.Views.MainWindow"
+        x:DataType="vm:DownloadViewModel"
+        mc:Ignorable="d"
+        Title="软件更新"
+        Width="520" Height="380"
+        WindowStartupLocation="CenterScreen"
+        CanResize="False"
+        semi:SemiTheme.Locale="zh-CN"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="NoChrome">
+
+  <Window.Styles>
+    <semi:SemiTheme Locale="zh-CN" />
+  </Window.Styles>
+
+  <Grid RowDefinitions="Auto,*,Auto" Margin="0">
+
+    <!-- 标题栏 -->
+    <Border Grid.Row="0" Height="48"
+            Background="{DynamicResource SemiColorFillSecondaryBackgorund}">
+      <Grid ColumnDefinitions="48,*,48" Margin="16,0">
+        <Border Grid.Column="0" CornerRadius="24"
+                Background="{DynamicResource SemiColorAccentPrimary}">
+          <TextBlock Text="🔄"
+                     HorizontalAlignment="Center"
+                     VerticalAlignment="Center"
+                     FontSize="20" />
+        </Border>
+        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="12,0,0,0">
+          <TextBlock Text="软件更新"
+                     FontSize="16" FontWeight="SemiBold" />
+          <TextBlock Text="{Binding VersionText}"
+                     FontSize="12"
+                     Foreground="{DynamicResource SemiColorTextSecondary}"
+                     Opacity="0.7" />
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <!-- 内容 -->
+    <Border Grid.Row="1" Padding="32,24">
+      <StackPanel Spacing="16" VerticalAlignment="Center">
+
+        <!-- 版本信息 -->
+        <Border CornerRadius="8"
+                Background="{DynamicResource SemiColorFillTertiary}"
+                Padding="16">
+          <StackPanel Spacing="8">
+            <TextBlock Text="{Binding StatusText}"
+                       FontSize="18" FontWeight="SemiBold"
+                       HorizontalAlignment="Center" />
+            <TextBlock Text="{Binding Statistics.BytesReceivedInMB, StringFormat='{0:F1} MB / {Binding Statistics.TotalBytesToReceiveInMB, StringFormat={}{0:F1} MB}'}"
+                       FontSize="13"
+                       Foreground="{DynamicResource SemiColorTextSecondary}"
+                       HorizontalAlignment="Center" />
+          </StackPanel>
+        </Border>
+
+        <!-- 进度条 -->
+        <ProgressBar Value="{Binding Statistics.ProgressPercentage}"
+                     Minimum="0" Maximum="100"
+                     Height="8" CornerRadius="4"
+                     Foreground="{DynamicResource SemiColorAccentPrimary}"
+                     Background="{DynamicResource SemiColorFillTertiary}"
+                     IsIndeterminate="False" />
+
+        <!-- 速度信息 -->
+        <Grid ColumnDefinitions="*,*">
+          <TextBlock Grid.Column="0"
+                     FontSize="12"
+                     Foreground="{DynamicResource SemiColorTextTertiary}">
+            <Run Text="下载速度: " />
+            <Run Text="{Binding Statistics.Speed, StringFormat='{0:F1} MB/s'}" />
+          </TextBlock>
+          <TextBlock Grid.Column="1"
+                     FontSize="12"
+                     Foreground="{DynamicResource SemiColorTextTertiary}"
+                     HorizontalAlignment="Right">
+            <Run Text="版本: " />
+            <Run Text="{Binding Statistics.Version}" />
+          </TextBlock>
+        </Grid>
+
+      </StackPanel>
+    </Border>
+
+    <!-- 按钮区 -->
+    <Border Grid.Row="2" Padding="16,12"
+            Background="{DynamicResource SemiColorFillSecondaryBackgorund}">
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+        <Button Command="{Binding StartCommand}"
+                IsVisible="{Binding Status, Converter={x:Static converters:EnumConverter.StatusToVisibilityConverter}}"
+                Content="开始更新"
+                Width="100" Height="32"
+                CornerRadius="6" />
+        <Button Command="{Binding RestartCommand}"
+                Content="重新下载"
+                Width="90" Height="32"
+                CornerRadius="6"
+                Background="Transparent" />
+      </StackPanel>
+    </Border>
+
+  </Grid>
+</Window>

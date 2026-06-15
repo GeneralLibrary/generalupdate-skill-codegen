@@ -1,0 +1,96 @@
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using GeneralUpdate.Core;
+using GeneralUpdate.Core.Configuration;
+using GeneralUpdate.Core.Enum;
+
+namespace MauiUpdate.ViewModels;
+
+/// <summary>
+/// 【Skill 自动生成】MAUI 更新页面 ViewModel
+/// 使用 GeneralUpdate.Maui.Android 或 GeneralUpdate.Core
+/// </summary>
+public partial class UpdateViewModel : ObservableObject
+{
+    private readonly string _updateUrl;
+    private readonly string _secretKey;
+    private CancellationTokenSource? _cts;
+
+    [ObservableProperty] private string _versionText = "检测中...";
+    [ObservableProperty] private string _releaseNotes = "";
+    [ObservableProperty] private double _progressValue;
+    [ObservableProperty] private string _statusText = "准备就绪";
+    [ObservableProperty] private string _speedText = "";
+    [ObservableProperty] private bool _isUpdating;
+
+    public UpdateViewModel(string updateUrl, string secretKey)
+    {
+        _updateUrl = updateUrl;
+        _secretKey = secretKey;
+    }
+
+    [RelayCommand]
+    private async Task StartUpdateAsync()
+    {
+        if (IsUpdating) return;
+
+        IsUpdating = true;
+        _cts = new CancellationTokenSource();
+
+        try
+        {
+            StatusText = "正在连接服务器...";
+
+            var bootstrap = new GeneralUpdateBootstrap()
+                .SetSource(_updateUrl, _secretKey)
+                .SetOption(Option.AppType, AppType.OssClient)
+                .AddListenerUpdateInfo((_, e) =>
+                {
+                    MainThread.BeginInvokeOnMainThread(() =>
+                    {
+                        VersionText = e.Version ?? "未知版本";
+                    });
+                })
+                .AddListenerMultiDownloadStatistics((_, e) =>
+                {
+                    MainThread.BeginInvokeOnMainThread(() =>
+                    {
+                        ProgressValue = e.ProgressValue / 100.0;
+                        StatusText = $"{e.ProgressValue:F1}%";
+                        SpeedText = e.Speed ?? "";
+                    });
+                })
+                .AddListenerMultiDownloadCompleted((_, e) =>
+                {
+                    MainThread.BeginInvokeOnMainThread(() =>
+                    {
+                        StatusText = "下载完成，正在安装...";
+                    });
+                })
+                .AddListenerMultiAllDownloadCompleted((_, e) =>
+                {
+                    MainThread.BeginInvokeOnMainThread(() =>
+                    {
+                        StatusText = "更新完成！";
+                    });
+                })
+                .AddListenerException((_, e) =>
+                {
+                    MainThread.BeginInvokeOnMainThread(() =>
+                    {
+                        StatusText = $"错误: {e.Message}";
+                    });
+                });
+
+            await bootstrap.LaunchAsync();
+        }
+        catch (Exception ex)
+        {
+            StatusText = $"更新失败: {ex.Message}";
+        }
+        finally
+        {
+            IsUpdating = false;
+        }
+    }
+}
