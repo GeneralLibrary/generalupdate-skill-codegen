@@ -7,26 +7,3 @@
   "ClientVersion": "1.0.0.0",
   "UpgradeClientVersion": "1.0.0.0"
 }
-
-/* ═══════════════════════════════════════════════════
- * generalupdate.manifest.json 字段说明
- *
- * MainAppName        — 主程序可执行文件名（含扩展名）
- * UpdateAppName      — 升级程序可执行文件名（含扩展名）
- * ProductId          — 产品标识（与服务端 ProductId 对应）
- * InstallPath        — 安装目录（"."=当前目录，或绝对路径）
- * UpdatePath         — Upgrade.exe 所在子目录（相对 InstallPath）
- * ClientVersion      — 主程序当前版本号（必须 4 段式！不能为空！）
- * UpgradeClientVersion — 升级程序当前版本号
- *
- * ⚠️ 不得修改文件名！
- * ⚠️ 必须放在应用根目录（和 .exe 同级）
- * ⚠️ ClientVersion 和 UpgradeClientVersion 必须是 4 段式版本号
- * ⚠️ 空字段会导致 AppMetadataDiscoverer.Discover() 无法自动发现
- *
- * 条件可选字段（写了会覆盖自动发现，不写则自动从程序集读取）：
- *   InstallPath、ClientVersion、UpgradeClientVersion
- *
- * 必填字段（manifest 必须提供）：
- *   MainAppName、UpdateAppName、ProductId
- ═══════════════════════════════════════════════════ */

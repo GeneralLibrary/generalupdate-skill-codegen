@@ -149,7 +149,7 @@
         </StackPanel>
 
         <!-- ═══ 已是最新版 ═══ -->
-        <StackPanel IsVisible="{Binding Status, Converter={x:Static conv:StatusToVisibleConverter.AlreadyLatest}}"
+        <StackPanel IsVisible="{Binding IsCompleted}"
                     HorizontalAlignment="Center" Spacing="8">
           <TextBlock Text="已是最新版本 ✓" FontSize="16"
                      Foreground="{DynamicResource SemiColorSuccessPrimary}"
@@ -165,14 +165,12 @@
       <StackPanel Orientation="Horizontal"
                   HorizontalAlignment="Right" Spacing="8">
 
-        <!-- 开始检查（Idle 状态） -->
+        <!-- 开始检查（Idle 状态，由 CanExecute 控制） -->
         <Button Command="{Binding CheckCommand}"
-                IsVisible="{Binding Status, Converter={x:Static conv:StatusToVisibleConverter.CanStart}}"
                 Content="检查更新" Width="100" Height="32" CornerRadius="6" />
 
-        <!-- 暂停（下载中） -->
+        <!-- 暂停（下载中，由 CanExecute 控制） -->
         <Button Command="{Binding PauseCommand}"
-                IsVisible="{Binding Status, Converter={x:Static conv:StatusToVisibleConverter.IsDownloading}}"
                 Content="暂停" Width="80" Height="32" CornerRadius="6"
                 Background="Transparent" />
 

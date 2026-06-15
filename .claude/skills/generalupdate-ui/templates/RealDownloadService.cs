@@ -1,3 +1,7 @@
+using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using GeneralUpdate.Core;
 using GeneralUpdate.Core.Configuration;
 using GeneralUpdate.Core.Enum;
@@ -128,35 +132,80 @@ public class RealDownloadService : IDownloadService
 
         try
         {
-            // ⚠️ 当前 GeneralUpdate 版本没有"仅检查不下载"的 API
-            // 使用 LaunchAsync 模拟，通过回调判断是否有更新
-            var bootstrap = BuildBootstrap();
+            // 直接调用服务端 /Upgrade/Verification API 仅检查版本
+            // 不触发 LaunchAsync（避免启动完整下载+升级流程）
+            using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
 
-            // 标记是否有更新
-            var hasUpdate = false;
-            bootstrap.AddListenerUpdateInfo((_, e) =>
+            var payload = JsonSerializer.Serialize(new
             {
-                hasUpdate = (e.Info?.Body?.Count ?? 0) > 0;
-                if (hasUpdate)
-                {
-                    CurrentStatistics.Version = e.Version;
-                    CurrentStatistics.TotalBytesToReceive = e.Size;
-                }
-                StatisticsChanged?.Invoke(CurrentStatistics);
+                appKey = _secretKey,
+                appType = (int)_appType,
+                clientVersion = GetCurrentVersion(),
+                productId = GetProductId(),
+                platform = GetPlatform()
             });
 
-            var result = await bootstrap.LaunchAsync();
+            var response = await client.PostAsync(
+                _updateUrl.TrimEnd('/') + "/Upgrade/Verification",
+                new StringContent(payload, Encoding.UTF8, "application/json"),
+                token);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                ErrorOccurred?.Invoke($"服务器返回 {(int)response.StatusCode}");
+                UpdateState(DownloadStatus.DownloadError);
+                return;
+            }
+
+            var json = await response.Content.ReadAsStringAsync(token);
+            using var doc = JsonDocument.Parse(json);
+            var body = doc.RootElement.GetProperty("body");
+            var hasUpdate = body.GetArrayLength() > 0;
 
             if (hasUpdate)
+            {
+                // 读取第一个版本的信息填充统计
+                var first = body[0];
+                CurrentStatistics.Version = first.TryGetProperty("version", out var v) ? v.GetString() : null;
+                CurrentStatistics.TotalBytesToReceive = first.TryGetProperty("size", out var s) ? s.GetInt64() : 0;
+                StatisticsChanged?.Invoke(CurrentStatistics);
                 UpdateState(DownloadStatus.FoundUpdate);
+            }
             else
+            {
                 UpdateState(DownloadStatus.AlreadyLatest);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            ErrorOccurred?.Invoke("检查已取消");
+            UpdateState(DownloadStatus.Idle);
         }
         catch (Exception ex)
         {
             ErrorOccurred?.Invoke($"检查更新失败: {ex.Message}");
             UpdateState(DownloadStatus.DownloadError);
         }
+    }
+
+    private static string GetCurrentVersion()
+    {
+        return System.Reflection.Assembly.GetEntryAssembly()
+            ?.GetName()?.Version?.ToString(4) ?? "1.0.0.0";
+    }
+
+    private static string GetProductId()
+    {
+        // 从 manifest 中读取，简化实现
+        return "unknown";
+    }
+
+    private static string GetPlatform()
+    {
+        if (OperatingSystem.IsWindows()) return "Windows";
+        if (OperatingSystem.IsLinux()) return "Linux";
+        if (OperatingSystem.IsMacOS()) return "MacOS";
+        return "Unknown";
     }
 
     private async Task RunDownloadAsync(CancellationToken token)

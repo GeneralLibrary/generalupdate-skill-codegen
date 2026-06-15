@@ -106,8 +106,16 @@ public partial class EnhancedDownloadViewModel : ObservableObject
         Dispatch(() =>
         {
             Statistics = stats;
-            if (stats.Speed > 0)
+
+            // 版本信息同步
+            if (stats.Version != null)
+                VersionText = $"版本: {stats.Version}";
+
+            // 速度信息：小于 0.01 MB/s 视为 0
+            if (stats.Speed > 0.01)
                 SpeedText = $"{stats.Speed:F1} MB/s";
+            else
+                SpeedText = "";
         });
     }
 
@@ -118,6 +126,10 @@ public partial class EnhancedDownloadViewModel : ObservableObject
             Status = status;
             UpdateVisibility();
             UpdateStatusText();
+
+            // 非下载状态清空速度
+            if (status is not (DownloadStatus.Downloading or DownloadStatus.Applying))
+                SpeedText = "";
         });
     }
 
