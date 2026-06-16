@@ -25,4 +25,4 @@ alwaysApply: false
 
 ## 平台差异
 Windows: Hash->解压->Patch+Bowl+Drivelution
-Linux/macOS: Hash->解压->Patch(无Bowl,需UnixPermissionHooks)
+Linux/macOS: Hash->解压->Patch（⚠️ v10.4.6 无 UnixPermissionHooks，需手动 chmod +x）

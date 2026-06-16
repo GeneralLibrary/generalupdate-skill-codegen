@@ -36,6 +36,6 @@ tags: ["dotnet", "generalupdate"]
 | Platform | Notes |
 |----------|-------|
 | **Windows** | Uses **Bowl** crash daemon (restarts the app bus on unhandled exception). Full file-system access. |
-| **Linux / macOS** | Uses **UnixPermissionHooks** to handle `chmod +x` / setuid and OS-level permission elevation. |
+| **Linux / macOS** | ⚠️ v10.4.6 无 `UnixPermissionHooks`，需手动 `chmod +x`。目标框架建议 .NET 8+。 |
 
 > For the full Bootstrap pipeline and middleware architecture, see `01-generalupdate-init.md`.

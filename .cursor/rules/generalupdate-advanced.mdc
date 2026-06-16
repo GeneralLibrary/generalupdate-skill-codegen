@@ -4,16 +4,19 @@ globs: ["**/*.cs", "**/*.csproj"]
 alwaysApply: false
 ---
 
-# GeneralUpdate 高级定制
+# GeneralUpdate 高级定制 (v10.4.6 ⚠️)
 
-## 10+ 扩展点
-Hooks, Strategy, UpdateReporter, DownloadSource, DownloadOrchestrator, DownloadPolicy, DownloadExecutor, DownloadPipeline, SslValidationPolicy, HttpAuthProvider
+## ⚠️ v10.4.6 稳定版不支持以下扩展点
+- ❌ 无 Hooks / Strategy / UpdateReporter / DownloadOrchestrator / IHttpAuthProvider
+- ❌ 无 SetOption / SilentPollOrchestrator / ProcessContract
 
-## 4 种 IPC
-EncryptedFile(默认), NamedPipe, SharedMemory, AutoFallback
+## IPC
+- ✅ EncryptedFile（默认，AES加密文件）
+- ❌ 无可替换 IPC 接口（NamedPipe/SharedMemory/AutoFallback 不可用）
 
-## Bowl 崩溃守护
+## Bowl 崩溃守护（可用，独立模块）
 Phase1: procdump准备 -> Phase2: 监控 -> Phase3: 检查dump -> Phase4: MiniDump+故障报告+系统诊断+AutoRestore+OnCrash
+Bowl 引用规则：只用 `GeneralUpdate.Bowl`（传递依赖 Core）
 
 ## AOT/Trim
-v5.0+ 支持。SignalR用JSON协议+JsonSerializerContext
+v5.0+ 支持。SignalR 推荐用 JSON 协议 + JsonSerializerContext

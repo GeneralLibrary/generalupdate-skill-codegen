@@ -4,15 +4,18 @@ globs: ["**/*.cs", "**/*.csproj", "**/*.json"]
 alwaysApply: false
 ---
 
-# GeneralUpdate 快速集成
+# GeneralUpdate 快速集成 (v10.4.6 稳定版 API)
 
 ## NuGet
-- `GeneralUpdate.Core` — 必需。Bootstrap/策略/下载/IPC/事件
-- `GeneralUpdate.Differential` — 可选。差分更新
-- `GeneralUpdate.Bowl` — 可选。崩溃守护
+- `GeneralUpdate.Core` — 必需
+- `GeneralUpdate.Bowl` — 可选（只用 Bowl，不额外引用 Core，两者互斥）
+- ~~`GeneralUpdate.Differential`~~ — 已嵌入 Core，无需额外引用
 
-## 最小集成
-SetSource(url, key) -> SetOption(AppType.Client) -> LaunchAsync()
+## 最小集成 (v10.4.6)
+```csharp
+new Configinfo { ... }.SetConfig().LaunchAsync()
+```
+❌ 无 SetSource() / SetOption() — 仅 Configinfo 属性
 
 ## 4 大更新场景
 - None, UpgradeOnly, MainOnly, Both
@@ -25,12 +28,10 @@ MainAppName, UpdateAppName, ProductId, InstallPath, UpdatePath, ClientVersion, U
 - Client 和 Upgrade 必须相同 AppSecretKey
 - 版本号必须是 4 段式
 - manifest ClientVersion 不能为空
-- AppType 枚举：Client=1, Upgrade=2, OssClient=3, OssUpgrade=4
+- AppType 是 **class**（非 enum）：`AppType.ClientApp = 1`, `AppType.UpgradeApp = 2`
+- ❌ 无 OssClient/OssUpgrade
 
-## 3 种配置方式
-- Minimal: SetSource + manifest.json
-- Standard: SetConfig(UpdateRequest) + Option + events
-- appsettings: LoadFromConfiguration(config)
-
-## 5 种 HTTP 认证
-HMAC(默认), Basic, Bearer, APIKey, 自定义(IHttpAuthProvider)
+## 配置方式 (v10.4.6)
+- Configinfo 属性直接设置 + SetConfig()
+- appsettings.json 注入（参考模板）
+- ❌ 无 Option 配置系统
