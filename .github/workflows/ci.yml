@@ -173,11 +173,12 @@ jobs:
 
           Write-Host "=== Verifying: $templateName ==="
           dotnet build "$testDir\TestProject.csproj" 2>&1
+          if ($LASTEXITCODE -ne 0) { throw "Build failed for $templateName" }
+          Write-Host "✅ $templateName compiles successfully"
 
       - name: Verify build success
         run: |
-          if ($LASTEXITCODE -ne 0) { throw "Build failed for ${{ matrix.template }}" }
-          echo "✅ ${{ matrix.template }} compiles successfully"
+          echo "✅ ${{ matrix.template }} build was already verified in the previous step"
 
   dotnet-verify-scaffold:
     name: .NET — Complete Scaffold Build
