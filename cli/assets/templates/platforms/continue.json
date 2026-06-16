@@ -1,0 +1,12 @@
+{
+  "platform": "continue",
+  "displayName": "Continue",
+  "installType": "full",
+  "folderStructure": { "root": ".continue", "skillPath": "skills/generalupdate-init", "filename": "SKILL.md" },
+  "scriptPath": "skills/generalupdate-init/scripts/generate.py",
+  "frontmatter": null,
+  "sections": { "quickReference": false },
+  "title": "GeneralUpdate Skill",
+  "description": "GeneralUpdate auto-update skill suite for .NET applications.",
+  "skillOrWorkflow": "Skill"
+}

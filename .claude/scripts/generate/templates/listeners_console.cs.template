@@ -1,0 +1,25 @@
+    .AddListenerUpdateInfo((_, e) =>
+    {
+        var count = e.Info?.Body?.Count ?? 0;
+        Console.WriteLine($"发现 {count} 个版本待更新");
+    })
+    .AddListenerMultiDownloadStatistics((_, e) =>
+    {
+        Console.Write($"\r下载进度: {e.ProgressPercentage}% | {e.Speed}/s | 剩余 {e.Remaining}");
+    })
+    .AddListenerMultiDownloadCompleted((_, e) =>
+    {
+        Console.WriteLine($"\n版本 {e.Version} 下载完成 (IsComplated={e.IsComplated})");
+    })
+    .AddListenerMultiDownloadError((_, e) =>
+    {
+        Console.Error.WriteLine($"\n下载失败: 版本 {e.Version} — {e.Exception?.Message}");
+    })
+    .AddListenerMultiAllDownloadCompleted((_, e) =>
+    {
+        Console.WriteLine($"\n全部下载完成, 正在安装...");
+    })
+    .AddListenerException((_, e) =>
+    {
+        Console.Error.WriteLine($"错误: {e.Message}");
+    })

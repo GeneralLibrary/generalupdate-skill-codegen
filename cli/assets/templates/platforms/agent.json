@@ -1,0 +1,12 @@
+{
+  "platform": "agent",
+  "displayName": "Antigravity / Generic Agent",
+  "installType": "full",
+  "folderStructure": { "root": ".agents", "skillPath": "skills/generalupdate-init", "filename": "SKILL.md" },
+  "scriptPath": "skills/generalupdate-init/scripts/generate.py",
+  "frontmatter": { "name": "generalupdate-init", "description": "GeneralUpdate auto-update skill suite for .NET applications." },
+  "sections": { "quickReference": false },
+  "title": "GeneralUpdate Skill",
+  "description": "GeneralUpdate auto-update skill suite for .NET applications. Bootstrap config, UI, strategy, troubleshooting.",
+  "skillOrWorkflow": "Skill"
+}

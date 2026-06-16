@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="GeneralUpdate.Core" Version="5.*" />
+    <!-- Uncomment for delta updates:
+    <PackageReference Include="GeneralUpdate.Differential" Version="5.*" />
+    -->
+    <!-- Uncomment for crash monitoring:
+    <PackageReference Include="GeneralUpdate.Bowl" Version="1.*" />
+    -->
+  </ItemGroup>
+</Project>

@@ -1,0 +1,91 @@
+<!--
+[Skill Auto-generated] MAUI Android Update Page
+Based on .NET MAUI + CommunityToolkit.Mvvm
+Supports Dark/Light mode via AppThemeBinding
+
+Usage:
+  1. Install NuGet: GeneralUpdate.Maui.Android
+  2. Add this page to Pages/ directory
+  3. Register DI in MauiProgram.cs
+-->
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:MauiUpdate.ViewModels"
+             x:Class="MauiUpdate.Pages.UpdatePage"
+             x:DataType="vm:UpdateViewModel"
+             Title="Software Update"
+             BackgroundColor="{AppThemeBinding Light={StaticResource White},
+                                               Dark={StaticResource Black}}">
+
+  <ScrollView>
+    <VerticalStackLayout Spacing="20" Padding="24"
+                         VerticalOptions="Center">
+
+      <!-- Icon -->
+      <Border StrokeShape="RoundRectangle 32"
+              BackgroundColor="{AppThemeBinding Light={StaticResource Primary},
+                                                Dark={StaticResource PrimaryDark}}"
+              HeightRequest="64" WidthRequest="64"
+              HorizontalOptions="Center">
+        <Label Text="🔄" FontSize="32"
+               HorizontalOptions="Center"
+               VerticalOptions="Center" />
+      </Border>
+
+      <!-- Title -->
+      <Label Text="New Version Available"
+             FontSize="24" FontAttributes="Bold"
+             HorizontalOptions="Center"
+             TextColor="{AppThemeBinding Light={StaticResource Black},
+                                          Dark={StaticResource White}}" />
+
+      <!-- Version Number -->
+      <Label Text="{Binding VersionText}"
+             FontSize="14"
+             HorizontalOptions="Center"
+             TextColor="{AppThemeBinding Light=Gray, Dark=#AAAAAA}" />
+
+      <!-- Release Notes -->
+      <Border StrokeShape="RoundRectangle 8"
+              Padding="16"
+              BackgroundColor="{AppThemeBinding Light=#F5F5F5,
+                                                Dark=#2D2D2D}">
+        <Label Text="{Binding ReleaseNotes}"
+               FontSize="13"
+               TextColor="{AppThemeBinding Light=#333333,
+                                            Dark=#CCCCCC}" />
+      </Border>
+
+      <!-- Progress Bar -->
+      <ProgressBar Progress="{Binding ProgressValue}"
+                   ProgressColor="{AppThemeBinding Light={StaticResource Primary},
+                                                    Dark={StaticResource PrimaryDark}}"
+                   HeightRequest="8" />
+
+      <!-- Progress Text -->
+      <Label Text="{Binding StatusText}"
+             FontSize="14"
+             HorizontalOptions="Center"
+             TextColor="{AppThemeBinding Light=Gray, Dark=#AAAAAA}" />
+
+      <!-- Speed -->
+      <Label Text="{Binding SpeedText}"
+             FontSize="12"
+             HorizontalOptions="Center"
+             TextColor="{AppThemeBinding Light=#999999, Dark=#777777}" />
+
+      <!-- Button -->
+      <Button Text="Start Update"
+              Command="{Binding StartUpdateCommand}"
+              BackgroundColor="{AppThemeBinding Light={StaticResource Primary},
+                                                Dark={StaticResource PrimaryDark}}"
+              TextColor="White"
+              CornerRadius="8"
+              HeightRequest="48"
+              FontSize="16"
+              Margin="0,8,0,0" />
+
+    </VerticalStackLayout>
+  </ScrollView>
+</ContentPage>

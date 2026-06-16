@@ -1,0 +1,21 @@
+{
+  "platform": "claude",
+  "displayName": "Claude Code",
+  "installType": "full",
+  "folderStructure": {
+    "root": ".claude",
+    "skillPath": "skills/generalupdate-init",
+    "filename": "SKILL.md"
+  },
+  "scriptPath": "skills/generalupdate-init/scripts/generate.py",
+  "frontmatter": {
+    "name": "generalupdate-init",
+    "description": "Integrate GeneralUpdate auto-update into any .NET application. Generates Bootstrap configuration code, manifest files, and dual-project (Client+Upgrade) scaffolding. Covers 4 update scenes, Configinfo configuration, appsettings.json, HTTP auth (HMAC/Basic/Bearer), and complete deployment checklist."
+  },
+  "sections": {
+    "quickReference": false
+  },
+  "title": "GeneralUpdate Skill - Claude Code",
+  "description": "Complete Claude Code skill suite for GeneralUpdate .NET auto-update integration.",
+  "skillOrWorkflow": "Skill"
+}

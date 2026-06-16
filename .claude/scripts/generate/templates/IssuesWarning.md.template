@@ -1,0 +1,7 @@
+# Issues Warning — {{STRATEGY_NAME}} + {{FRAMEWORK}}
+
+This configuration may be affected by the following known issues:
+
+{{WARNINGS_LIST}}
+
+Cross-reference with `generalupdate-troubleshoot` reference.md for full details.

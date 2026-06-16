@@ -1,0 +1,12 @@
+{
+  "platform": "copilot",
+  "displayName": "GitHub Copilot",
+  "installType": "full",
+  "folderStructure": { "root": ".github", "skillPath": "prompts/generalupdate", "filename": "generalupdate.md" },
+  "scriptPath": "prompts/generalupdate/scripts/generate.py",
+  "frontmatter": null,
+  "sections": { "quickReference": false },
+  "title": "GeneralUpdate Skill - GitHub Copilot",
+  "description": "Complete GitHub Copilot prompt for GeneralUpdate .NET auto-update integration.",
+  "skillOrWorkflow": "Custom"
+}

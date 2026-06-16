@@ -1,0 +1,63 @@
+<!--
+【Skill 自动生成】Avalonia + SemiUrsa 升级进程窗口
+Upgrade 进程在应用更新时显示，提示用户等待
+-->
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:Upgrade.Avalonia.ViewModels"
+        xmlns:semi="https://github.com/irihitech/Semi.Avalonia"
+        x:Class="Upgrade.Avalonia.Views.UpdateWindow"
+        x:DataType="vm:UpdateViewModel"
+        mc:Ignorable="d"
+        Title="正在更新"
+        Width="420" Height="280"
+        WindowStartupLocation="CenterScreen"
+        CanResize="False"
+        WindowStyle="None"
+        Topmost="True"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="NoChrome">
+
+  <Grid RowDefinitions="*,Auto">
+
+    <!-- 进度内容 -->
+    <Border Grid.Row="0" Padding="40,24">
+      <StackPanel Spacing="20" VerticalAlignment="Center">
+
+        <!-- 动画图标 -->
+        <Border CornerRadius="32" Width="64" Height="64"
+                HorizontalAlignment="Center"
+                Background="{DynamicResource SemiColorAccentPrimary}">
+          <TextBlock Text="⚙️" FontSize="32"
+                     HorizontalAlignment="Center"
+                     VerticalAlignment="Center" />
+        </Border>
+
+        <TextBlock Text="正在更新，请稍候..."
+                   FontSize="20" FontWeight="SemiBold"
+                   HorizontalAlignment="Center" />
+
+        <TextBlock Text="更新过程中请勿关闭计算机"
+                   FontSize="13"
+                   Foreground="{DynamicResource SemiColorTextSecondary}"
+                   HorizontalAlignment="Center" />
+
+        <ProgressBar IsIndeterminate="True"
+                     Height="4" CornerRadius="2"
+                     Foreground="{DynamicResource SemiColorAccentPrimary}" />
+      </StackPanel>
+    </Border>
+
+    <!-- 底部信息 -->
+    <Border Grid.Row="1" Padding="16,8"
+            Background="{DynamicResource SemiColorFillSecondaryBackgorund}">
+      <TextBlock Text="GeneralUpdate | 自动更新引擎"
+                 FontSize="11"
+                 Foreground="{DynamicResource SemiColorTextTertiary}"
+                 HorizontalAlignment="Center" />
+    </Border>
+
+  </Grid>
+</Window>

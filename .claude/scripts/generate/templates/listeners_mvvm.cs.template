@@ -1,0 +1,30 @@
+    .AddListenerUpdateInfo((_, e) =>
+    {
+        // ViewModel.UpdateCheckResult(e.Info?.Body)
+        System.Console.WriteLine($"发现 {e.Info?.Body?.Count ?? 0} 个版本待更新");
+    })
+    .AddListenerMultiDownloadStatistics((_, e) =>
+    {
+        // ViewModel: ProgressPercentage, Speed, Remaining, TotalBytesToReceive, BytesReceived
+        // 注意: 使用正确的 Dispatcher 更新 UI
+        // WPF:   Application.Current.Dispatcher.Invoke(() => { ... });
+        // Avalonia: Dispatcher.UIThread.Post(() => { ... });
+        // 不要直接使用 Dispatcher.Invoke() — 它在不同框架中语义不同
+        System.Console.WriteLine($"下载进度: {e.ProgressPercentage}%");
+    })
+    .AddListenerMultiDownloadCompleted((_, e) =>
+    {
+        System.Console.WriteLine($"版本 {e.Version} 下载完成");
+    })
+    .AddListenerMultiDownloadError((_, e) =>
+    {
+        System.Console.Error.WriteLine($"下载失败: 版本 {e.Version} — {e.Exception?.Message}");
+    })
+    .AddListenerMultiAllDownloadCompleted((_, e) =>
+    {
+        System.Console.WriteLine("全部下载完成, 正在安装...");
+    })
+    .AddListenerException((_, e) =>
+    {
+        System.Console.Error.WriteLine($"错误: {e.Message}");
+    })

@@ -1,0 +1,12 @@
+{
+  "platform": "roocode",
+  "displayName": "RooCode",
+  "installType": "full",
+  "folderStructure": { "root": ".roo", "skillPath": "skills/generalupdate-init", "filename": "SKILL.md" },
+  "scriptPath": "skills/generalupdate-init/scripts/generate.py",
+  "frontmatter": { "name": "generalupdate-init", "description": "GeneralUpdate auto-update skill suite for .NET applications." },
+  "sections": { "quickReference": false },
+  "title": "GeneralUpdate Skill",
+  "description": "GeneralUpdate auto-update skill suite for .NET applications.",
+  "skillOrWorkflow": "Skill"
+}

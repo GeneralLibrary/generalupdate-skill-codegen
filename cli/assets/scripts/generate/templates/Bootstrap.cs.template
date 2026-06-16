@@ -1,0 +1,28 @@
+using GeneralUpdate.Core;
+using GeneralUpdate.Common.Shared.Object;
+using GeneralUpdate.Common.Download;
+
+var config = new Configinfo
+{
+    // === 必需 ===
+    UpdateUrl = "{{UPDATE_URL}}",
+    AppSecretKey = "{{APP_SECRET_KEY}}",
+    AppName = "{{PROJECT_NAME}}.exe",
+    MainAppName = "{{PROJECT_NAME}}.exe",
+    ClientVersion = "{{CLIENT_VERSION}}",
+    ProductId = "{{PRODUCT_ID}}",
+    InstallPath = {{INSTALL_PATH}},
+
+    // === 可选 ===
+    Encoding = System.Text.Encoding.UTF8,
+{{#BOWL}}
+    // Bowl 配置（仅包含 GeneralUpdate.Bowl 包，不重复添加 Core）
+{{/BOWL}}
+};
+
+{{STRATEGY_WARNING}}
+{{BOWL_NOTICE}}
+await new GeneralUpdateBootstrap()
+    .SetConfig(config)
+{{LISTENERS}}
+    .LaunchAsync();
