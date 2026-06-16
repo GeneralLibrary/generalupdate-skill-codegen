@@ -72,7 +72,7 @@
 var config = new UpdateRequest
 {
     // ...
-    SkipDirectorys = new List<string> { ".backups", "backup-" }
+    Directories = new List<string> { ".backups", "backup-" }
 };
 ```
 
