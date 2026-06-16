@@ -1,0 +1,25 @@
+    .AddListenerUpdateInfo((_, e) =>
+    {
+        // MAUI UI 更新需要 MainThread 和 using Microsoft.Maui.ApplicationModel;
+        System.Console.WriteLine($"发现 {e.Info?.Body?.Count ?? 0} 个版本待更新");
+    })
+    .AddListenerMultiDownloadStatistics((_, e) =>
+    {
+        System.Console.WriteLine($"下载进度: {e.ProgressPercentage}%");
+    })
+    .AddListenerMultiDownloadCompleted((_, e) =>
+    {
+        System.Console.WriteLine($"版本 {e.Version} 下载完成");
+    })
+    .AddListenerMultiDownloadError((_, e) =>
+    {
+        System.Console.Error.WriteLine($"下载失败: {e.Exception?.Message}");
+    })
+    .AddListenerMultiAllDownloadCompleted((_, e) =>
+    {
+        System.Console.WriteLine("全部下载完成, 正在安装...");
+    })
+    .AddListenerException((_, e) =>
+    {
+        System.Console.Error.WriteLine($"错误: {e.Message}");
+    })

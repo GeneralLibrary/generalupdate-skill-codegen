@@ -1,0 +1,73 @@
+<!--
+[Skill Auto-generated] WPF + WPFDevelopers Update Window
+Based on WPFDevelopers skin library (circular progress + breath lamp)
+Replaced for-loop Mock with GenerateUpdate real binding
+-->
+<wd:Window x:Class="Upgrade.WPF.Views.UpdateWindow"
+           xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+           xmlns:wd="clr-namespace:WPFDevelopers.Controls;assembly=WPFDevelopers"
+           xmlns:vm="clr-namespace:Upgrade.WPF.ViewModels"
+           Title="Software Update"
+           Height="420" Width="380"
+           WindowStartupLocation="CenterScreen"
+           WindowStyle="None"
+           AllowsTransparency="True"
+           Background="Transparent">
+
+  <Border CornerRadius="12"
+          Background="#2D2D2D"
+          Padding="24">
+    <Grid>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="*" />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+
+      <!-- Title -->
+      <StackPanel Grid.Row="0" Margin="0,8,0,16"
+                  HorizontalAlignment="Center">
+        <TextBlock Text="Software Update"
+                   FontSize="22" FontWeight="Bold"
+                   Foreground="White"
+                   HorizontalAlignment="Center" />
+        <TextBlock Text="{Binding Statistics.Version}"
+                   FontSize="13"
+                   Foreground="#AAAAAA"
+                   HorizontalAlignment="Center" />
+      </StackPanel>
+
+      <!-- Circular Progress -->
+      <StackPanel Grid.Row="1" VerticalAlignment="Center"
+                  HorizontalAlignment="Center">
+        <wd:CircleProgressBar x:Name="PART_Slider"
+                              Value="{Binding Statistics.ProgressPercentage}"
+                              Minimum="0" Maximum="100"
+                              Width="160" Height="160"
+                              ArcThickness="12"
+                              ArcColor="#4FC3F7"
+                              Text="{Binding Statistics.ProgressPercentage, StringFormat='{}{0:F0}%'}"
+                              TextColor="White" />
+        <TextBlock Text="{Binding SpeedText}"
+                   FontSize="13"
+                   Foreground="#888888"
+                   HorizontalAlignment="Center"
+                   Margin="0,8,0,0" />
+      </StackPanel>
+
+      <!-- Status -->
+      <Border Grid.Row="2" Margin="0,16,0,0"
+              CornerRadius="8"
+              Background="#3D3D3D" Padding="12">
+        <StackPanel>
+          <wd:BreathLamp Text="{Binding StatusText}"
+                          HorizontalAlignment="Center"
+                          FontSize="14"
+                          Foreground="#4FC3F7" />
+        </StackPanel>
+      </Border>
+
+    </Grid>
+  </Border>
+</wd:Window>

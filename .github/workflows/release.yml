@@ -1,0 +1,143 @@
+name: Release — Publish CLI + GitHub Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g. 0.1.0)'
+        required: true
+        type: string
+
+jobs:
+  release:
+    name: Build and Publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # ======================
+      # Validate before release
+      # ======================
+
+      - name: Validate — BM25 search
+        run: |
+          cd .claude/skills/generalupdate-troubleshoot
+          python3 scripts/search.py "升级后启动不了" --domain issue -n 1 --json | \
+            python3 -c "import sys,json; d=json.load(sys.stdin); assert d['count']>=1; print('✅ Search OK')"
+
+      - name: Validate — Code generator
+        run: |
+          cd .claude/scripts
+          python3 generate.py --strategy oss --framework wpf-layui --bowl \
+            --project-name ReleaseTest --version 0.1.0.0 -o /tmp/release-verify
+          grep -q "ReleaseTest.exe" /tmp/release-verify/Client/Integration.cs && echo "✅ Generator OK"
+
+      # ======================
+      # Build CLI
+      # ======================
+
+      - name: Build CLI
+        run: |
+          cd cli
+          npm ci --ignore-scripts
+          npm run build
+          echo "✅ CLI built"
+
+      # ======================
+      # Package assets for CLI
+      # ======================
+
+      - name: Sync assets to CLI
+        run: |
+          # Sync search engine
+          cp -r .claude/skills/generalupdate-troubleshoot/scripts cli/assets/scripts/
+          cp -r .claude/skills/generalupdate-troubleshoot/data cli/assets/data/
+          # Sync code generator
+          cp -r .claude/scripts/generate cli/assets/scripts/generate
+          cp .claude/scripts/generate.py cli/assets/scripts/generate.py
+
+          echo "✅ Assets synced"
+
+      # ======================
+      # Generate changelog
+      # ======================
+
+      - name: Generate changelog
+        run: |
+          previousTag=$(git describe --tags --abbrev=0 --always 2>/dev/null || echo "")
+          if [ -z "$previousTag" ] || [ "$previousTag" = "${{ github.sha }}" ]; then
+            log=$(git log --oneline --no-decorate -100)
+          else
+            log=$(git log "${previousTag}..HEAD" --oneline --no-decorate)
+          fi
+
+          features=""; fixes=""; docs=""; chores=""; others=""
+          while IFS= read -r line; do
+            line=$(echo "$line" | sed 's/^[a-f0-9]* //')
+            case "$line" in
+              feat:*) features="$features- $line\n" ;;
+              fix:*)  fixes="$fixes- $line\n" ;;
+              docs:*) docs="$docs- $line\n" ;;
+              chore:*|ci:*|build:*) chores="$chores- $line\n" ;;
+              *)      others="$others- $line\n" ;;
+            esac
+          done <<< "$log"
+
+          cat > changelog.md << EOF
+          ## 🚀 Features
+          $(echo -e "$features")
+
+          ## 🐛 Bug Fixes
+          $(echo -e "$fixes")
+
+          ## 📝 Documentation
+          $(echo -e "$docs")
+
+          ## 🔧 Chores
+          $(echo -e "$chores")
+
+          ## 📦 Other Changes
+          $(echo -e "$others")
+          EOF
+          echo "✅ Changelog generated"
+
+      # ======================
+      # Create GitHub Release
+      # ======================
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: v${{ github.event.inputs.version }}
+          name: Release v${{ github.event.inputs.version }}
+          body_path: changelog.md
+          files: |
+            cli/dist/
+            cli/package.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Output — Next steps
+        run: |
+          echo ""
+          echo "=============================="
+          echo "✅ Release v${{ github.event.inputs.version }} published!"
+          echo ""
+          echo "To publish to npm:"
+          echo "  cd cli"
+          echo "  npm publish"
+          echo ""
+          echo "=============================="

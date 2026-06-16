@@ -1,0 +1,11 @@
+using GeneralUpdate.Core;
+
+// Upgrade 进程入口 — 从 IPC 文件读取配置，无需 SetConfig
+// 注意: Upgrade 项目的 AppType 设为 2 (UpgradeApp)
+
+await new GeneralUpdateBootstrap()
+    .AddListenerException((_, e) =>
+    {
+        System.Console.Error.WriteLine($"升级错误: {e.Message}");
+    })
+    .LaunchAsync();

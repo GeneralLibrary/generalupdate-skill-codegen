@@ -1,0 +1,21 @@
+{
+  "platform": "cursor",
+  "displayName": "Cursor",
+  "installType": "full",
+  "folderStructure": {
+    "root": ".cursor",
+    "skillPath": "skills/generalupdate-init",
+    "filename": "SKILL.md"
+  },
+  "scriptPath": "skills/generalupdate-init/scripts/generate.py",
+  "frontmatter": {
+    "name": "generalupdate-init",
+    "description": "Integrate GeneralUpdate auto-update into any .NET application. Generates Bootstrap configuration code, manifest files, and dual-project (Client+Upgrade) scaffolding."
+  },
+  "sections": {
+    "quickReference": false
+  },
+  "title": "GeneralUpdate Skill - Cursor",
+  "description": "Complete Cursor skill suite for GeneralUpdate .NET auto-update integration.",
+  "skillOrWorkflow": "Skill"
+}
