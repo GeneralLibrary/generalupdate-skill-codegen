@@ -1,69 +1,37 @@
-using GeneralUpdate.Core.Strategy;
-using GeneralUpdate.Core.Pipeline;
+using GeneralUpdate.Common.Internal.Pipeline;
 
 /// <summary>
-/// [Skill Generated] Custom platform update strategy.
-/// Completely replaces default strategies (WindowsStrategy / LinuxStrategy / MacStrategy).
+/// 【Skill 参考】自定义平台策略
 ///
-/// Usage:
-///   .Strategy<MyCustomStrategy>()
+/// ⚠️ 注意：v10.4.6 稳定版不支持通过 bootstrap.Strategy<T>() 注入自定义策略。
+/// 自定义策略需要直接继承 AbstractStrategy 并手动调用。
+///
+/// AbstractStrategy 模板方法：
+/// - Create(UpdateContext) — 初始化
+/// - ExecuteAsync() — 执行策略主体
+/// - StartAppAsync() — 启动主应用
+/// - BuildPipeline(PipelineContext) — 构建平台特定中间件链
 /// </summary>
-public class MyCustomStrategy : AbstractStrategy
+public class MyCustomStrategy
 {
-    public override async Task ExecuteAsync(UpdateContext context)
+    // v10.4.6 稳定版不支持自定义策略注入
+    // 此模板作为开发分支（v10.5.0-beta.2）特性的参考
+
+    public static async Task ExamplePipelineAsync()
     {
-        Console.WriteLine("[CustomStrategy] Executing custom update strategy");
+        var context = new PipelineContext();
+        context.Add("ZipFilePath", @"C:\temp\update.zip");
+        context.Add("Hash", "");
+        context.Add("Format", 0);
+        context.Add("Encoding", System.Text.Encoding.UTF8);
+        context.Add("SourcePath", @"C:\Program Files\MyApp");
+        context.Add("PatchEnabled", true);
 
-        // 1. Pre-update check
-        if (await Hooks.SafeOnBeforeUpdateAsync(context) == false)
-        {
-            Console.WriteLine("[CustomStrategy] Pre-check failed, aborting");
-            return;
-        }
+        await new PipelineBuilder(context)
+            .UseMiddleware<HashMiddleware>()
+            .UseMiddleware<CompressMiddleware>()
+            .Build();
 
-        // 2. Process each version through the pipeline
-        foreach (var version in context.UpdateVersions)
-        {
-            Console.WriteLine($"[CustomStrategy] Processing version: {version.Version}");
-
-            var pipeline = new PipelineBuilder(context)
-                .UseMiddleware<HashMiddleware>()
-                .UseMiddleware<CompressMiddleware>()
-                .Build();
-
-            await pipeline.ExecuteAsync(context, version);
-            Console.WriteLine($"[CustomStrategy] Version {version.Version} done");
-        }
-
-        // 3. Post-update
-        await Hooks.SafeOnAfterUpdateAsync(context);
-
-        // 4. Start main app
-        await StartAppAsync(context);
-    }
-
-    public override async Task StartAppAsync(UpdateContext context)
-    {
-        Console.WriteLine("[CustomStrategy] Starting main app");
-        var appPath = Path.Combine(context.InstallPath, context.MainAppName ?? "MyApp.exe");
-        if (!File.Exists(appPath))
-            throw new FileNotFoundException($"App not found: {appPath}");
-
-        var process = Process.Start(new ProcessStartInfo
-        {
-            FileName = appPath,
-            WorkingDirectory = context.InstallPath,
-            UseShellExecute = true
-        });
-
-        if (process == null)
-            throw new InvalidOperationException($"Failed to start: {appPath}");
-
-        Console.WriteLine($"[CustomStrategy] App started (PID: {process.Id})");
-    }
-
-    public override async Task ExecuteAsync(UpdateContext context, string pipeHandle)
-    {
-        await ExecuteAsync(context);
+        Console.WriteLine("[CustomStrategy] 管道执行完成");
     }
 }

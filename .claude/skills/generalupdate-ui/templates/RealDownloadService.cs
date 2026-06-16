@@ -1,11 +1,7 @@
-using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using GeneralUpdate.Core;
-using GeneralUpdate.Core.Configuration;
-using GeneralUpdate.Core.Enum;
-using GeneralUpdate.Core.Event;
+using GeneralUpdate.Common.Shared.Object;
 using Common.Avalonia.Models;
 
 namespace Common.Avalonia.Services;
@@ -17,8 +13,11 @@ namespace Common.Avalonia.Services;
 /// 覆盖全部 UI 状态：Idle → Checking → FoundUpdate → Downloading → Paused
 /// → DownloadError → Applying → Success / Failed → RollingBack
 ///
+/// ⚠️ 针对 NuGet v10.4.6 稳定版 API。
+/// LaunchAsync 返回 Task&lt;GeneralUpdateBootstrap&gt;（非 bool）。
+///
 /// 使用方式（DI 注册）：
-///   services.AddSingleton<IDownloadService>(sp => new RealDownloadService(
+///   services.AddSingleton&lt;IDownloadService&gt;(sp => new RealDownloadService(
 ///       "https://your-server.com/api", "your-secret-key"));
 ///
 /// 或直接替换 MockDownloadService：
@@ -44,22 +43,19 @@ public class RealDownloadService : IDownloadService
     // ── 内部状态 ──
     private readonly string _updateUrl;
     private readonly string _secretKey;
-    private readonly AppType _appType;
-    private readonly string _productId;
     private CancellationTokenSource? _cts;
     private int _retryCount;
     private const int MaxRetries = 3;
 
-    public RealDownloadService(string updateUrl, string secretKey, AppType appType = AppType.Client, string productId = "unknown")
+    public RealDownloadService(string updateUrl, string secretKey)
     {
         _updateUrl = updateUrl;
         _secretKey = secretKey;
-        _appType = appType;
-        _productId = productId;
 
         CurrentStatistics = new DownloadStatistics
         {
             Version = null,
+            SpeedText = "",
             Speed = 0,
             Remaining = TimeSpan.Zero,
             TotalBytesToReceive = 0,
@@ -72,7 +68,6 @@ public class RealDownloadService : IDownloadService
     // 公开方法
     // ═══════════════════════════════════════════════
 
-    /// <summary>检查更新（触发版本验证，不自动下载）</summary>
     public void CheckForUpdates()
     {
         if (!CanStart) return;
@@ -80,7 +75,6 @@ public class RealDownloadService : IDownloadService
         _ = RunCheckAsync(_cts.Token);
     }
 
-    /// <summary>开始下载更新</summary>
     public void StartDownload()
     {
         if (Status != DownloadStatus.FoundUpdate) return;
@@ -89,17 +83,16 @@ public class RealDownloadService : IDownloadService
         _ = RunDownloadAsync(_cts.Token);
     }
 
-    /// <summary>暂停（取消当前下载，下次继续）</summary>
     public void Pause()
     {
         if (!CanPause) return;
         _cts?.Cancel();
         UpdateState(DownloadStatus.Paused);
         CurrentStatistics.Speed = 0;
+        CurrentStatistics.SpeedText = "";
         StatisticsChanged?.Invoke(CurrentStatistics);
     }
 
-    /// <summary>重试（从当前进度恢复，或重新开始）</summary>
     public void Retry()
     {
         if (!CanRetry) return;
@@ -109,14 +102,12 @@ public class RealDownloadService : IDownloadService
         _ = RunDownloadAsync(_cts.Token);
     }
 
-    /// <summary>取消并重置</summary>
     public void Cancel()
     {
         _cts?.Cancel();
         ResetState();
     }
 
-    /// <summary>完全重新开始</summary>
     public void Restart()
     {
         _cts?.Cancel();
@@ -134,91 +125,55 @@ public class RealDownloadService : IDownloadService
 
         try
         {
-            using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
-
-            var payload = JsonSerializer.Serialize(new
+            var config = new Configinfo
             {
-                appKey = _secretKey,
-                appType = (int)_appType,
-                clientVersion = GetCurrentVersion(),
-                productId = _productId,
-                platform = GetPlatform(),
-                tenantId = "default"
-            });
+                UpdateUrl = _updateUrl,
+                AppSecretKey = _secretKey,
+                AppName = "check.exe",
+                MainAppName = "check.exe",
+                ClientVersion = GetCurrentVersion(),
+                ProductId = "check",
+                InstallPath = ".",
+            };
 
-            // Use _updateUrl as-is; it should already point to the full Verification endpoint
-            var response = await client.PostAsync(
-                _updateUrl,
-                new StringContent(payload, Encoding.UTF8, "application/json"),
-                token);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                ErrorOccurred?.Invoke($"Server returned {(int)response.StatusCode}");
-                UpdateState(DownloadStatus.DownloadError);
-                return;
-            }
-
-            var json = await response.Content.ReadAsStringAsync(token);
-            using var doc = JsonDocument.Parse(json);
-
-            // Check for server error envelope first: { code, message, body }
-            if (doc.RootElement.TryGetProperty("code", out var codeProp) &&
-                codeProp.GetInt32() != 200)
-            {
-                var msg = doc.RootElement.TryGetProperty("message", out var msgProp)
-                    ? msgProp.GetString() ?? "Unknown server error"
-                    : "Unknown server error";
-                ErrorOccurred?.Invoke($"Server error: {msg}");
-                UpdateState(DownloadStatus.DownloadError);
-                return;
-            }
-
-            if (!doc.RootElement.TryGetProperty("body", out var body) || body.GetArrayLength() == 0)
-            {
-                UpdateState(DownloadStatus.AlreadyLatest);
-                return;
-            }
-
-            var hasUpdate = body.GetArrayLength() > 0;
-
-            if (hasUpdate)
-            {
-                var first = body[0];
-                CurrentStatistics.Version = first.TryGetProperty("version", out var v) ? v.GetString() : null;
-                CurrentStatistics.TotalBytesToReceive = first.TryGetProperty("size", out var s) ? s.GetInt64() : 0;
-                StatisticsChanged?.Invoke(CurrentStatistics);
-                UpdateState(DownloadStatus.FoundUpdate);
-            }
-            else
-            {
-                UpdateState(DownloadStatus.AlreadyLatest);
-            }
+            // 启动 Bootstrap 进行真实版本验证
+            await new GeneralUpdateBootstrap()
+                .SetConfig(config)
+                .AddListenerUpdateInfo((_, e) =>
+                {
+                    if (e.Info?.Body != null && e.Info.Body.Count > 0)
+                    {
+                        var first = e.Info.Body[0];
+                        if (first != null)
+                        {
+                            CurrentStatistics.Version = first.Version;
+                            CurrentStatistics.TotalBytesToReceive = first.Size ?? 0;
+                        }
+                        StatisticsChanged?.Invoke(CurrentStatistics);
+                        UpdateState(DownloadStatus.FoundUpdate);
+                    }
+                    else
+                    {
+                        UpdateState(DownloadStatus.AlreadyLatest);
+                    }
+                })
+                .AddListenerException((_, e) =>
+                {
+                    ErrorOccurred?.Invoke($"检查更新失败: {e.Message}");
+                    UpdateState(DownloadStatus.DownloadError);
+                })
+                .LaunchAsync();
         }
         catch (OperationCanceledException)
         {
-            ErrorOccurred?.Invoke("Check cancelled");
+            ErrorOccurred?.Invoke("检查已取消");
             UpdateState(DownloadStatus.Idle);
         }
         catch (Exception ex)
         {
-            ErrorOccurred?.Invoke($"Check failed: {ex.Message}");
+            ErrorOccurred?.Invoke($"检查更新失败: {ex.Message}");
             UpdateState(DownloadStatus.DownloadError);
         }
-    }
-
-    private static string GetCurrentVersion()
-    {
-        return System.Reflection.Assembly.GetEntryAssembly()
-            ?.GetName()?.Version?.ToString(4) ?? "1.0.0.0";
-    }
-
-    private static string GetPlatform()
-    {
-        if (OperatingSystem.IsWindows()) return "windows";
-        if (OperatingSystem.IsLinux()) return "linux";
-        if (OperatingSystem.IsMacOS()) return "macos";
-        return "unknown";
     }
 
     private async Task RunDownloadAsync(CancellationToken token)
@@ -227,22 +182,42 @@ public class RealDownloadService : IDownloadService
 
         try
         {
-            var bootstrap = BuildBootstrap()
+            var config = new Configinfo
+            {
+                UpdateUrl = _updateUrl,
+                AppSecretKey = _secretKey,
+                AppName = "MyApp.exe",
+                MainAppName = "MyApp.exe",
+                ClientVersion = GetCurrentVersion(),
+                ProductId = "my-product-001",
+                InstallPath = ".",
+            };
+
+            // v10.4.6 稳定版：LaunchAsync 返回 Task<GeneralUpdateBootstrap>
+            // 无需检查返回值，更新完成后由 Upgrade 进程接管
+            await new GeneralUpdateBootstrap()
+                .SetConfig(config)
                 .AddListenerUpdateInfo((_, e) =>
                 {
-                    CurrentStatistics.Version = e.Version;
-                    CurrentStatistics.TotalBytesToReceive = e.Size;
+                    if (e.Info?.Body != null && e.Info.Body.Count > 0)
+                    {
+                        var first = e.Info.Body[0];
+                        if (first != null)
+                        {
+                            CurrentStatistics.Version = first.Version;
+                            CurrentStatistics.TotalBytesToReceive = first.Size ?? 0;
+                        }
+                    }
                     StatisticsChanged?.Invoke(CurrentStatistics);
                 })
                 .AddListenerMultiDownloadStatistics((_, e) =>
                 {
                     CurrentStatistics.ProgressPercentage = e.ProgressPercentage;
+                    CurrentStatistics.SpeedText = e.Speed;
                     CurrentStatistics.Speed = ParseSpeed(e.Speed);
                     CurrentStatistics.Remaining = e.Remaining;
-                    // 估算 BytesReceived（GeneralUpdate 事件可能不直接提供）
-                    CurrentStatistics.BytesReceived = CurrentStatistics.TotalBytesToReceive > 0
-                        ? (long)(e.ProgressPercentage / 100.0 * CurrentStatistics.TotalBytesToReceive)
-                        : 0;
+                    CurrentStatistics.TotalBytesToReceive = e.TotalBytesToReceive;
+                    CurrentStatistics.BytesReceived = e.BytesReceived;
                     StatisticsChanged?.Invoke(CurrentStatistics);
                 })
                 .AddListenerMultiDownloadError((_, e) =>
@@ -256,57 +231,34 @@ public class RealDownloadService : IDownloadService
                 })
                 .AddListenerMultiDownloadCompleted((_, e) =>
                 {
-                    // 下载阶段完成，进入应用阶段
                     CurrentStatistics.ProgressPercentage = 100;
                     CurrentStatistics.BytesReceived = CurrentStatistics.TotalBytesToReceive;
                     StatisticsChanged?.Invoke(CurrentStatistics);
                 })
                 .AddListenerMultiAllDownloadCompleted((_, e) =>
                 {
-                    // 全部下载完成，Upgrade 进程处理中
                     UpdateState(DownloadStatus.Applying);
                 })
                 .AddListenerException((_, e) =>
                 {
-                    // 非致命异常（如单文件下载失败），不改变状态
                     System.Diagnostics.Debug.WriteLine($"[RealDownloadService] 非致命异常: {e.Message}");
-                });
+                })
+                .LaunchAsync();
 
-            var result = await bootstrap.LaunchAsync();
-
-            // LaunchAsync 返回 true → 已在升级进程处理中
-            // LaunchAsync 返回 false → 已是最新版本
-            if (result)
-            {
-                UpdateState(DownloadStatus.Applying);
-                // 短暂延迟后认为升级完成
-                await Task.Delay(2000, token);
-                UpdateState(DownloadStatus.Success);
-                UpdateCompleted?.Invoke();
-            }
-            else
-            {
-                UpdateState(DownloadStatus.AlreadyLatest);
-            }
+            // LaunchAsync 返回后表示更新流程已启动
+            // 有更新时进程由 Upgrade 接管
+            UpdateState(DownloadStatus.Success);
+            UpdateCompleted?.Invoke();
         }
         catch (OperationCanceledException)
         {
-            // 用户取消操作 → 状态已经在 Pause() 中更新
+            // 用户取消
         }
         catch (Exception ex)
         {
             ErrorOccurred?.Invoke($"更新失败: {ex.Message}");
             UpdateState(DownloadStatus.Failed);
         }
-    }
-
-    private GeneralUpdateBootstrap BuildBootstrap()
-    {
-        return new GeneralUpdateBootstrap()
-            .SetSource(_updateUrl, _secretKey)
-            .SetOption(Option.AppType, _appType)
-            .SetOption(Option.PatchEnabled, false)
-            .SetOption(Option.BackupEnabled, true);
     }
 
     // ═══════════════════════════════════════════════
@@ -325,6 +277,7 @@ public class RealDownloadService : IDownloadService
         CurrentStatistics = new DownloadStatistics
         {
             Version = null,
+            SpeedText = "",
             Speed = 0,
             Remaining = TimeSpan.Zero,
             TotalBytesToReceive = 0,
@@ -336,11 +289,17 @@ public class RealDownloadService : IDownloadService
         StatisticsChanged?.Invoke(CurrentStatistics);
     }
 
+    private static string GetCurrentVersion()
+    {
+        return System.Reflection.Assembly.GetEntryAssembly()
+            ?.GetName()?.Version?.ToString(4) ?? "1.0.0.0";
+    }
+
     private static double ParseSpeed(string? speedStr)
     {
         if (string.IsNullOrEmpty(speedStr)) return 0;
         var parts = speedStr.Split(' ');
-        if (parts.Length >= 2 && double.TryParse(parts[0], out var value))
+        if (parts.Length >= 1 && double.TryParse(parts[0], out var value))
             return value;
         return 0;
     }

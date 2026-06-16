@@ -1,14 +1,13 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GeneralUpdate.Core;
-using GeneralUpdate.Core.Configuration;
-using GeneralUpdate.Core.Enum;
+using GeneralUpdate.Common.Shared.Object;
 
 namespace MauiUpdate.ViewModels;
 
 /// <summary>
-/// [Skill Auto-generated] MAUI Update Page ViewModel
-/// Uses GeneralUpdate.Maui.Android or GeneralUpdate.Core
+/// 【Skill 自动生成】MAUI 更新页面 ViewModel
+/// 针对 NuGet v10.4.6 稳定版 API
 /// </summary>
 public partial class UpdateViewModel : ObservableObject
 {
@@ -16,10 +15,10 @@ public partial class UpdateViewModel : ObservableObject
     private readonly string _secretKey;
     private CancellationTokenSource? _cts;
 
-    [ObservableProperty] private string _versionText = "Checking...";
+    [ObservableProperty] private string _versionText = "检测中...";
     [ObservableProperty] private string _releaseNotes = "";
     [ObservableProperty] private double _progressValue;
-    [ObservableProperty] private string _statusText = "Ready";
+    [ObservableProperty] private string _statusText = "准备就绪";
     [ObservableProperty] private string _speedText = "";
     [ObservableProperty] private bool _isUpdating;
 
@@ -39,24 +38,35 @@ public partial class UpdateViewModel : ObservableObject
 
         try
         {
-            StatusText = "Connecting to server...";
+            StatusText = "正在连接服务器...";
 
-            var bootstrap = new GeneralUpdateBootstrap()
-                .SetSource(_updateUrl, _secretKey)
-                .SetOption(Option.AppType, AppType.OssClient)
+            var config = new Configinfo
+            {
+                UpdateUrl = _updateUrl,
+                AppSecretKey = _secretKey,
+                AppName = "MyApp.exe",
+                MainAppName = "MyApp.exe",
+                ClientVersion = "1.0.0.0",
+                ProductId = "my-product-001",
+                InstallPath = ".",
+            };
+
+            // v10.4.6 稳定版 API：Configinfo + SetConfig + LaunchAsync
+            await new GeneralUpdateBootstrap()
+                .SetConfig(config)
                 .AddListenerUpdateInfo((_, e) =>
                 {
                     MainThread.BeginInvokeOnMainThread(() =>
                     {
-                        VersionText = e.Version ?? "Unknown version";
+                        VersionText = e.Info?.Body?.Count > 0 ? e.Info.Body[0]?.Version ?? "未知版本" : "未知版本";
                     });
                 })
                 .AddListenerMultiDownloadStatistics((_, e) =>
                 {
                     MainThread.BeginInvokeOnMainThread(() =>
                     {
-                        ProgressValue = e.ProgressValue / 100.0;
-                        StatusText = $"{e.ProgressValue:F1}%";
+                        ProgressValue = e.ProgressPercentage / 100.0;
+                        StatusText = $"{e.ProgressPercentage:F1}%";
                         SpeedText = e.Speed ?? "";
                     });
                 })
@@ -64,29 +74,28 @@ public partial class UpdateViewModel : ObservableObject
                 {
                     MainThread.BeginInvokeOnMainThread(() =>
                     {
-                        StatusText = "Download completed, installing...";
+                        StatusText = "下载完成，正在安装...";
                     });
                 })
                 .AddListenerMultiAllDownloadCompleted((_, e) =>
                 {
                     MainThread.BeginInvokeOnMainThread(() =>
                     {
-                        StatusText = "Update Completed!";
+                        StatusText = "更新完成！";
                     });
                 })
                 .AddListenerException((_, e) =>
                 {
                     MainThread.BeginInvokeOnMainThread(() =>
                     {
-                        StatusText = $"Error: {e.Message}";
+                        StatusText = $"错误: {e.Message}";
                     });
-                });
-
-            await bootstrap.LaunchAsync();
+                })
+                .LaunchAsync();
         }
         catch (Exception ex)
         {
-            StatusText = $"Update failed: {ex.Message}";
+            StatusText = $"更新失败: {ex.Message}";
         }
         finally
         {

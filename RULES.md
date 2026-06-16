@@ -3,21 +3,24 @@
 ## Architecture
 - Dual-process: Client (verification/download/IPC) + Upgrade (file replacement)
 - 4 scenes: None/UpgradeOnly/MainOnly/Both
-- IPC: Encrypted file(AES, default), NamedPipe, SharedMemory, AutoFallback
+- IPC: Encrypted file (AES, default)
 
-## Bootstrap
-- Minimal: SetSource(url, key) -> SetOption(AppType.Client) -> LaunchAsync()
-- Standard: SetConfig(UpdateRequest) -> SetOption() -> AddListener*() -> LaunchAsync()
-- From config: LoadFromConfiguration(config.GetSection("GeneralUpdate"))
+## Bootstrap (v10.4.6 stable API)
+- Configinfo + SetConfig() + LaunchAsync()
+- Events: AddListenerUpdateInfo, AddListenerMultiDownloadStatistics, etc.
 
-## NuGet
-Core(required), Differential(delta), Bowl(crash), Extension(plugins), Drivelution(drivers)
+## NuGet Package Rules
+- Core only: `dotnet add package GeneralUpdate.Core`
+- With Bowl: **reference only** `GeneralUpdate.Bowl` (transitively includes Core, the two conflict)
+- Differential: types are **embedded in Core**, no extra package needed
+- Extension, Drivelution: standalone, no conflicts
+
+## AppType (v10.4.6 stable — class, not enum)
+- `AppType.ClientApp = 1`
+- `AppType.UpgradeApp = 2`
 
 ## UpdateRequest Required
 UpdateUrl, AppSecretKey, InstallPath, ClientVersion, MainAppName, UpdateAppName, ProductId
-
-## Options
-MaxConcurrency=3, PatchEnabled=false, BackupEnabled=false(v5+), Silent=false, Format=Zip, DownloadTimeout=60
 
 ## 6 Strategies
 1. Client-Server (needs backend)
@@ -29,24 +32,28 @@ MaxConcurrency=3, PatchEnabled=false, BackupEnabled=false(v5+), Silent=false, Fo
 
 ## Platform
 Windows: Hash->Decompress->Patch+Bowl+Drivelution
-Linux/Mac: Hash->Decompress->Patch (no Bowl, need UnixPermissionHooks)
+Linux/Mac: Hash->Decompress->Patch (no Bowl)
 
-## Extension Points
-Hooks, Strategy, UpdateReporter, DownloadSource, DownloadOrchestrator, DownloadPolicy, DownloadExecutor, DownloadPipeline, SslValidationPolicy, HttpAuthProvider
+## Event Args (v10.4.6 stable)
+- UpdateInfoEventArgs: Info?.Body (List<VersionInfo>)
+- MultiDownloadStatisticsEventArgs: ProgressPercentage, Speed, Remaining, TotalBytesToReceive, BytesReceived
+- MultiDownloadCompletedEventArgs: **Version** (object), **IsComplated** (bool) — note typo
+- MultiDownloadErrorEventArgs: Exception, Version (object)
+- MultiAllDownloadCompletedEventArgs: IsAllDownloadCompleted, FailedVersions
+- ProgressEventArgs: Progress (DownloadProgress?), DiffProgress (DiffProgress?) — v10.4.6 Core only
+- ExceptionEventArgs: Exception, Message
 
 ## Quick Fixes
 - Upgrade not starting: Check UpdatePath
 - Method not found: Align NuGet versions
-- Silent mode broken: Call TryLaunchUpgrade()
 - Chinese garbled: Set Encoding.UTF8
-- Linux no exec: Add UnixPermissionHooks
+- Linux no exec: Manually chmod +x (v10.4.6 has no IUpdateHooks)
 - Version wrong: Use 4-segment
 - Infinite loop: WriteBack after update
-- Path too long: Upgrade to v5.0+
 
 ## Diagnostics
 1. NuGet versions match
-2. generalupdate.manifest.json valid
+2. manifest.json valid
 3. UpgradeApp.exe exists
 4. Server API reachable
 5. Logs in Logs/generalupdate-trace *.log

@@ -1,34 +1,43 @@
 using GeneralUpdate.Core;
-using GeneralUpdate.Core.Configuration;
-using GeneralUpdate.Core.Enum;
+using GeneralUpdate.Common.Shared.Object;
+using GeneralUpdate.Common.Download;
 
 /// <summary>
-/// Strategy 1: Standard Client-Server update.
-/// Suitable for most scenarios with a backend server.
+/// 标准客户端-服务端更新策略
 ///
-/// Backend required:
-/// - POST /Upgrade/Verification — version verification
-/// - (Optional) POST /Upgrade/Report — status reporting
+/// 适用于已部署 GeneralSpacestation 或兼容后端的应用。
+/// 后端要求：
+/// - POST /Upgrade/Verification — 版本验证
+/// - (可选) POST /Upgrade/Report — 状态上报
 ///
 /// NuGet: dotnet add package GeneralUpdate.Core
+/// ⚠️ 针对 NuGet v10.4.6 稳定版
 /// </summary>
 public static class ClientServerStrategy
 {
     public static async Task RunAsync()
     {
-        var bootstrap = new GeneralUpdateBootstrap()
-            .SetSource("https://your-server.com/api", "your-secret-key")
-            .SetOption(Option.AppType, AppType.Client)
-            .SetOption(Option.MaxConcurrency, 3)
-            .SetOption(Option.BackupEnabled, true)
+        var config = new Configinfo
+        {
+            UpdateUrl = "https://your-server.com/api",
+            AppSecretKey = "your-32-char-secret-key",
+            AppName = "MyApp.exe",
+            MainAppName = "MyApp.exe",
+            ClientVersion = "1.0.0.0",
+            ProductId = "my-product-001",
+            InstallPath = ".",
+        };
+
+        await new GeneralUpdateBootstrap()
+            .SetConfig(config)
             .AddListenerUpdateInfo((_, e) =>
-                Console.WriteLine($"[Version] Found: {e.Version} | Size: {e.Size}"))
+                Console.WriteLine($"[版本发现] 发现 {e.Info?.Body?.Count ?? 0} 个版本"))
             .AddListenerMultiDownloadStatistics((_, e) =>
-                Console.WriteLine($"[Download] {e.ProgressValue}% | {e.Speed}"))
+                Console.WriteLine($"进度: {e.ProgressPercentage}% | {e.Speed}"))
             .AddListenerMultiDownloadCompleted((_, e) =>
-                Console.WriteLine($"[Download] Complete: {e.Versions?.LastOrDefault()?.Version}"))
+                Console.WriteLine($"下载完成: {e.Version} (IsComplated={e.IsComplated})"))
             .AddListenerException((_, e) =>
-                Console.WriteLine($"[Error] {e.Message}"));
-        await bootstrap.LaunchAsync();
+                Console.WriteLine($"错误: {e.Message}"))
+            .LaunchAsync();
     }
 }

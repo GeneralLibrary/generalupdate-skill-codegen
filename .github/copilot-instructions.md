@@ -1,47 +1,47 @@
 # GeneralUpdate Auto-Update Integration Guide
 
 > Comprehensive reference for integrating GeneralUpdate into .NET applications.
+> ⚠️ Targeting **NuGet v10.4.6 stable** API (Configinfo + SetConfig + LaunchAsync, no SetSource/SetOption).
 
 ## Architecture
 - Dual-process: Client (verification/download/IPC) + Upgrade (file replacement)
 - 4 update scenes: None/UpgradeOnly/MainOnly/Both
-- AppType: Client=0, Upgrade=1, OssClient=2, OssUpgrade=3
-- IPC: Encrypted file (default), replaceable via IProcessInfoProvider
+- AppType: **class** (ClientApp=1, UpgradeApp=2) — not an enum
+- IPC: Encrypted file (default)
 
-## NuGet Packages
-- GeneralUpdate.Core -- Required. Bootstrap/Strategy/Download/IPC/Events
-- GeneralUpdate.Differential -- Optional. BSDIFF/HDiffPatch
-- GeneralUpdate.Bowl -- Optional. Crash monitoring
-- GeneralUpdate.Extension -- Optional. Plugin management
-- GeneralUpdate.Drivelution -- Optional. Driver installation
+## NuGet Package Rules
+- Core only: `dotnet add package GeneralUpdate.Core`
+- With Bowl: reference **only** `GeneralUpdate.Bowl` (the two conflict if referenced together)
+- Differential: already embedded in Core, no extra package needed
 
-## Bootstrap Setup
-- Minimal: SetSource(url, key) -> SetOption(AppType.Client) -> LaunchAsync()
-- Standard: SetConfig(UpdateRequest) -> SetOption() -> AddListener*() -> LaunchAsync()
-- AppSettings: LoadFromConfiguration(config.GetSection("GeneralUpdate"))
+## Bootstrap Setup (v10.4.6 stable)
+```csharp
+var config = new Configinfo
+{
+    UpdateUrl = "https://server/api",
+    AppSecretKey = "your-key",
+    AppName = "MyApp.exe",
+    MainAppName = "MyApp.exe",
+    ClientVersion = "1.0.0.0",
+    ProductId = "my-product-001",
+    InstallPath = "."
+};
+await new GeneralUpdateBootstrap()
+    .SetConfig(config)
+    .AddListenerUpdateInfo((_, e) => { })
+    .LaunchAsync();
+```
 
-## UpdateRequest Required Fields
-UpdateUrl, AppSecretKey, InstallPath, ClientVersion, MainAppName, UpdateAppName, ProductId
-
-## Options
-MaxConcurrency=3, PatchEnabled=false, BackupEnabled=false(v5+), Silent=false, Format=Zip, DownloadTimeout=60
-
-## 6 Strategies
-1. Client-Server: Standard (needs backend)
-2. OSS: S3/MinIO (no backend)
-3. Silent: Background polling
-4. Differential: Delta patches
-5. CVP: Cross-version jump
-6. SignalR Push: Server-initiated
-
-## 10 Extension Points
-Hooks, Strategy, UpdateReporter, DownloadSource, DownloadOrchestrator, DownloadPolicy, DownloadExecutor, DownloadPipeline, SslValidationPolicy, HttpAuthProvider
+## Events (v10.4.6)
+- AddListenerUpdateInfo → UpdateInfoEventArgs
+- AddListenerMultiDownloadStatistics → MultiDownloadStatisticsEventArgs
+- AddListenerMultiDownloadCompleted → MultiDownloadCompletedEventArgs **(IsComplated — note typo)**
+- AddListenerMultiDownloadError → MultiDownloadErrorEventArgs
+- AddListenerMultiAllDownloadCompleted → MultiAllDownloadCompletedEventArgs
+- AddListenerException → ExceptionEventArgs
 
 ## Known Issues
-- Upgrade not starting: Check UpdatePath
-- Method not found: Align NuGet versions
-- Silent mode broken: Call TryLaunchUpgrade()
-- Chinese garbled: Set Encoding.UTF8
-- Linux no exec: Add UnixPermissionHooks
+- Upgrade not starting: Check UpgradeApp.exe exists in update/ dir
+- Method not found: Align NuGet versions between Client and Upgrade
 - Version wrong: Use 4-segment format
-- Infinite loop: WriteBack after update
+- Infinite loop: manifest writes back version

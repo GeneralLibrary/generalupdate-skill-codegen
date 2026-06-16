@@ -17,17 +17,18 @@ SetSource(url, key) -> SetOption(AppType.Client) -> LaunchAsync()
 ## 4 大更新场景
 - None, UpgradeOnly, MainOnly, Both
 
-## generalupdate.manifest.json
+## manifest.json
 MainAppName, UpdateAppName, ProductId, InstallPath, UpdatePath, ClientVersion, UpgradeClientVersion
 
 ## 关键警告
 - UpgradeApp.exe 必须随首个版本发布（不能自己下载自己）
 - Client 和 Upgrade 必须相同 AppSecretKey
 - 版本号必须是 4 段式
-- generalupdate.manifest.json ClientVersion 不能为空
+- manifest ClientVersion 不能为空
+- AppType 枚举：Client=1, Upgrade=2, OssClient=3, OssUpgrade=4
 
 ## 3 种配置方式
-- Minimal: SetSource + generalupdate.manifest.json
+- Minimal: SetSource + manifest.json
 - Standard: SetConfig(UpdateRequest) + Option + events
 - appsettings: LoadFromConfiguration(config)
 

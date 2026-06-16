@@ -1,45 +1,36 @@
 using GeneralUpdate.Bowl;
-using GeneralUpdate.Core.Models;
+using GeneralUpdate.Bowl.Strategys;
 
 /// <summary>
-/// [Skill Generated] Bowl crash daemon integration.
-/// Bowl monitors the main app after update. On crash it generates:
-/// - MiniDump (.dmp)
-/// - Crash report (.json)
-/// - System diagnostics (event log / drivers / system info)
-/// - Auto-restore from backup (optional)
+/// 【Skill 参考】Bowl 崩溃守护
+///
+/// ⚠️ 注意：v10.4.6 稳定版中 Bowl 仅提供基础类型定义。
+/// Bowl.LaunchAsync() 等完整功能在开发分支（v10.5.0-beta.2）中可用。
+///
+/// 此模板展示 v10.4.6 的实际 API 调用方式。
 ///
 /// NuGet: dotnet add package GeneralUpdate.Bowl
-///
-/// Notes:
-/// - Bowl is fully tested on Windows only
-/// - Rollback depends on BackupEnabled = true
-/// - Keeps only the 3 most recent backups
-/// - Requires procdump tool (Windows)
 /// </summary>
 public static class BowlIntegration
 {
-    public static async Task StartBowlAsync(string appPath, string installPath)
+    public static void ConfigureBowl()
     {
-        Console.WriteLine("[Bowl] Starting crash daemon...");
+        // v10.4.6 中的 Bowl API：
+        // Bowl 类有公开构造函数，但无公开 LaunchAsync 方法
+        // 完整崩溃守护功能请关注后续版本
 
-        var bowl = new Bowl();
-        bowl.OnCrash += (crashReport) =>
+        var param = new MonitorParameter
         {
-            Console.WriteLine($"[Bowl] Crash detected!");
-            Console.WriteLine($"[Bowl] Reason: {crashReport.CrashReason}");
-            Console.WriteLine($"[Bowl] Dump file: {crashReport.DumpFilePath}");
-
-            if (crashReport.AutoRestore)
-                Console.WriteLine("[Bowl] Restoring from backup...");
+            ProcessNameOrId = "MyApp.exe",
+            DumpFileName = "v1.0.0.0_fail.dmp",
+            FailFileName = "v1.0.0.0_fail.json",
+            TargetPath = @"C:\Program Files\MyApp",
+            FailDirectory = @"C:\Program Files\MyApp\fail",
+            BackupDirectory = @"C:\Program Files\MyApp\backup",
+            WorkModel = "Upgrade",
         };
 
-        await bowl.LaunchAsync(new BowlOptions
-        {
-            TargetAppPath = appPath,
-            InstallPath = installPath,
-            AutoRestore = true,
-            ReportOutputPath = Path.Combine(installPath, "CrashReports")
-        });
+        var bowl = new Bowl();
+        Console.WriteLine("[Bowl] Bowl 实例已创建。完整监控功能需 v10.5+。");
     }
 }

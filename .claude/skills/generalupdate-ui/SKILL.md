@@ -4,11 +4,9 @@ description: |
   Generate a complete update UI window for ANY .NET UI framework — no UI coding required.
   Automatically detects WPF (LayUI.Wpf, WPFDevelopers, native), WinForms (AntdUI, native),
   Avalonia (SemiUrsa), MAUI, or console apps. Generates fully wired update windows with
-  REAL GeneralUpdate.Core event bindings that cover ALL states: checking, downloading,
-  error/retry, paused, completed, upgrade-in-progress, already-latest, forced-update,
-  rollback. Generates IDownloadService bridge to replace MockDownloadService.
+  REAL GeneralUpdate.Core event bindings.
   Triggers on: "update UI", "progress bar", "update window", "show progress",
-  "update UI", "show progress", "update window", "beautiful UI", "UI style",
+  "update界面", "进度显示", "更新窗口", "好看点", "UI样式",
   "how to show update progress", "need a progress UI", "update form",
   "beautiful update UI", "professional update appearance".
   ALWAYS load this skill when the user asks for auto-update + UI together.
@@ -19,195 +17,136 @@ when_to_use: |
   - User asks about showing download progress, speed, remaining time
   - User mentions their UI framework (WPF/WinForms/Avalonia/MAUI) in context of updates
   - User wants a "beautiful" or "professional looking" update experience
-  - User currently uses MockDownloadService and wants real update binding
-  - User wants pre-built ViewModels, Windows, Styles for update flows
   - User already has basic update integration working and wants a UI for it
 allowed-tools: "Read, Write, Edit, Glob, Grep"
 ---
 
-# GeneralUpdate Update UI Generation — Full State Coverage
+# 🎨 GeneralUpdate 更新界面生成 — 全状态覆盖
 
-Automatically detects the developer's UI framework type and generates a complete update window with real GeneralUpdate.Core event bindings.
-Covers all UI states, error handling, animations, and MVVM bindings.
+自动检测开发者的 UI 框架类型，生成带真实 GeneralUpdate.Core 事件绑定的完整更新窗口代码。
+
+> ⚠️ 针对 NuGet v10.4.6 稳定版。`RealDownloadService.cs` 为抽象桥接模板，需手动适配。
 
 ---
 
-## UI State Machine (all templates cover the following states)
+## UI 状态机（所有模板覆盖以下状态）
 
 ```
                    ┌─────────────┐
-                   │    Idle     │ ← Initial state
+                   │    Idle     │ ← 初始状态
                    └──────┬──────┘
-                          │ Auto/manual trigger
+                          │ 自动/手动触发
                           ▼
                    ┌─────────────┐
-            ┌─────│  Checking    │ ← "Checking for updates..." indeterminate animation
+            ┌─────│  Checking    │ ← "正在检查更新..."
             │     └──────┬──────┘
             │            │
             │     ┌──────┴──────┐
             │     ▼             ▼
             │  ┌────────┐  ┌──────────┐
-            │  │ Latest │  │  Found!  │ ← Shows version/size/release notes
-            │  │(Latest)│  └────┬─────┘
-            │  └────────┘       │ User clicks "Start Update"
+            │  │ Latest │  │  Found!  │ ← 显示版本号/大小
+            │  └────────┘  └────┬─────┘
+            │                   │ 用户点击"开始更新"
             │                   ▼
             │            ┌──────────────┐
-            │      ┌─────│ Downloading  │ ← Progress bar/speed/remaining time/animation
+            │      ┌─────│ Downloading  │ ← 进度条/速度/剩余时间
             │      │     └──────┬───────┘
             │      │            │
             │      │     ┌──────┴──────┐
             │      │     ▼             ▼
             │      │  ┌────────┐  ┌──────────┐
-            │      │  │ Paused │  │  Error   │ ← Shows error message + "Retry" button
+            │      │  │ Paused │  │  Error   │ ← 显示错误 + "重试"
             │      │  └───┬────┘  └────┬─────┘
-            │      │      │ Resume     │ Retry
+            │      │      │ 继续        │ 重试
             │      │      ▼             ▼
             │      │  ┌──────────────┐
-            │      │  │ Downloading  │ ← Back to download state
+            │      │  │ Downloading  │
             │      │  └──────────────┘
             │      │
             │      │     ┌──────────────┐
-            │      └────→│  Applying    │ ← "Installing update..." (Upgrade process)
+            │      └────→│  Applying    │ ← "正在安装更新..."
             │             └──────┬───────┘
             │                    │
             │             ┌──────┴──────┐
             │             ▼             ▼
             │       ┌─────────┐  ┌──────────┐
-            │       │ Success │  │  Failed  │ ← Shows failure reason + rollback hint
-            │       └────┬────┘  └────┬─────┘
-            │            │            │
-            │            ▼            ▼
-            │       ┌──────────┐  ┌──────────┐
-            │       │ Restart  │  │ Rollback │ ← "Rolling back to previous version"
-            │       │(Restart app)│  └──────────┘
+            │       │ Success │  │  Failed  │
+            │       └────┬────┘  └──────────┘
+            │            │
+            │            ▼
+            │       ┌──────────┐
+            │       │ Restart  │ ← 重启应用
             │       └──────────┘
             │
-            └── Back to Idle (when no update needed)
+            └── 回到 Idle
 ```
 
 ---
 
-## Workflow
+## 工作流程
 
 ```
-1. Framework Detection
-   ├── Scan .csproj → PackageReference to identify UI library
-   │   ├── Semi.Avalonia / Ursa → Avalonia + SemiUrsa
-   │   ├── LayUI.Wpf → WPF + LayUI
-   │   ├── WPFDevelopers → WPF + WPFDevelopers
-   │   ├── AntdUI → WinForms + AntdUI
-   │   ├── Microsoft.Maui → MAUI
-   │   └── None → Detect .xaml / .Designer.cs → Native WPF/WinForms
-   ├── If unrecognized → Ask user which framework they use
-   └── If no UI framework → Console progress bar
+1. 框架探测
+   ├── 扫描 .csproj → PackageReference 识别 UI 库
+   ├── 如果无法识别 → 询问用户
+   └── 如果无 UI 框架 → 控制台进度条
 
-2. Status Code Generation
-   ├── IDownloadService enhanced interface (covers all states)
-   ├── RealDownloadService bridge code (GeneralUpdate.Core → IDownloadService)
-   ├── ViewModel (MVVM) or Code-Behind
-   └── Window/Page XAML (framework-specific)
+2. 状态代码生成
+   ├── IDownloadService 桥接接口
+   ├── RealDownloadService 桥接代码（手动适配 GeneralUpdate.Core 事件）
+   ├── ViewModel（MVVM）或 Code-Behind
+   └── 窗口/页面 XAML
 
-3. Integration Guide
-   ├── How to replace MockDownloadService → RealDownloadService
-   ├── DI Registration (or direct instantiation)
-   └── Bootstrap configuration (works with generalupdate-init)
+3. 集成指导
+   ├── 如何引入 GeneralUpdateBootstrap
+   └── Bootstrap 配置（与 generalupdate-init 配合）
 ```
 
 ---
 
-## Core Bridge: RealDownloadService
+## 核心桥接：RealDownloadService
 
-All UI templates share this bridge class, mapping all GeneralUpdate.Core events to the `IDownloadService` interface.
+所有 UI 模板共享这个桥接类，将 GeneralUpdate.Core 的事件映射到 `IDownloadService` 接口。
 
-### Enhanced IDownloadService Interface (Full State Coverage)
+### 桥接逻辑（v10.4.6 稳定版）
 
 ```csharp
-public enum DownloadStatus
-{
-    Idle,               // Initial state, no operation
-    Checking,           // Checking server for updates
-    FoundUpdate,        // New version found (waiting for user confirmation)
-    AlreadyLatest,      // Already on the latest version
-    Downloading,        // Downloading update package
-    Paused,             // Download paused
-    DownloadError,      // Download error, can retry
-    Applying,           // Applying update (extracting/patching)
-    UpgradeProgress,    // Upgrade process is executing
-    Success,            // Update successful, waiting for restart
-    Failed,             // Update failed, may need rollback
-    RollingBack         // Rolling back to previous version
-}
+// GeneralUpdate.Core 事件 → DownloadStatus 状态机映射：
 
-public interface IDownloadService
-{
-    // === Events ===
-    event Action<DownloadStatistics>? StatisticsChanged;  // Any state/statistics change
-    event Action<DownloadStatus>? StatusChanged;          // Status change
-    event Action<string>? ErrorOccurred;                  // Error message
-    event Action? UpdateCompleted;                        // Update completed
+GeneralUpdateBootstrap.AddListenerMultiDownloadStatistics
+    → Downloading（更新 ProgressPercentage/Speed/Remaining）
 
-    // === Properties ===
-    DownloadStatistics CurrentStatistics { get; }
-    DownloadStatus Status { get; }
-    bool CanStart { get; }
-    bool CanPause { get; }
-    bool CanRetry { get; }
+GeneralUpdateBootstrap.AddListenerMultiDownloadCompleted
+    → 文件处理中（解压/校验）
 
-    // === Methods ===
-    void CheckForUpdates();            // Check for updates
-    void StartDownload();              // Start download
-    void Pause();                      // Pause
-    void Retry();                      // Retry (resume from current state)
-    void Cancel();                     // Cancel
-    void Restart();                    // Restart completely
-}
-```
+GeneralUpdateBootstrap.AddListenerMultiAllDownloadCompleted
+    → Applying → Success
 
-### RealDownloadService Bridge Logic
+GeneralUpdateBootstrap.AddListenerMultiDownloadError
+    → DownloadError（自动重试 N 次后）
 
-```csharp
-// Maps GeneralUpdate.Core events to DownloadStatus state machine:
-
-Bootstrap Event                 → State Transition
-──────────────────────────────────────────────────
-LaunchAsync starts              → Checking
-UpdateInfo received             → FoundUpdate / AlreadyLatest
-MultiDownloadStatistics received→ Downloading
-MultiDownloadError received     → DownloadError (after N auto-retries)
-MultiDownloadCompleted received → Applying
-MultiAllDownloadCompleted recv. → UpgradeProgress → Success
-Exception received              → Failed
+GeneralUpdateBootstrap.AddListenerException
+    → Failed（非致命异常不改变状态）
 ```
 
 ---
 
-## UI Framework Template List
+## UI 框架模板清单
 
-| Template File | Framework | Features Included |
+| 模板文件 | 适用框架 | 包含特性 |
 |---------|---------|---------|
-| `SemiUrsaClientView.axaml` + `.cs` | Avalonia + SemiUrsa | Full state machine, dark mode toggle, notifications, progress bar animation |
-| `SemiUrsaUpgradeView.axaml` + `.cs` | Avalonia + SemiUrsa (Upgrade) | Waiting UI, indeterminate progress, transition animations |
-| `LayUIStyle.xaml` + `.cs` | WPF + LayUI.Wpf | Glass effect, modal dialogs, progress bar |
-| `WPFDevelopersStyle.xaml` + `.cs` | WPF + WPFDevelopers | Circular progress, breath lamp animation, notification icon |
-| `AntdUIStyle.cs` | WinForms + AntdUI | Dark theme, localization, wave progress button, cancel |
-| `NativeWpfWindow.xaml` + `.cs` | Native WPF (no skin) | Clean window, progress bar, status text |
-| `NativeWinForms.cs` | Native WinForms | Simple form, progress bar, cancel |
-| `MauiUpdatePage.xaml` + `.cs` | MAUI | Cross-platform, dark mode, AppThemeBinding |
-| `ConsoleProgress.cs` | Console App | ANSI progress bar, status text |
-| `DownloadViewModels.cs` | Shared (all frameworks) | Complete ViewModel + DownloadStatistics |
-| `RealDownloadService.cs` | Shared (all frameworks) | **Core Bridge**: GeneralUpdate → IDownloadService |
+| `SemiUrsaClientView.axaml` + `.cs` | Avalonia + SemiUrsa | 全状态机、暗黑切换、动画 |
+| `SemiUrsaUpgradeView.axaml` + `.cs` | Avalonia + SemiUrsa (Upgrade) | 等待中 UI |
+| `LayUIStyle.xaml` + `.cs` | WPF + LayUI.Wpf | 玻璃效果、进度条 |
+| `WPFDevelopersStyle.xaml` + `.cs` | WPF + WPFDevelopers | 圆形进度、呼吸灯动画 |
+| `AntdUIStyle.cs` | WinForms + AntdUI | 暗黑主题、波浪进度按钮 |
+| `MauiUpdatePage.xaml` + `.cs` | MAUI | 深色模式、AppThemeBinding |
+| `DownloadViewModels.cs` | 所有框架共用 | MVVM ViewModel |
+| `RealDownloadService.cs` | 所有框架共用 | **核心桥接** |
 
 ---
 
-## Output
+## 相关技能
 
-Based on the user's framework and requirements, output the following (in priority order):
-- ✅ `RealDownloadService.cs` — Core bridge code (replaces MockDownloadService)
-- ✅ `DownloadViewModels.cs` — Complete MVVM ViewModel (full state coverage)
-- ✅ Target framework window/page XAML + Code-Behind
-- ✅ Integration step instructions (DI registration / file replacement / Navigation)
-
-## Related Skills
-
-- `/generalupdate-init` — If Bootstrap is not yet configured
-- `/generalupdate-troubleshoot` — If UI displays abnormal values
+- `/generalupdate-init` — 如果还未配置 Bootstrap
+- `/generalupdate-troubleshoot` — 如果 UI 显示异常

@@ -1,23 +1,21 @@
 using GeneralUpdate.Core;
-using GeneralUpdate.Core.Configuration;
-using GeneralUpdate.Core.Enum;
+using GeneralUpdate.Common.Shared.Object;
+using GeneralUpdate.Common.Download;
 using Microsoft.AspNetCore.SignalR.Client;
 
 /// <summary>
-/// Strategy 6: SignalR Push update.
-/// Server actively pushes update notifications to clients.
+/// SignalR 推送更新策略
 ///
-/// Flow:
-/// Client connects to SignalR Hub -> Admin uploads new package
-/// -> Clicks "Push" -> Hub notifies all clients -> Bootstrap starts update
+/// 适用于需要服务端主动控制更新时机的场景。
+/// 客户端连接 SignalR Hub，服务端推送更新通知后触发更新。
 ///
 /// NuGet:
 ///   dotnet add package GeneralUpdate.Core
 ///   dotnet add package Microsoft.AspNetCore.SignalR.Client
 ///
-/// Known issue (#402, Code Audit #5):
-/// UpgradeHubService.DisposeAsync does not null the connection reference
-/// -> ObjectDisposedException on reconnect. Use SafeHubConnection wrapper.
+/// ⚠️ 已知问题：
+/// HubConnection Dispose 后不置 null，重连时抛 ObjectDisposedException。
+/// 解决方案：在 Dispose 后将 _connection 置 null。
 /// </summary>
 public static class PushStrategy
 {
@@ -27,6 +25,18 @@ public static class PushStrategy
         var secretKey = "your-secret-key";
         var hubUrl = "https://your-server.com/hub/upgrade";
 
+        var config = new Configinfo
+        {
+            UpdateUrl = updateUrl,
+            AppSecretKey = secretKey,
+            AppName = "MyApp.exe",
+            MainAppName = "MyApp.exe",
+            ClientVersion = "1.0.0.0",
+            ProductId = "my-product-001",
+            InstallPath = ".",
+        };
+
+        // 连接到 SignalR Hub
         var connection = new HubConnectionBuilder()
             .WithUrl(hubUrl)
             .WithAutomaticReconnect()
@@ -34,93 +44,47 @@ public static class PushStrategy
 
         connection.On<string>("OnPushUpgrade", async (message) =>
         {
-            Console.WriteLine($"[Push] Update notification: {message}");
-            await StartUpdateAsync(updateUrl, secretKey);
+            Console.WriteLine($"[推送] 收到更新通知: {message}");
+            await StartUpdateAsync(config);
         });
 
         connection.On<string>("OnForceUpgrade", async (message) =>
         {
-            Console.WriteLine($"[Push] Force update: {message}");
-            await StartUpdateAsync(updateUrl, secretKey);
+            Console.WriteLine($"[推送] 收到强制更新通知: {message}");
+            await StartUpdateAsync(config);
         });
 
         try
         {
             await connection.StartAsync();
-            Console.WriteLine("[Push] Connected to update push service");
+            Console.WriteLine("[推送] 已连接到更新推送服务");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[Push] Connection failed: {ex.Message}");
+            Console.WriteLine($"[推送] 连接失败: {ex.Message}");
         }
 
-        Console.WriteLine("[Push] Waiting for server push...");
+        // 保持应用运行
         await Task.Delay(Timeout.Infinite);
     }
 
-    private static async Task StartUpdateAsync(string updateUrl, string secretKey)
+    private static async Task StartUpdateAsync(Configinfo config)
     {
         try
         {
-            var bootstrap = new GeneralUpdateBootstrap()
-                .SetSource(updateUrl, secretKey)
-                .SetOption(Option.AppType, AppType.Client)
-                .SetOption(Option.BackupEnabled, true)
+            await new GeneralUpdateBootstrap()
+                .SetConfig(config)
                 .AddListenerMultiDownloadStatistics((_, e) =>
-                    Console.WriteLine($"[Push/Update] Download: {e.ProgressValue}%"))
+                    Console.WriteLine($"[推送更新] 下载: {e.ProgressPercentage}%"))
                 .AddListenerMultiDownloadCompleted((_, e) =>
-                    Console.WriteLine($"[Push/Update] Download complete"))
+                    Console.WriteLine($"[推送更新] 下载完成: {e.Version}"))
                 .AddListenerException((_, e) =>
-                    Console.WriteLine($"[Push/Update] Error: {e.Message}"));
-
-            await bootstrap.LaunchAsync();
+                    Console.WriteLine($"[推送更新] 错误: {e.Message}"))
+                .LaunchAsync();
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[Push/Update] Failed: {ex.Message}");
-        }
-    }
-}
-
-/// <summary>
-/// Safe HubConnection wrapper — fixes ObjectDisposedException on reconnect.
-/// UpgradeHubService.DisposeAsync does not null the connection reference.
-/// This wrapper ensures null after Dispose, allowing clean reconnect.
-/// </summary>
-public class SafeHubConnection : IAsyncDisposable
-{
-    private HubConnection? _connection;
-    private readonly string _hubUrl;
-
-    public SafeHubConnection(string hubUrl) { _hubUrl = hubUrl; }
-
-    public async Task StartAsync()
-    {
-        if (_connection == null)
-            _connection = new HubConnectionBuilder().WithUrl(_hubUrl).WithAutomaticReconnect().Build();
-        if (_connection.State != HubConnectionState.Connected)
-            await _connection.StartAsync();
-    }
-
-    public async Task StopAsync()
-    {
-        if (_connection?.State == HubConnectionState.Connected)
-            await _connection.StopAsync();
-    }
-
-    public HubConnectionState? State => _connection?.State;
-
-    public IDisposable On(string methodName, Action<string> handler)
-    {
-        return _connection?.On(methodName, handler) ?? throw new InvalidOperationException("Not connected");
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        if (_connection != null)
-        {
-            await _connection.DisposeAsync();
-            _connection = null;  // CRITICAL: must null to prevent ObjectDisposedException on reconnect
+            Console.WriteLine($"[推送更新] 启动失败: {ex.Message}");
         }
     }
 }
