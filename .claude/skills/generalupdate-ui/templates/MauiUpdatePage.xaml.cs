@@ -1,13 +1,14 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GeneralUpdate.Core;
-using GeneralUpdate.Common.Shared.Object;
+using GeneralUpdate.Core.Configuration;
+using GeneralUpdate.Core.Download;
 
 namespace MauiUpdate.ViewModels;
 
 /// <summary>
 /// 【Skill 自动生成】MAUI 更新页面 ViewModel
-/// 针对 NuGet v10.4.6 稳定版 API
+/// 针对 NuGet v10.5.0-beta.4 API
 /// </summary>
 public partial class UpdateViewModel : ObservableObject
 {
@@ -40,18 +41,17 @@ public partial class UpdateViewModel : ObservableObject
         {
             StatusText = "正在连接服务器...";
 
-            var config = new Configinfo
+            var config = new UpdateRequest
             {
                 UpdateUrl = _updateUrl,
                 AppSecretKey = _secretKey,
-                AppName = "MyApp.exe",
                 MainAppName = "MyApp.exe",
                 ClientVersion = "1.0.0.0",
                 ProductId = "my-product-001",
                 InstallPath = ".",
             };
 
-            // v10.4.6 稳定版 API：Configinfo + SetConfig + LaunchAsync
+            // v10.5.0-beta.4 API：UpdateRequest + SetConfig + LaunchAsync
             await new GeneralUpdateBootstrap()
                 .SetConfig(config)
                 .AddListenerUpdateInfo((_, e) =>

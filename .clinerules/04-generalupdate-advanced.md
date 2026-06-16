@@ -4,19 +4,38 @@ globs: ["**/*.cs"]
 tags: ["dotnet", "generalupdate", "advanced"]
 ---
 
-# 高级定制 (v10.4.6 注意事项 ⚠️)
+# 高级定制 (v10.5.0-beta.4 可用功能 ✅)
 
-## ⚠️ v10.4.6 稳定版无以下扩展点
-- ❌ 无 `IUpdateHooks` / `IStrategy` / `IProcessInfoProvider`
-- ❌ 无 `SetOption` / `SilentPollOrchestrator` / `ProcessContract`
-- ❌ 无可编程 Option 配置系统（仅 Configinfo 属性）
+## ✅ v10.5.0-beta.4 支持以下扩展点
+- ✅ `IUpdateHooks` — 生命周期钩子: `bootstrap.Hooks<MyHooks>()`
+- ✅ `IStrategy` — 自定义策略: `bootstrap.Strategy<MyStrategy>()`
+- ✅ `IUpdateReporter` — 自定义上报
+- ✅ `ISslValidationPolicy` — SSL 验证策略
+- ✅ `IHttpAuthProvider` — HTTP 认证提供者
 
-## IPC: 仅 EncryptedFile（默认，AES加密文件），无可替换 IPC 接口
-- ❌ 无 NamedPipe / SharedMemory / AutoFallback 接口替换能力
+## ✅ 可编程 Option 系统
+```csharp
+bootstrap.SetOption(Option.Silent, true);
+bootstrap.SetOption(Option.MaxConcurrency, 4);
+bootstrap.SetOption(Option.RetryCount, 5);
+bootstrap.SetOption(Option.SilentPollIntervalMinutes, 120);
+```
+
+## 零配置入口
+`SetSource(updateUrl, appSecretKey)` — 自动从 manifest.json 发现身份信息
+
+## IPC: EncryptedFile（默认，AES加密文件），暂无可替换 IPC 接口
 
 ## Bowl: procdump->监控->dump->故障报告->AutoRestore（可用，属于独立模块）
 - Bowl 引用规则：只用 `GeneralUpdate.Bowl`，不额外引用 Core
 
-## AOT: v10.4.6 支持 NativeAOT，SignalR 推荐 JSON + JsonSerializerContext
+## AOT: v10.5.0-beta.4 支持 NativeAOT (net8.0+), SignalR 推荐 JSON + JsonSerializerContext
 
-> ⚠️ 以上扩展点仅在 dev 分支（v10.5.0-beta.2）存在。**模板和示例均已针对 v10.4.6 稳定版编写。**
+## 命名空间速查
+- `GeneralUpdate.Core.Hooks` — IUpdateHooks, HookContext, NoOpUpdateHooks, UnixPermissionHooks
+- `GeneralUpdate.Core.Strategy` — IStrategy
+- `GeneralUpdate.Core.Pipeline` — PipelineBuilder, DiffPipelineBuilder
+- `GeneralUpdate.Core.Configuration` — Option, AppType, UpdateRequest
+- `GeneralUpdate.Core.Download.Reporting` — IUpdateReporter
+- `GeneralUpdate.Core.Event` — EventManager, IUpdateEventListener
+- `GeneralUpdate.Core.Download` — 所有事件参数类型

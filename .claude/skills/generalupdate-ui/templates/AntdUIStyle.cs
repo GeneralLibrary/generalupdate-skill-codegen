@@ -1,6 +1,6 @@
 using AntdUI;
 using GeneralUpdate.Core;
-using GeneralUpdate.Common.Shared.Object;
+using GeneralUpdate.Core.Configuration;
 
 namespace Upgrade;
 
@@ -54,8 +54,6 @@ public partial class UpdateForm : AntdUI.Window
         try
         {
             // 使用 GeneralUpdate.Core 进行版本验证
-            // 实际集成中，这里调用 GeneralUpdateBootstrap 的版本检查
-            // 此处为演示，真实集成时替换为 Bootstrap 调用
             await Task.Delay(500);
             lbl_note.Text = AntdUI.Localization.Get("found", "发现新版本");
             lbl_version.Text = ""; // GeneralUpdate 会返回版本号
@@ -86,18 +84,17 @@ public partial class UpdateForm : AntdUI.Window
     {
         try
         {
-            var config = new Configinfo
+            var config = new UpdateRequest
             {
                 UpdateUrl = _updateUrl,
                 AppSecretKey = _secretKey,
-                AppName = "MyApp.exe",
                 MainAppName = "MyApp.exe",
                 ClientVersion = "1.0.0.0",
                 ProductId = "my-product-001",
                 InstallPath = ".",
             };
 
-            // v10.4.6 稳定版 API
+            // v10.5.0-beta.4 API
             await new GeneralUpdateBootstrap()
                 .SetConfig(config)
                 .AddListenerMultiDownloadStatistics((_, e) =>

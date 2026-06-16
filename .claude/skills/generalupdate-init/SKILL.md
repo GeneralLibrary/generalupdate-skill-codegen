@@ -24,7 +24,7 @@ allowed-tools: "Bash, Read, Write, Edit, Glob, Grep, WebSearch"
 
 帮助开发者在任意 .NET 应用中集成 GeneralUpdate 自动更新。从零开始，覆盖所有配置方式、部署场景和生产环境考量。
 
-> ⚠️ **针对 NuGet v10.4.6 稳定版**。开发分支（v10.5.0-beta.2）有不同 API。
+> ⚠️ **针对 NuGet v10.5.0-beta.4**。`Configinfo` 已被 `UpdateRequest` 替代，命名空间已移至 `GeneralUpdate.Core.Configuration`。
 
 ---
 
@@ -36,9 +36,9 @@ allowed-tools: "Bash, Read, Write, Edit, Glob, Grep, WebSearch"
    └── 检查现有配置 → 已安装 NuGet？已有 manifest？
    
 2. 选择集成模式
-   ├── [Minimal] （new Configinfo + SetConfig + LaunchAsync）— 推荐新用户
-   ├── [Standard]（Configinfo + 事件监听）— 需要精细控制
-   └── [Scaffold]（完整双项目结构）— 从零开始的团队项目
+   ├── [Minimal] （UpdateRequest + SetConfig + LaunchAsync）— 推荐新用户
+   ├── [Standard]（UpdateRequest + 事件监听）— 需要精细控制
+   └── [Zero-Config]（SetSource + LaunchAsync）— 自动从 manifest 发现配置
 
 3. 生成输出
    ├── NuGet 安装命令
@@ -81,17 +81,17 @@ Upgrade.exe (Upgrade 进程) 负责:
 
 ---
 
-## Configinfo 配置详解
+## UpdateRequest 配置详解
 
-### Configinfo 完整属性
+### UpdateRequest 完整属性
 
 ```csharp
-var config = new Configinfo
+// 方式 A：直接构造 UpdateRequest（推荐）
+var config = new UpdateRequest
 {
     // === 必需 ===
     UpdateUrl = "https://your-server.com/Upgrade/Verification",
     AppSecretKey = "your-secret-key",
-    AppName = "MyApp.exe",
     MainAppName = "MyApp.exe",
     ClientVersion = "1.0.0.0",
     ProductId = "my-product-001",
@@ -103,39 +103,59 @@ var config = new Configinfo
     UpgradeClientVersion = "1.0.0.0",
     
     // === 安全认证 ===
-    Scheme = "Bearer",           // HTTP 认证方案
-    Token = "your-token",        // HTTP 认证令牌
+    AuthScheme = AuthScheme.Hmac,  // Hmac / Bearer / ApiKey / Basic
+    Token = "your-token",
+    BasicUsername = "user",
+    BasicPassword = "pass",
     
     // === 黑名单（备份/复制时排除）===
-    BlackFiles = new List<string> { "*.log", "*.tmp" },
-    BlackFormats = new List<string> { ".pdb" },
-    SkipDirectorys = new List<string> { "logs", "cache" },
+    Files = new List<string> { "*.log", "*.tmp" },
+    Formats = new List<string> { ".pdb" },
+    Directories = new List<string> { "logs", "cache" },
 };
+
+// 方式 B：使用建造者模式
+var config = UpdateRequestBuilder.Create()
+    .SetUpdateUrl("https://your-server.com/api")
+    .SetAppSecretKey("your-secret-key")
+    .SetMainAppName("MyApp.exe")
+    .SetClientVersion("1.0.0.0")
+    .SetProductId("my-product-001")
+    .SetInstallPath(".")
+    .Build();
+
+// 方式 C：零配置 — 从 manifest.json 自动发现
+await new GeneralUpdateBootstrap()
+    .SetSource(
+        updateUrl: "https://your-server.com/api",
+        appSecretKey: "your-secret-key")
+    .AddListenerUpdateInfo(...)
+    .LaunchAsync();
 ```
 
 ### 应用角色（AppType）
 
-`AppType` 是一个 class，包含两个静态字段：
+`AppType` 是一个 enum（v10.5.0-beta.4）：
 
-| 字段 | 值 | 说明 |
-|------|-----|------|
-| `AppType.ClientApp` | 1 | 标准客户端（主程序） |
-| `AppType.UpgradeApp` | 2 | 标准升级程序 |
-
-> ⚠️ v10.4.6 不支持 OssClient（值 3-4），这些在开发分支中。
+| 值 | 名称 | 说明 |
+|----|------|------|
+| 1 | `AppType.Client` | 标准客户端（主程序） |
+| 2 | `AppType.Upgrade` | 标准升级程序 |
+| 3 | `AppType.OssClient` | OSS 客户端模式（静默） |
+| 4 | `AppType.OssUpgrade` | OSS 升级模式 |
 
 ### 事件监听器完整清单
 
 ```csharp
-// 全部 6 个事件
+// 全部 7 个事件
 .AddListenerUpdateInfo((_, e) => {
-    /* 版本验证结果（e.Info?.Body 含 VersionInfo 列表） */
+    /* 版本验证结果（e.Info?.Body 含 VersionEntry 列表） */
 })
 .AddListenerMultiDownloadStatistics((_, e) => {
     /* 批量下载进度（e.ProgressPercentage, e.Speed, e.Remaining） */
 })
 .AddListenerMultiDownloadCompleted((_, e) => {
-    /* 每版本下载完成（e.Version, e.IsComplated） */
+    /* 每版本下载完成（e.Version, e.IsCompleted） */
 })
 .AddListenerMultiDownloadError((_, e) => {
     /* 下载错误（e.Exception, e.Version） */
@@ -146,23 +166,25 @@ var config = new Configinfo
 .AddListenerException((_, e) => {
     /* 异常（e.Message, e.Exception） */
 })
+.AddListenerProgress((_, e) => {
+    /* 进度（e.Progress 或 e.DiffProgress，v10.5+） */
+})
 ```
 
 ---
 
 ## 集成方式的完整代码
 
-### 方式 A：Minimal — 使用 Configinfo
+### 方式 A：Minimal — 使用 UpdateRequest
 
 ```csharp
 using GeneralUpdate.Core;
-using GeneralUpdate.Common.Shared.Object;
+using GeneralUpdate.Core.Configuration;
 
-var config = new Configinfo
+var config = new UpdateRequest
 {
     UpdateUrl = "https://your-server.com/api",
     AppSecretKey = "your-32-char-secret-key-here!",
-    AppName = "MyApp.exe",
     MainAppName = "MyApp.exe",
     ClientVersion = "1.0.0.0",
     ProductId = "my-product-001",
@@ -174,18 +196,17 @@ await new GeneralUpdateBootstrap()
     .LaunchAsync();
 ```
 
-### 方式 B：Standard — Configinfo + 事件 + 监听
+### 方式 B：Standard — UpdateRequest + 事件监听
 
 ```csharp
 using GeneralUpdate.Core;
-using GeneralUpdate.Common.Shared.Object;
-using GeneralUpdate.Common.Download;
+using GeneralUpdate.Core.Configuration;
+using GeneralUpdate.Core.Download;
 
-var config = new Configinfo
+var config = new UpdateRequest
 {
     UpdateUrl = "https://your-server.com/Upgrade/Verification",
     AppSecretKey = "your-secret-key",
-    AppName = "MyApp.exe",
     MainAppName = "MyApp.exe",
     ClientVersion = "1.0.0.0",
     ProductId = "my-product-001",
@@ -268,9 +289,16 @@ publish/
 - 使用 Bowl：**只引用** `GeneralUpdate.Bowl`（它传递依赖 Core 所有功能）
 - 差分类型已内嵌在 Core，**无需额外** `GeneralUpdate.Differential` 包
 
-### 稳定版功能限制
-v10.4.6 无 `IUpdateHooks`、无可编程 `Option`、无静默轮询器。
-这些功能在开发分支（v10.5.0-beta.2）中可用。
+### 稳定版功能增强
+v10.5.0-beta.4 新增以下功能：
+- ✅ `IUpdateHooks` 生命周期钩子 — `Hooks<T>()`
+- ✅ 可编程 `Option` 系统 — `SetOption(Option.Silent, true)`
+- ✅ `SilentPollOrchestrator` 静默轮询
+- ✅ `SetSource()` 零配置入口
+- ✅ `UseDiffPipeline()` 差分管道配置
+- ✅ `AddListenerProgress()` 第 7 个事件
+- ✅ `IStrategy` 自定义策略注入 — `Strategy<T>()`
+- ✅ `IUpdateReporter` / `IHttpAuthProvider` 等扩展点
 
 ---
 

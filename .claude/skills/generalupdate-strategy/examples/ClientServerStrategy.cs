@@ -1,6 +1,6 @@
 using GeneralUpdate.Core;
-using GeneralUpdate.Common.Shared.Object;
-using GeneralUpdate.Common.Download;
+using GeneralUpdate.Core.Configuration;
+using GeneralUpdate.Core.Download;
 
 /// <summary>
 /// 标准客户端-服务端更新策略
@@ -11,17 +11,16 @@ using GeneralUpdate.Common.Download;
 /// - (可选) POST /Upgrade/Report — 状态上报
 ///
 /// NuGet: dotnet add package GeneralUpdate.Core
-/// ⚠️ 针对 NuGet v10.4.6 稳定版
+/// ⚠️ 针对 NuGet v10.5.0-beta.4
 /// </summary>
 public static class ClientServerStrategy
 {
     public static async Task RunAsync()
     {
-        var config = new Configinfo
+        var config = new UpdateRequest
         {
             UpdateUrl = "https://your-server.com/api",
             AppSecretKey = "your-32-char-secret-key",
-            AppName = "MyApp.exe",
             MainAppName = "MyApp.exe",
             ClientVersion = "1.0.0.0",
             ProductId = "my-product-001",
@@ -35,7 +34,7 @@ public static class ClientServerStrategy
             .AddListenerMultiDownloadStatistics((_, e) =>
                 Console.WriteLine($"进度: {e.ProgressPercentage}% | {e.Speed}"))
             .AddListenerMultiDownloadCompleted((_, e) =>
-                Console.WriteLine($"下载完成: {e.Version} (IsComplated={e.IsComplated})"))
+                Console.WriteLine($"下载完成: {e.Version} (IsCompleted={e.IsCompleted})"))
             .AddListenerException((_, e) =>
                 Console.WriteLine($"错误: {e.Message}"))
             .LaunchAsync();

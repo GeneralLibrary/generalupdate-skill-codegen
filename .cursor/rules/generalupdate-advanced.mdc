@@ -1,22 +1,31 @@
 ---
-description: "GeneralUpdate advanced customization — 10+ extension points, 4 IPC providers, Bowl crash daemon, AOT"
+description: "GeneralUpdate advanced customization — extension points, Pipeline, Bowl crash daemon, AOT"
 globs: ["**/*.cs", "**/*.csproj"]
 alwaysApply: false
 ---
 
-# GeneralUpdate 高级定制 (v10.4.6 ⚠️)
+# GeneralUpdate 高级定制 (v10.5.0-beta.4 ✅)
 
-## ⚠️ v10.4.6 稳定版不支持以下扩展点
-- ❌ 无 Hooks / Strategy / UpdateReporter / DownloadOrchestrator / IHttpAuthProvider
-- ❌ 无 SetOption / SilentPollOrchestrator / ProcessContract
+## ✅ v10.5.0-beta.4 支持以下扩展点
+- ✅ `Hooks<T>()` — IUpdateHooks 生命周期钩子
+- ✅ `Strategy<T>()` — IStrategy 自定义策略注入
+- ✅ `HttpAuth<T>()` — IHttpAuthProvider 自定义认证
+- ✅ `SslPolicy<T>()` — ISslValidationPolicy SSL策略
+- ✅ `SetOption(Option.Silent, true)` — 可编程选项
+- ✅ `UseDiffPipeline()` — 差分管道配置
 
 ## IPC
 - ✅ EncryptedFile（默认，AES加密文件）
-- ❌ 无可替换 IPC 接口（NamedPipe/SharedMemory/AutoFallback 不可用）
+- ❌ 无可替换 IPC 接口（NamedPipe/SharedMemory 不可替换）
 
 ## Bowl 崩溃守护（可用，独立模块）
 Phase1: procdump准备 -> Phase2: 监控 -> Phase3: 检查dump -> Phase4: MiniDump+故障报告+系统诊断+AutoRestore+OnCrash
 Bowl 引用规则：只用 `GeneralUpdate.Bowl`（传递依赖 Core）
 
 ## AOT/Trim
-v5.0+ 支持。SignalR 推荐用 JSON 协议 + JsonSerializerContext
+v10.5+ 支持。SignalR 推荐用 JSON 协议 + JsonSerializerContext
+
+## 扩展点命名空间
+- `GeneralUpdate.Core.Hooks` — IUpdateHooks, HookContext
+- `GeneralUpdate.Core.Strategy` — IStrategy
+- `GeneralUpdate.Core.Pipeline` — PipelineBuilder, DiffPipelineBuilder

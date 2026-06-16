@@ -25,7 +25,7 @@ allowed-tools: "Read, Write, Edit, Glob"
 
 # ⚙️ GeneralUpdate 更新策略完全指南
 
-> ⚠️ **针对 NuGet v10.4.6 稳定版**。该版本使用 `Configinfo` 配置，无可编程 `Option` 系统。
+> ⚠️ **针对 NuGet v10.5.0-beta.4**。该版本使用 `UpdateRequest` 配置，支持可编程 `Option` 系统。
 
 ---
 
@@ -58,17 +58,16 @@ allowed-tools: "Read, Write, Edit, Glob"
 
 ## 集成代码
 
-所有策略使用相同的 `Configinfo` 配置模式：
+所有策略使用相同的配置模式：
 
 ```csharp
 using GeneralUpdate.Core;
-using GeneralUpdate.Common.Shared.Object;
+using GeneralUpdate.Core.Configuration;
 
-var config = new Configinfo
+var config = new UpdateRequest
 {
     UpdateUrl = "https://your-server.com/api",
     AppSecretKey = "your-secret-key",
-    AppName = "MyApp.exe",
     MainAppName = "MyApp.exe",
     ClientVersion = "1.0.0.0",
     ProductId = "my-product-001",
@@ -78,6 +77,17 @@ var config = new Configinfo
 await new GeneralUpdateBootstrap()
     .SetConfig(config)
     .AddListener*(...)
+    .LaunchAsync();
+```
+
+或使用零配置 `SetSource()` API：
+
+```csharp
+await new GeneralUpdateBootstrap()
+    .SetSource(
+        updateUrl: "https://your-server.com/api",
+        appSecretKey: "your-secret-key")
+    .AddListenerUpdateInfo(...)
     .LaunchAsync();
 ```
 

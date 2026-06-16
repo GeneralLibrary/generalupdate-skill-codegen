@@ -1,12 +1,12 @@
 # GeneralUpdate Auto-Update Integration Guide
 
 > Comprehensive reference for integrating GeneralUpdate into .NET applications.
-> ⚠️ Targeting **NuGet v10.4.6 stable** API (Configinfo + SetConfig + LaunchAsync, no SetSource/SetOption).
+> ⚠️ Targeting **NuGet v10.5.0-beta.4** API (UpdateRequest + SetConfig + LaunchAsync, with SetSource/SetOption/Hooks/Strategy).
 
 ## Architecture
 - Dual-process: Client (verification/download/IPC) + Upgrade (file replacement)
 - 4 update scenes: None/UpgradeOnly/MainOnly/Both
-- AppType: **class** (ClientApp=1, UpgradeApp=2) — not an enum
+- AppType: **enum** (Client=1, Upgrade=2, OssClient=3, OssUpgrade=4)
 - IPC: Encrypted file (default)
 
 ## NuGet Package Rules
@@ -14,13 +14,12 @@
 - With Bowl: reference **only** `GeneralUpdate.Bowl` (the two conflict if referenced together)
 - Differential: already embedded in Core, no extra package needed
 
-## Bootstrap Setup (v10.4.6 stable)
+## Bootstrap Setup (v10.5.0-beta.4)
 ```csharp
-var config = new Configinfo
+var config = new UpdateRequest
 {
     UpdateUrl = "https://server/api",
     AppSecretKey = "your-key",
-    AppName = "MyApp.exe",
     MainAppName = "MyApp.exe",
     ClientVersion = "1.0.0.0",
     ProductId = "my-product-001",
@@ -32,13 +31,23 @@ await new GeneralUpdateBootstrap()
     .LaunchAsync();
 ```
 
-## Events (v10.4.6)
-- AddListenerUpdateInfo → UpdateInfoEventArgs
+Or using zero-config SetSource API:
+```csharp
+await new GeneralUpdateBootstrap()
+    .SetSource("https://server/api", "your-key")
+    .SetOption(Option.Silent, true)
+    .Hooks<UnixPermissionHooks>()
+    .LaunchAsync();
+```
+
+## Events (v10.5.0-beta.4)
+- AddListenerUpdateInfo → UpdateInfoEventArgs (namespace: GeneralUpdate.Core.Download)
 - AddListenerMultiDownloadStatistics → MultiDownloadStatisticsEventArgs
-- AddListenerMultiDownloadCompleted → MultiDownloadCompletedEventArgs **(IsComplated — note typo)**
+- AddListenerMultiDownloadCompleted → MultiDownloadCompletedEventArgs **(IsCompleted)**
 - AddListenerMultiDownloadError → MultiDownloadErrorEventArgs
 - AddListenerMultiAllDownloadCompleted → MultiAllDownloadCompletedEventArgs
-- AddListenerException → ExceptionEventArgs
+- AddListenerException → ExceptionEventArgs (namespace: GeneralUpdate.Core.Event)
+- AddListenerProgress → ProgressEventArgs (new in v10.5)
 
 ## Known Issues
 - Upgrade not starting: Check UpgradeApp.exe exists in update/ dir

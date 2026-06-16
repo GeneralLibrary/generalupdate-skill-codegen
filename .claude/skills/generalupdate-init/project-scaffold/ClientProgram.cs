@@ -1,17 +1,16 @@
 using GeneralUpdate.Core;
-using GeneralUpdate.Common.Shared.Object;
-using GeneralUpdate.Common.Download;
+using GeneralUpdate.Core.Configuration;
+using GeneralUpdate.Core.Download;
 
 string updateUrl = args.Length > 0 ? args[0] : "https://your-server.com/api";
 string secretKey = args.Length > 1 ? args[1] : "your-secret-key";
 
 Console.WriteLine($"[Client] 启动版本检查: {updateUrl}");
 
-var config = new Configinfo
+var config = new UpdateRequest
 {
     UpdateUrl = updateUrl,
     AppSecretKey = secretKey,
-    AppName = "MyApp.exe",
     MainAppName = "MyApp.exe",
     ClientVersion = GetCurrentVersion(),
     ProductId = "my-product-001",
