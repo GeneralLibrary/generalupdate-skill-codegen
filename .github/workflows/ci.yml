@@ -166,8 +166,9 @@ jobs:
           $entryPoint = "// Entry point for build verification$nl" +
                         "Console.WriteLine(""Verifying $templateName compiles..."");$nl" +
                         "await $templateName.RunAsync();$nl"
-          # Insert before the first /// documentation comment
-          $code = $code -replace '(?=/// <summary>)', "$entryPoint$nl"
+          # Insert before the first /// documentation comment only (single match)
+          $pos = $code.IndexOf('/// <summary>')
+          if ($pos -ge 0) { $code = $code.Insert($pos, "$entryPoint$nl") }
           $code | Out-File -FilePath "$testDir\Program.cs" -Encoding UTF8
 
           Write-Host "=== Verifying: $templateName ==="
