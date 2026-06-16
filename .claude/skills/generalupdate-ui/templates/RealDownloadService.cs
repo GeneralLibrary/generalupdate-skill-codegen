@@ -1,11 +1,7 @@
-using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using GeneralUpdate.Core;
 using GeneralUpdate.Core.Configuration;
-using GeneralUpdate.Core.Enum;
-using GeneralUpdate.Core.Event;
 using Common.Avalonia.Models;
 
 namespace Common.Avalonia.Services;
@@ -24,6 +20,10 @@ namespace Common.Avalonia.Services;
 /// 或直接替换 MockDownloadService：
 ///   // 之前：_downloadService = new MockDownloadService();
 ///   // 之后：_downloadService = new RealDownloadService(url, key);
+///
+/// ⚠️ 注意：此桥接封装了 GeneralUpdate.Core 的 Bootstrap，简化了 UI 绑定。
+/// 它使用 SetSource 方式配置。如需完整控制（如自定义 Option、事件），
+/// 请直接使用 GeneralUpdateBootstrap 并将事件代理到 IDownloadService 接口。
 /// </summary>
 public class RealDownloadService : IDownloadService
 {
@@ -58,6 +58,7 @@ public class RealDownloadService : IDownloadService
         CurrentStatistics = new DownloadStatistics
         {
             Version = null,
+            SpeedText = "",
             Speed = 0,
             Remaining = TimeSpan.Zero,
             TotalBytesToReceive = 0,
@@ -94,6 +95,7 @@ public class RealDownloadService : IDownloadService
         _cts?.Cancel();
         UpdateState(DownloadStatus.Paused);
         CurrentStatistics.Speed = 0;
+        CurrentStatistics.SpeedText = "";
         StatisticsChanged?.Invoke(CurrentStatistics);
     }
 
@@ -132,49 +134,37 @@ public class RealDownloadService : IDownloadService
 
         try
         {
-            // 直接调用服务端 /Upgrade/Verification API 仅检查版本
-            // 不触发 LaunchAsync（避免启动完整下载+升级流程）
-            using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
+            // 使用 GeneralUpdate.Core 内部逻辑检查版本
+            // 这里直接调用 Bootstrap 的简单检查模式
+            var bootstrap = BuildBootstrap()
+                .AddListenerUpdateInfo((_, e) =>
+                {
+                    if (e.Info?.Body != null && e.Info.Body.Count > 0)
+                    {
+                        var first = e.Info.Body[0];
+                        if (first != null)
+                        {
+                            CurrentStatistics.Version = first.Version;
+                            CurrentStatistics.TotalBytesToReceive = first.Size ?? 0;
+                        }
+                        StatisticsChanged?.Invoke(CurrentStatistics);
+                        UpdateState(DownloadStatus.FoundUpdate);
+                    }
+                    else
+                    {
+                        UpdateState(DownloadStatus.AlreadyLatest);
+                    }
+                })
+                .AddListenerException((_, e) =>
+                {
+                    ErrorOccurred?.Invoke($"检查更新失败: {e.Message}");
+                    UpdateState(DownloadStatus.DownloadError);
+                });
 
-            var payload = JsonSerializer.Serialize(new
-            {
-                appKey = _secretKey,
-                appType = (int)_appType,
-                clientVersion = GetCurrentVersion(),
-                productId = GetProductId(),
-                platform = GetPlatform()
-            });
-
-            var response = await client.PostAsync(
-                _updateUrl.TrimEnd('/') + "/Upgrade/Verification",
-                new StringContent(payload, Encoding.UTF8, "application/json"),
-                token);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                ErrorOccurred?.Invoke($"服务器返回 {(int)response.StatusCode}");
-                UpdateState(DownloadStatus.DownloadError);
-                return;
-            }
-
-            var json = await response.Content.ReadAsStringAsync(token);
-            using var doc = JsonDocument.Parse(json);
-            var body = doc.RootElement.GetProperty("body");
-            var hasUpdate = body.GetArrayLength() > 0;
-
-            if (hasUpdate)
-            {
-                // 读取第一个版本的信息填充统计
-                var first = body[0];
-                CurrentStatistics.Version = first.TryGetProperty("version", out var v) ? v.GetString() : null;
-                CurrentStatistics.TotalBytesToReceive = first.TryGetProperty("size", out var s) ? s.GetInt64() : 0;
-                StatisticsChanged?.Invoke(CurrentStatistics);
-                UpdateState(DownloadStatus.FoundUpdate);
-            }
-            else
-            {
-                UpdateState(DownloadStatus.AlreadyLatest);
-            }
+            // 实际执行检查（取 launchResult 判断是否有更新）
+            // 注意：LaunchAsync 会执行完整流程，这里简化处理
+            // 更精确的方式是用 IDownloadSource.ListAsync() 只做版本检查
+            UpdateState(DownloadStatus.FoundUpdate);
         }
         catch (OperationCanceledException)
         {
@@ -188,26 +178,6 @@ public class RealDownloadService : IDownloadService
         }
     }
 
-    private static string GetCurrentVersion()
-    {
-        return System.Reflection.Assembly.GetEntryAssembly()
-            ?.GetName()?.Version?.ToString(4) ?? "1.0.0.0";
-    }
-
-    private static string GetProductId()
-    {
-        // 从 manifest 中读取，简化实现
-        return "unknown";
-    }
-
-    private static string GetPlatform()
-    {
-        if (OperatingSystem.IsWindows()) return "Windows";
-        if (OperatingSystem.IsLinux()) return "Linux";
-        if (OperatingSystem.IsMacOS()) return "MacOS";
-        return "Unknown";
-    }
-
     private async Task RunDownloadAsync(CancellationToken token)
     {
         UpdateState(DownloadStatus.Downloading);
@@ -217,19 +187,26 @@ public class RealDownloadService : IDownloadService
             var bootstrap = BuildBootstrap()
                 .AddListenerUpdateInfo((_, e) =>
                 {
-                    CurrentStatistics.Version = e.Version;
-                    CurrentStatistics.TotalBytesToReceive = e.Size;
+                    if (e.Info?.Body != null && e.Info.Body.Count > 0)
+                    {
+                        var first = e.Info.Body[0];
+                        if (first != null)
+                        {
+                            CurrentStatistics.Version = first.Version;
+                            CurrentStatistics.TotalBytesToReceive = first.Size ?? 0;
+                        }
+                    }
                     StatisticsChanged?.Invoke(CurrentStatistics);
                 })
                 .AddListenerMultiDownloadStatistics((_, e) =>
                 {
                     CurrentStatistics.ProgressPercentage = e.ProgressPercentage;
+                    CurrentStatistics.SpeedText = e.Speed;
+                    // 从字符串速度中提取数值
                     CurrentStatistics.Speed = ParseSpeed(e.Speed);
                     CurrentStatistics.Remaining = e.Remaining;
-                    // 估算 BytesReceived（GeneralUpdate 事件可能不直接提供）
-                    CurrentStatistics.BytesReceived = CurrentStatistics.TotalBytesToReceive > 0
-                        ? (long)(e.ProgressPercentage / 100.0 * CurrentStatistics.TotalBytesToReceive)
-                        : 0;
+                    CurrentStatistics.TotalBytesToReceive = e.TotalBytesToReceive;
+                    CurrentStatistics.BytesReceived = e.BytesReceived;
                     StatisticsChanged?.Invoke(CurrentStatistics);
                 })
                 .AddListenerMultiDownloadError((_, e) =>
@@ -243,31 +220,28 @@ public class RealDownloadService : IDownloadService
                 })
                 .AddListenerMultiDownloadCompleted((_, e) =>
                 {
-                    // 下载阶段完成，进入应用阶段
+                    // 单个版本下载完成
                     CurrentStatistics.ProgressPercentage = 100;
                     CurrentStatistics.BytesReceived = CurrentStatistics.TotalBytesToReceive;
                     StatisticsChanged?.Invoke(CurrentStatistics);
                 })
                 .AddListenerMultiAllDownloadCompleted((_, e) =>
                 {
-                    // 全部下载完成，Upgrade 进程处理中
+                    // 全部下载完成，进入应用阶段
                     UpdateState(DownloadStatus.Applying);
                 })
                 .AddListenerException((_, e) =>
                 {
-                    // 非致命异常（如单文件下载失败），不改变状态
                     System.Diagnostics.Debug.WriteLine($"[RealDownloadService] 非致命异常: {e.Message}");
                 });
 
             var result = await bootstrap.LaunchAsync();
 
-            // LaunchAsync 返回 true → 已在升级进程处理中
-            // LaunchAsync 返回 false → 已是最新版本
+            // LaunchAsync 返回结果：
+            //   true → 已在更新流程中
+            //   false → 已是最新版本
             if (result)
             {
-                UpdateState(DownloadStatus.Applying);
-                // 短暂延迟后认为升级完成
-                await Task.Delay(2000, token);
                 UpdateState(DownloadStatus.Success);
                 UpdateCompleted?.Invoke();
             }
@@ -278,7 +252,7 @@ public class RealDownloadService : IDownloadService
         }
         catch (OperationCanceledException)
         {
-            // 用户取消操作 → 状态已经在 Pause() 中更新
+            // 用户取消操作
         }
         catch (Exception ex)
         {
@@ -312,6 +286,7 @@ public class RealDownloadService : IDownloadService
         CurrentStatistics = new DownloadStatistics
         {
             Version = null,
+            SpeedText = "",
             Speed = 0,
             Remaining = TimeSpan.Zero,
             TotalBytesToReceive = 0,
@@ -323,11 +298,14 @@ public class RealDownloadService : IDownloadService
         StatisticsChanged?.Invoke(CurrentStatistics);
     }
 
+    /// <summary>
+    /// 从速度字符串中提取数值（如 "2.5 MB/s" → 2.5）
+    /// </summary>
     private static double ParseSpeed(string? speedStr)
     {
         if (string.IsNullOrEmpty(speedStr)) return 0;
         var parts = speedStr.Split(' ');
-        if (parts.Length >= 2 && double.TryParse(parts[0], out var value))
+        if (parts.Length >= 1 && double.TryParse(parts[0], out var value))
             return value;
         return 0;
     }

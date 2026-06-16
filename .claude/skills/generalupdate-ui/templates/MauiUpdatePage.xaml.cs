@@ -1,8 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GeneralUpdate.Core;
-using GeneralUpdate.Core.Configuration;
-using GeneralUpdate.Core.Enum;
+using GeneralUpdate.Common.Shared.Object;
 
 namespace MauiUpdate.ViewModels;
 
@@ -48,15 +47,15 @@ public partial class UpdateViewModel : ObservableObject
                 {
                     MainThread.BeginInvokeOnMainThread(() =>
                     {
-                        VersionText = e.Version ?? "未知版本";
+                        VersionText = e.Info?.Body?.Count > 0 ? e.Info.Body[0]?.Version ?? "未知版本" : "未知版本";
                     });
                 })
                 .AddListenerMultiDownloadStatistics((_, e) =>
                 {
                     MainThread.BeginInvokeOnMainThread(() =>
                     {
-                        ProgressValue = e.ProgressValue / 100.0;
-                        StatusText = $"{e.ProgressValue:F1}%";
+                        ProgressValue = e.ProgressPercentage / 100.0;
+                        StatusText = $"{e.ProgressPercentage:F1}%";
                         SpeedText = e.Speed ?? "";
                     });
                 })

@@ -1,81 +1,53 @@
 using GeneralUpdate.Core;
-using GeneralUpdate.Core.Configuration;
-using GeneralUpdate.Core.Differential;
-using GeneralUpdate.Core.Enum;
+using GeneralUpdate.Common.Shared.Object;
+using GeneralUpdate.Common.Download;
 
 /// <summary>
-/// 策略 4：差分增量更新
+/// 差分增量更新策略
 ///
-/// 适用场景：
-/// - 应用体积大（>100MB）
-/// - 用户网络带宽受限
-/// - 每次更新只改少量文件
+/// 适用于应用体积大（>100MB）或带宽受限的场景。
+/// 仅传输变动的文件部分，节省 60-90% 带宽。
 ///
 /// 工作原理：
-/// 服务端：DiffPipeline.CleanAsync(srcDir, tgtDir, patchDir)
-///   → 对比新旧版本文件 → 生成 .patch 补丁文件 + 新增文件 + 删除清单
-///
-/// 客户端：下载差分包 → PipelineBuilder
-///   → HashMiddleware (完整性校验)
-///   → CompressMiddleware (解压)
-///   → PatchMiddleware (应用补丁，DiffPipeline.DirtyAsync)
+/// 服务端调用 DiffPipeline 生成 .patch 文件
+/// 客户端下载后自动应用补丁
 ///
 /// NuGet:
 ///   dotnet add package GeneralUpdate.Core
 ///   dotnet add package GeneralUpdate.Differential
 ///
-/// ⚠️ 已知问题（来自 Issue #II75WI、#II77NS）：
-/// 1. 同名文件在不同目录时，封包可能出错（DefaultCleanMatcher 未用相对路径匹配）
-///    解决方案：设置自定义 CleanMatcher
+/// ⚠️ 注意：GeneralUpdate.Core v10.4.6 稳定版内置差分支持，
+/// 无需手动配置 DiffPipelineBuilder。安装 Differential 包即可。
+///
+/// ⚠️ 已知问题：
+/// 1. 同名文件在不同目录可能封包出错
 /// 2. 旧 patch 临时文件残留可能导致后续更新失败
-///    解决方案：每次更新前清理 TempPath
-/// 3. 建议对 patch 增加旧文件的 hash 判断
-///    若旧文件 hash 不匹配，跳过该文件并给出错误回调
 /// </summary>
 public static class DifferentialStrategy
 {
     public static async Task RunAsync()
     {
-        // 1. 配置 DiffPipeline（差分引擎）
-        // 服务端使用 Clean 模式生成差分包时用此配置
-        // 客户端使用 Dirty 模式应用差分包时自动注入
-        var diffPipeline = new DiffPipelineBuilder()
-            .UseDiffer(new StreamingHdiffDiffer())    // 差分算法：HDiffPatch（默认）
-            // .UseDiffer(new BsdiffDiffer())          // 备选：BSDIFF
-            .UseCleanMatcher(new DefaultCleanMatcher())
-            .UseDirtyMatcher(new DefaultDirtyMatcher())
-            .WithParallelism(2)                       // 并行度（默认2）
-            .Build();
+        var config = new Configinfo
+        {
+            UpdateUrl = "https://your-server.com/api",
+            AppSecretKey = "your-secret-key",
+            AppName = "MyApp.exe",
+            MainAppName = "MyApp.exe",
+            ClientVersion = "1.0.0.0",
+            ProductId = "my-product-001",
+            InstallPath = ".",
 
-        // 2. 配置 Bootstrap（启用差分）
-        var bootstrap = new GeneralUpdateBootstrap()
-            .SetSource(
-                "https://your-server.com/api",
-                "your-secret-key")
-            .SetOption(Option.AppType, AppType.Client)
-            .SetOption(Option.PatchEnabled, true)       // 启用差分模式
-            .SetOption(Option.MaxConcurrency, 3)
-            .SetOption(Option.BackupEnabled, true)       // 差分更新建议启用备份
-            .SetOption(Option.Format, CompressionFormat.Zip)
+            // 服务端配置差分时自动启用
+        };
 
-            // ⚠️ 每次更新前自动清理临时目录，避免残留文件
-            .SetOption(Option.AutoCleanTemp, true)
-
+        await new GeneralUpdateBootstrap()
+            .SetConfig(config)
             .AddListenerMultiDownloadStatistics((_, e) =>
-            {
-                Console.WriteLine($"[差分] 下载: {e.ProgressValue}% | " +
-                    $"速度: {e.Speed}");
-            })
-            .AddListenerProgress((_, e) =>
-            {
-                // 包含解压、补丁应用等阶段的详细进度
-                Console.WriteLine($"[处理] {e.FileName} — {e.ProgressValue}% ({e.Type})");
-            })
+                Console.WriteLine($"[差分] 下载: {e.ProgressPercentage}% | {e.Speed}"))
+            .AddListenerMultiDownloadCompleted((_, e) =>
+                Console.WriteLine($"[差分] 版本 {e.Version} 处理完成"))
             .AddListenerException((_, e) =>
-            {
-                Console.WriteLine($"[差分] 错误: {e.Message}");
-            });
-
-        await bootstrap.LaunchAsync();
+                Console.WriteLine($"[差分] 错误: {e.Message}"))
+            .LaunchAsync();
     }
 }

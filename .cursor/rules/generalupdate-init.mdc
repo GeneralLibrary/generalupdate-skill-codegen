@@ -25,6 +25,7 @@ MainAppName, UpdateAppName, ProductId, InstallPath, UpdatePath, ClientVersion, U
 - Client 和 Upgrade 必须相同 AppSecretKey
 - 版本号必须是 4 段式
 - manifest ClientVersion 不能为空
+- AppType 枚举：Client=1, Upgrade=2, OssClient=3, OssUpgrade=4
 
 ## 3 种配置方式
 - Minimal: SetSource + manifest.json

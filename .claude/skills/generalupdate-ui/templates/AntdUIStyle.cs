@@ -1,7 +1,6 @@
 using AntdUI;
 using GeneralUpdate.Core;
 using GeneralUpdate.Core.Configuration;
-using GeneralUpdate.Core.Enum;
 
 namespace Upgrade;
 
@@ -97,8 +96,8 @@ public partial class UpdateForm : AntdUI.Window
                     // 更新 UI 进度（在 UI 线程上）
                     Invoke(() =>
                     {
-                        btn_download.LoadingWaveValue = (float)(e.ProgressValue / 100.0);
-                        btn_download.Text = $"{e.ProgressValue:F1}% " +
+                        btn_download.LoadingWaveValue = (float)(e.ProgressPercentage / 100.0);
+                        btn_download.Text = $"{e.ProgressPercentage:F1}% " +
                             AntdUI.Localization.Get("downloading", "下载中");
                         // 更新状态标签
                         Text = $"{e.Speed} | " +

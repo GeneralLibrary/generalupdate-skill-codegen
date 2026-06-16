@@ -4,9 +4,11 @@
 
 覆盖 50+ 真实 Issue 发现的已知问题，提供即用型代码生成 + 深度故障排查。
 
-> **当前版本：v1.0.0** — 针对 NuGet `GeneralUpdate.Core ≥ 10.4.6` 稳定版
+> 当前版本：v1.0.0 — 针对 NuGet `GeneralUpdate.Core ≥ 10.4.6` 稳定版
 > 兼容性：`v10.4.6`（NuGet 最新稳定版）
-> 所有 32 个模板文件已通过 `dotnet build` 编译验证（0 errors）。
+> **所有模板已通过 `dotnet build` 编译验证（0 errors）。**
+
+---
 
 ## 技能总览
 
@@ -17,6 +19,8 @@
 | ⚙️ `generalupdate-strategy` | `/generalupdate-strategy` | 6 种策略决策树 + 混合组合 + 平台差异 | 6 策略 + 4 组合 + 平台对照 |
 | 🔧 `generalupdate-advanced` | `/generalupdate-advanced` | 10+ 扩展点 + 4 种 IPC + Bowl + AOT | 10+ 扩展点 + 完整架构图 |
 | 🩺 `generalupdate-troubleshoot` | `/generalupdate-troubleshoot` | 50+ 已知问题诊断 + 6 步通用排查 | 8 致命 + 11 高 + 20 中 + 12 低 |
+
+---
 
 ## 快速开始
 
@@ -43,6 +47,8 @@
 3. **GeneralUpdate 服务端**：对于标准策略，需要部署 [GeneralSpacestation](https://github.com/JusterZhu/GeneralSpacestation) 或兼容的后端服务
 4. **双进程架构**：需要理解 Client + Upgrade 双进程的核心理念
 
+---
+
 ## 数据来源
 
 所有技能的内容基于以下真实数据：
@@ -53,12 +59,14 @@
 - **Samples 源码**: CompleteUpdateSample、SilentUpdateSample、OssSample、DifferentialSample、PushSample、BowlSample、ExtensionSample、CompressSample、ImDiskQuickInstallSample
 - **UI Samples**: SemiUrsa、LayUI、AntdUI、WPFDevelopers、MauiUpdate、AndroidUpdate
 
+---
+
 ## 技能文件结构
 
 ```
 .claude/skills/
 ├── generalupdate-init/         (7 files)
-│   ├── SKILL.md                     ← 4大场景 + 4种配置 + API详解
+│   ├── SKILL.md                     ← 4大场景 + 3种配置 + API详解
 │   ├── reference.md                 ← NuGet/API/协议/框架兼容性
 │   └── templates/
 │       ├── MinimalIntegration.cs    ← 3行代码 + 注释说明
@@ -91,7 +99,7 @@
 │       └── PushStrategy.cs          ← SignalR推送模式
 │
 ├── generalupdate-advanced/     (6 files)
-│   ├── SKILL.md                     ← 10+扩展点 + IPC + Bowl + 事件系统
+│   ├── SKILL.md                     ← 10+扩展点 + 4 IPC + Bowl + 事件系统
 │   ├── reference.md                 ← 扩展点速查 + Bowl选项
 │   └── templates/
 │       ├── CustomHooks.cs           ← 完整IUpdateHooks + Unix权限
@@ -104,32 +112,25 @@
     └── reference.md                 ← ★ 50+症状清单（C/H/M/L四级）
 ```
 
-## 版本历史
+---
 
-### v1.0.0 — 2026-06-16
+## 已知限制与注意事项
 
-**相比开发分支（v10.5.0-beta.2），稳定版 NuGet v10.4.6 的 API 有根本性差异。**  
-所有模板已根据 **稳定版 API** 重写并通过编译验证。
+> ⚠️ **NuGet 包引用规则**：
+> - 使用 Core：`dotnet add package GeneralUpdate.Core`
+> - 使用 Bowl：**只引用** `GeneralUpdate.Bowl`（它传递依赖 Core，两者不能同时引用）
+> - 差分功能已内嵌在 Core 中，**无需额外引用** `GeneralUpdate.Differential`
 
-**核心 API 差异**：
-- ❌ 无 `SetSource()`、`SetOption()`、`Hooks<T>()`、`Strategy<T>()`、`SilentOrchestrator`
-- ❌ 无 `IUpdateHooks`、`IStrategy` 扩展点接口
-- ✅ `Configinfo` + `SetConfig()` + `LaunchAsync()` 为核心 API
-- ✅ `AppType` 是 class（非 enum），`ClientApp = 1`、`UpgradeApp = 2`
-- ✅ `LaunchAsync()` 返回 `Task<GeneralUpdateBootstrap>`（非 `Task<bool>`）
-- ⚠️ NuGet 包引用规则：使用 Bowl 时只引用 `GeneralUpdate.Bowl`，不额外引用 Core
-
-**变更清单**：
-- **重写**：全部 12 个模板/示例文件，使用 `Configinfo` API
-- **重写**：全部 5 个策略示例（适配 v10.4.6 稳定版）
-- **重写**：UI 桥接模板（`RealDownloadService.cs`）
-- **修复**：代码使用 `using GeneralUpdate.Common.Shared.Object` 命名空间
-- **删除**：不存在的 `SetOption`、扩展点、`IUpdateHooks`、`IProcessInfoProvider` 等引用
-- **新增**：英文版 README（README.en.md）
-- **新增**：中文版 README（README.zh-Hans.md）
-- **新增**：BUGS.md（审计报告与修复方案）
+> ⚠️ **API 差异**：v10.4.6 稳定版 API 比开发分支更简单。当前版本**不支持**：
+> - 无可编程 `Option` 配置系统（仅 `Configinfo` 属性）
+> - 无 `IUpdateHooks` 生命周期钩子
+> - 无 `SilentPollOrchestrator`
+>
+> 所有模板已针对 **稳定版 API** 编写并通过编译验证。
 
 详见 [BUGS.md](BUGS.md)。
+
+---
 
 ## 如何贡献
 
@@ -142,11 +143,14 @@
 
 ```bash
 # 本地测试技能
-claude-code --load-skills .claude/skills/
+# 在 Claude Code 中加载技能
+/claude-code --load-skills .claude/skills/
 
 # 验证模板代码可编译
 dotnet build your-test-project/
 ```
+
+---
 
 ## 许可证
 

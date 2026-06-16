@@ -5,8 +5,8 @@
 ## Architecture
 - Dual-process: Client (verification/download/IPC) + Upgrade (file replacement)
 - 4 update scenes: None/UpgradeOnly/MainOnly/Both
-- AppType: Client=0, Upgrade=1, OssClient=2, OssUpgrade=3
-- IPC: Encrypted file (default), replaceable via IProcessInfoProvider
+- AppType: Client=1, Upgrade=2, OssClient=3, OssUpgrade=4
+- IPC: Encrypted file (default), replaceable via custom Strategy
 
 ## NuGet Packages
 - GeneralUpdate.Core -- Required. Bootstrap/Strategy/Download/IPC/Events
@@ -19,6 +19,7 @@
 - Minimal: SetSource(url, key) -> SetOption(AppType.Client) -> LaunchAsync()
 - Standard: SetConfig(UpdateRequest) -> SetOption() -> AddListener*() -> LaunchAsync()
 - AppSettings: LoadFromConfiguration(config.GetSection("GeneralUpdate"))
+- File config: SetConfig("config.json")
 
 ## UpdateRequest Required Fields
 UpdateUrl, AppSecretKey, InstallPath, ClientVersion, MainAppName, UpdateAppName, ProductId

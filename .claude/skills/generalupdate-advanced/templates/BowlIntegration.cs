@@ -1,66 +1,36 @@
 using GeneralUpdate.Bowl;
-using GeneralUpdate.Core.Models;
+using GeneralUpdate.Bowl.Strategys;
 
 /// <summary>
-/// 【Skill 自动生成】Bowl 崩溃守护集成
+/// 【Skill 参考】Bowl 崩溃守护
 ///
-/// Bowl 是一个跨平台的崩溃监控助手，在升级完成后监控主应用的启动情况。
-/// 如果主应用崩溃，Bowl 会：
-/// 1. 生成 MiniDump 文件
-/// 2. 写入 CrashReport.json（崩溃诊断报告）
-/// 3. 可选：从备份自动回滚
-/// 4. 触发 OnCrash 回调
+/// ⚠️ 注意：v10.4.6 稳定版中 Bowl 仅提供基础类型定义。
+/// Bowl.LaunchAsync() 等完整功能在开发分支（v10.5.0-beta.2）中可用。
 ///
-/// 使用方式：
-///   在 Upgrade 完成后启动 Bowl（由 StartAppAsync 自动处理）
-///   或者在主应用启动后手动调用 Bowl.LaunchAsync()
+/// 此模板展示 v10.4.6 的实际 API 调用方式。
 ///
 /// NuGet: dotnet add package GeneralUpdate.Bowl
-///
-/// ⚠️ 注意事项：
-/// 1. Bowl 目前仅在 Windows 上充分测试
-/// 2. 回滚依赖于更新前的备份（BackupEnabled = true）
-/// 3. 备份保留最多 3 个版本
-/// 4. Bowl 需要使用 procdump 工具（Windows）
 /// </summary>
 public static class BowlIntegration
 {
-    /// <summary>
-    /// 启动 Bowl 崩溃守护
-    /// </summary>
-    public static async Task StartBowlAsync(string appPath, string installPath)
+    public static void ConfigureBowl()
     {
-        Console.WriteLine("[Bowl] 启动崩溃守护进程...");
+        // v10.4.6 中的 Bowl API：
+        // Bowl 类有公开构造函数，但无公开 LaunchAsync 方法
+        // 完整崩溃守护功能请关注后续版本
 
-        var bowl = new Bowl();
-
-        // 注册崩溃回调
-        bowl.OnCrash += (crashReport) =>
+        var param = new MonitorParameter
         {
-            Console.WriteLine($"[Bowl] 检测到崩溃!");
-            Console.WriteLine($"[Bowl] 原因: {crashReport.CrashReason}");
-            Console.WriteLine($"[Bowl] Dump 文件: {crashReport.DumpFilePath}");
-
-            // 自动回滚（前提是有备份）
-            if (crashReport.AutoRestore)
-            {
-                Console.WriteLine("[Bowl] 正在回滚到备份版本...");
-                // Bowl 会自动从备份目录恢复
-            }
+            ProcessNameOrId = "MyApp.exe",
+            DumpFileName = "v1.0.0.0_fail.dmp",
+            FailFileName = "v1.0.0.0_fail.json",
+            TargetPath = @"C:\Program Files\MyApp",
+            FailDirectory = @"C:\Program Files\MyApp\fail",
+            BackupDirectory = @"C:\Program Files\MyApp\backup",
+            WorkModel = "Upgrade",
         };
 
-        // 启动监控
-        await bowl.LaunchAsync(new BowlOptions
-        {
-            // 要监控的主应用路径
-            TargetAppPath = appPath,
-            // 安装目录（用于定位备份）
-            InstallPath = installPath,
-            // 启用自动回滚
-            AutoRestore = true,
-            // 崩溃报告输出目录
-            ReportOutputPath = Path.Combine(
-                installPath, "CrashReports")
-        });
+        var bowl = new Bowl();
+        Console.WriteLine("[Bowl] Bowl 实例已创建。完整监控功能需 v10.5+。");
     }
 }

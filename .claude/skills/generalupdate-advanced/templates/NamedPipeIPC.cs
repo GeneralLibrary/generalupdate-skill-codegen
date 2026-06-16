@@ -1,114 +1,99 @@
 using System.IO.Pipes;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 
 /// <summary>
-/// 【Skill 自动生成】命名管道 IPC（替代加密文件 IPC）
+/// 【Skill 参考】命名管道 IPC
 ///
-/// GeneralUpdate 默认使用 AES 加密文件进行 Client → Upgrade 的 IPC 通信。
-/// 在某些场景下（如安全要求高、反病毒软件干扰文件访问），
-/// 可以使用命名管道（NamedPipe）替代文件 IPC。
+/// ⚠️ 注意：v10.4.6 稳定版中不存在 IProcessInfoProvider 接口。
+/// IPC 实现在当前版本中不可替换。
 ///
-/// 优势：
-/// - 无磁盘文件写入（安全性更高）
-/// - 无 TOCTOU 攻击风险
-/// - 无防病毒软件干扰
-/// - 支持双向通信
-///
-/// 注意：此实现需要自行集成到 GeneralUpdateBootstrap 的流程中。
-/// 当前 GeneralUpdate 默认使用 EncryptedFileProcessContractProvider，
-/// 可通过 IProcessInfoProvider 接口替换。
-///
-/// NuGet: 无需额外包（System.IO.Pipes 在 .NET 内置）
+/// 此代码作为 NamedPipe 通信模式的参考实现，
+/// 实际替换 IPC 需要 v10.5.0-beta.2 开发分支。
 /// </summary>
 public class NamedPipeIpcProvider : IAsyncDisposable
 {
-    private const string PipeName = "GeneralUpdate_IPC_" + /* ProcessId */ "";
+    private const string PipeNamePrefix = "GeneralUpdate_IPC_";
     private NamedPipeServerStream? _server;
     private NamedPipeClientStream? _client;
     private readonly CancellationTokenSource _cts = new();
 
-    /// <summary>
-    /// 由 Client 进程调用：创建服务端管道，等待 Upgrade 进程连接
-    /// </summary>
-    public async Task<string> ServerWaitAsync(int timeoutMs = 30000)
+    public async Task<string> ServerWaitAsync(int processId, int timeoutMs = 30000)
     {
+        var pipeName = PipeNamePrefix + processId;
         _server = new NamedPipeServerStream(
-            PipeName,
-            PipeDirection.InOut,
+            pipeName, PipeDirection.InOut,
             maxNumberOfServerInstances: 1,
-            TransmissionMode.Byte,
-            PipeOptions.Asynchronous);
+            PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
 
-        // 等待 Upgrade 进程连接
-        await _server.WaitForConnectionAsync(_cts.Token);
-        return PipeName; // 返回管道名，通过环境变量传给 Upgrade 进程
+        using var timeoutCts = new CancellationTokenSource(timeoutMs);
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_cts.Token, timeoutCts.Token);
+        try
+        {
+            await _server.WaitForConnectionAsync(linkedCts.Token);
+            return pipeName;
+        }
+        catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
+        {
+            throw new TimeoutException($"NamedPipe 等待连接超时 ({timeoutMs}ms)");
+        }
     }
 
-    /// <summary>
-    /// 由 Upgrade 进程调用：连接到 Client 创建的管道
-    /// </summary>
     public async Task ClientConnectAsync(string pipeName, int timeoutMs = 30000)
     {
-        _client = new NamedPipeClientStream(
-            ".",
-            pipeName,
-            PipeDirection.InOut,
-            PipeOptions.Asynchronous);
-
+        _client = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
         await _client.ConnectAsync(timeoutMs, _cts.Token);
     }
 
-    /// <summary>
-    /// 发送数据
-    /// </summary>
     public async Task SendAsync<T>(T data)
     {
-        var stream = _server ?? _client as Stream
-            ?? throw new InvalidOperationException("未连接");
-
+        var stream = GetStream();
         var json = JsonSerializer.Serialize(data);
         var bytes = Encoding.UTF8.GetBytes(json);
         var lengthBytes = BitConverter.GetBytes(bytes.Length);
-
-        // 先发长度，再发内容
+        if (!BitConverter.IsLittleEndian) Array.Reverse(lengthBytes);
         await stream.WriteAsync(lengthBytes, _cts.Token);
         await stream.WriteAsync(bytes, _cts.Token);
         await stream.FlushAsync(_cts.Token);
     }
 
-    /// <summary>
-    /// 接收数据
-    /// </summary>
     public async Task<T?> ReceiveAsync<T>()
     {
-        var stream = _server ?? _client as Stream
-            ?? throw new InvalidOperationException("未连接");
-
-        // 先读长度
+        var stream = GetStream();
         var lengthBuffer = new byte[4];
-        await stream.ReadAsync(lengthBuffer, _cts.Token);
+        var lengthRead = 0;
+        while (lengthRead < 4)
+        {
+            var read = await stream.ReadAsync(lengthBuffer, lengthRead, 4 - lengthRead, _cts.Token);
+            if (read == 0) throw new EndOfStreamException("管道连接已关闭");
+            lengthRead += read;
+        }
         var length = BitConverter.ToInt32(lengthBuffer);
-
-        // 再读内容
+        if (!BitConverter.IsLittleEndian) Array.Reverse(lengthBuffer);
         var buffer = new byte[length];
         var offset = 0;
         while (offset < length)
         {
-            var read = await stream.ReadAsync(
-                buffer, offset, length - offset, _cts.Token);
+            var read = await stream.ReadAsync(buffer, offset, length - offset, _cts.Token);
+            if (read == 0) throw new EndOfStreamException("管道连接已关闭");
             offset += read;
         }
-
         var json = Encoding.UTF8.GetString(buffer);
         return JsonSerializer.Deserialize<T>(json);
     }
 
+    private Stream GetStream()
+    {
+        if (_server?.IsConnected == true) return _server;
+        if (_client?.IsConnected == true) return _client;
+        throw new InvalidOperationException("NamedPipe 未连接");
+    }
+
     public async ValueTask DisposeAsync()
     {
-        _cts.Cancel();
+        await _cts.CancelAsync();
         _server?.Dispose();
         _client?.Dispose();
+        _cts.Dispose();
     }
 }

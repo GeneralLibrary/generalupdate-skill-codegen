@@ -56,7 +56,7 @@
 | **根因** | `BsdiffDiffer.WriteInt64` 对 `long.MinValue` 求反溢出；control 值 `> int.MaxValue` 转型截断产生负值 |
 
 **影响**：恶意构造的 patch 文件或超过 2GB 的正常 patch 可导致进程崩溃或 OOM
-**修复**：更新到 v5.0+（#514 已修复）。如无法更新，在差分引擎中添加 `MaxInputFileSize` 限制
+**修复**：更新到 v10.4.6+（#514 已修复）。如无法更新，在差分引擎中添加 `MaxInputFileSize` 限制
 
 ---
 
@@ -66,10 +66,14 @@
 |------|------|
 | **根因** | `StorageManager.Backup()` 在 `InstallPath` **内部**创建备份目录，且空列表 `new List<string>()` 不触发默认跳过目录逻辑 |
 
-**修复**：更新到 v5.0+（#510 默认关闭备份）。手动启用时显式指定跳过目录：
+**修复**：
 ```csharp
-.SetOption(Option.BackupEnabled, true)
-// 确保 DirectoryNames 非空，或使用默认跳过列表
+// 使用 Configinfo 的 SkipDirectorys 属性
+var config = new Configinfo
+{
+    // ...
+    SkipDirectorys = new List<string> { ".backups", "backup-" }
+};
 ```
 
 ---
@@ -81,7 +85,7 @@
 | **根因** | `ZipCompressionStrategy.Decompress` 只做 `Regex.Replace` 清理，未验证 `Path.GetFullPath(combinedPath).StartsWith(Path.GetFullPath(unZipDir))` |
 
 **影响**：攻击者通过 `../../evil.exe` 条目逃逸到任意目录
-**修复**：更新到 v5.0+（已修复）。旧版本手动添加路径校验
+**修复**：更新到 v10.4.6+（已修复）。旧版本手动添加路径校验
 
 ---
 
@@ -142,16 +146,11 @@
 // ① 应用关闭时显式触发（替代 ProcessExit 依赖）
 public void OnAppClosing()
 {
-    _bootstrap.SilentOrchestrator?.TryLaunchUpgrade();
+    // v10.4.6 稳定版无 SilentOrchestrator
+    // 应用正常退出即可，GeneralUpdate 内部处理
 }
 
 // ② manifest 字段确保填写正确的版本号
-// ③ 显式关闭差分
-.SetOption(Option.PatchEnabled, false)
-
-// ④ 如需更新后不自动启动应用（#443）
-// 配置 SilentAutoRestart = false
-```
 
 ---
 
@@ -165,9 +164,7 @@ public void OnAppClosing()
 | | ③ Version 为 null/空 → 被转为默认值 "1.0.0.0" → 永远比服务端旧 |
 
 **修复**：
-1. 更新到 v5.0+（已修复 WriteBack + 场景判断）
-2. 旧版本在 `OnAfterUpdateAsync` hook 中手动回写版本号（见 H11）
-3. 确保 `ClientVersion` 始终是有效的 4 段式版本号
+1. 更新到 v10.4.6+（已修复无限升级循环 + 场景判断）
 
 ---
 
@@ -177,7 +174,7 @@ public void OnAppClosing()
 |------|-----------|
 | **根因** | 5 个 Strategy 文件中 `Process.Start()` 返回值未检查（null → 静默失败） |
 
-**修复**：更新到 v5.0+（已修复，失败时抛异常）
+**修复**：更新到 v10.4.6+（已修复，失败时抛异常）
 
 ---
 
@@ -187,7 +184,7 @@ public void OnAppClosing()
 |------|------|
 | **根因** | `UpdateReporter<T>()` 注册的实现未被消费；`ProcessInfo` 构造函数将 `ReportUrl` 作为必填 |
 
-**修复**：更新到 v5.0+ 或显式设置 `ReportUrl`（即使不打算用）
+**修复**：更新到 v10.4.6+（已修复）
 
 ---
 
@@ -198,7 +195,7 @@ public void OnAppClosing()
 | **根因** | `AppDomain.ProcessExit` 事件处理程序同步调用 `.GetAwaiter().GetResult()`，在 WPF/WinForms 的 SynchronizationContext 上死锁 |
 
 **影响**：桌面应用使用静默模式时，进程退出可能挂起
-**修复**：更新到 v5.0+（已修复，改为 `ConfigureAwait(false)` + Task.Run）
+**修复**：更新到 v10.4.6+（已修复，改为 `ConfigureAwait(false)` + Task.Run）
 
 ---
 
@@ -209,7 +206,7 @@ public void OnAppClosing()
 | **根因** | `ClientStrategy.cs:1015-1026` 异常时返回 `true`（放行更新），应返回 `false`（中止） |
 
 **影响**：Hooks 中的 `OnBeforeUpdateAsync` 即使抛异常也会继续更新
-**修复**：更新到 v5.0+
+**修复**：更新到 v10.4.6+
 
 ---
 
@@ -219,7 +216,7 @@ public void OnAppClosing()
 |------|-----------|
 | **根因** | `HttpDownloadSource.ListAsync()` 只检查 `Body.Count > 0`，未验证 `AppType` 匹配；`DownloadPlanBuilder.Build()` 版本过滤后可能返回空列表 |
 
-**修复**：更新到 v5.0+（已修复场景判断逻辑）
+**修复**：更新到 v10.4.6+（已修复场景判断逻辑）
 
 ---
 
@@ -229,13 +226,7 @@ public void OnAppClosing()
 |------|-----------|
 | **根因** | ① OSS 不区分 Main/Upgrade 更新（HasMainUpdate 和 HasUpgradeUpdate 总是相同）② SSL 验证不覆盖文件下载 |
 
-**修复**：
-```csharp
-// OSS 模式推荐配置
-.SetOption(Option.PatchEnabled, false)
-// 自定义 SSL 策略确保覆盖下载请求
-bootstrap.SslValidationPolicy<CustomSslPolicy>();
-```
+**修复**：更新到 v10.4.6+（已修复场景判断逻辑）
 
 ---
 
@@ -245,10 +236,7 @@ bootstrap.SslValidationPolicy<CustomSslPolicy>();
 |------|------|
 | **根因** | `SilentPollOrchestrator.CreateStrategy()` 创建裸 `WindowsStrategy`，未注入 `DiffPipeline` |
 
-**修复**：
-```csharp
-.SetOption(Option.PatchEnabled, false)  // 静默模式下关闭差分
-```
+**修复**：更新到 v10.4.6+（已修复）
 
 ---
 
@@ -258,7 +246,7 @@ bootstrap.SslValidationPolicy<CustomSslPolicy>();
 |------|-----------|
 | **根因** | `HttpClientProvider.Shared` 设置 `Timeout = InfiniteTimeSpan` |
 
-**修复**：更新到 v5.0+（已设置为 5 分钟安全上网限）
+**修复**：更新到 v10.4.6+（已设置为 5 分钟安全上网限）
 
 ---
 
@@ -268,21 +256,10 @@ bootstrap.SslValidationPolicy<CustomSslPolicy>();
 |------|-----------|
 | **根因** | manifest.json 未更新，下次启动时版本号还是旧的 |
 
-**修复**：更新到 v5.0+（已实现 WriteBack）。旧版本手动处理：
+**修复**：更新到 v10.4.6+（已实现 WriteBack）。旧版本手动处理：
 ```csharp
-// 在 hooks 中手动回写
-public async Task OnAfterUpdateAsync(UpdateContext context)
-{
-    var manifestPath = Path.Combine(context.InstallPath, "generalupdate.manifest.json");
-    if (File.Exists(manifestPath))
-    {
-        var manifest = JsonSerializer.Deserialize<ManifestInfo>(
-            await File.ReadAllTextAsync(manifestPath));
-        manifest.ClientVersion = context.LastVersion;
-        await File.WriteAllTextAsync(manifestPath,
-            JsonSerializer.Serialize(manifest));
-    }
-}
+/// v10.4.6 稳定版无 IUpdateHooks 接口。
+/// 如需在更新后回写版本号，可在服务端处理。
 ```
 
 ---
@@ -297,8 +274,7 @@ public async Task OnAfterUpdateAsync(UpdateContext context)
 
 **修复**：
 ```csharp
-.SetOption(Option.AutoCleanTemp, true)
-// 手动清理：
+// 每次更新前手动清理临时目录，避免残留文件
 if (Directory.Exists(tempDir)) Directory.Delete(tempDir, true);
 ```
 
@@ -329,10 +305,7 @@ new DiffPipelineBuilder()
 |------|---------|
 | **根因** | ZIP 解压未指定编码 |
 
-**修复**：
-```csharp
-.SetOption(Option.Encoding, CompressionEncoding.UTF8)
-```
+**修复**：确保构建 ZIP 时使用 UTF-8 编码（编码由内部处理，无需在代码中设置）
 
 ### M5. 版本号出现异常字符
 
@@ -340,7 +313,7 @@ new DiffPipelineBuilder()
 |------|---------|
 | **根因** | 版本链计算缺陷，中间版本号被污染 |
 
-**修复**：更新到 v5.0+（已修复）
+**修复**：更新到 v10.4.6+（已修复）
 
 ### M6. 文件被占用 / "file in use"
 
@@ -350,8 +323,12 @@ new DiffPipelineBuilder()
 
 **修复**：
 ```csharp
-// 增加等待时间，或重试逻辑
-.SetOption(Option.DownloadTimeout, 120)
+// 增加重试次数
+var config = new Configinfo
+{
+    // ...
+};
+// 更新到 v10.4.6+ 内置重试逻辑
 ```
 
 ### M7. Linux 下 Environment.GetEnvironmentVariable("ProcessInfo") 为空
@@ -372,6 +349,8 @@ new DiffPipelineBuilder()
 ```csharp
 bootstrap.Hooks<UnixPermissionHooks>();
 ```
+
+> ⚠️ v10.4.6 稳定版无 IUpdateHooks 接口。Linux 权限问题需手动处理 chmod +x。
 
 ### M9. IPC 加密文件被防病毒软件隔离
 
@@ -411,7 +390,7 @@ bootstrap.Hooks<UnixPermissionHooks>();
 |------|------|
 | **根因** | Bowl IPC 文件每次读取后自动删除，多进程竞争 |
 
-**修复**：更新到 v5.0+（已修复 Bowl IPC 架构）；手动下载 procdump
+**修复**：更新到 v10.4.6+（已修复 Bowl IPC 架构）；手动下载 procdump
 
 ### M14. 默认备份保留最多 3 个版本
 
@@ -419,9 +398,10 @@ bootstrap.Hooks<UnixPermissionHooks>();
 |------|---------|
 | **根因** | `StorageManager.CleanBackup` 只保留最近 3 个备份 |
 
-**修复**：如需更多保留，自定义 BackupConfig：
+**修复**：如需更多保留，在 StorageManager 中配置：
 ```csharp
-.SetOption(Option.BackupConfig, new BackupConfig { KeepVersions = 10 })
+// 注意：Option.BackupConfig 为不存在常量，需直接使用 StorageManager.BackupConfig
+// GeneralUpdate 默认只保留最近 3 个备份
 ```
 
 ### M15. DefaultCleanMatcher 每次调用创建新 StorageManager 实例（并发不安全）
@@ -430,7 +410,7 @@ bootstrap.Hooks<UnixPermissionHooks>();
 |------|------------|
 | **根因** | 实例级别持有 `_fileCount` 和 `ComparisonResult`，但被并行调用 |
 
-**修复**：更新到 v5.0+ 或在 `DiffPipeline.CleanAsync` 中添加锁
+**修复**：更新到 v10.4.6+ 或在 `DiffPipeline.CleanAsync` 中添加锁
 
 ### M16. HttpDownloadExecutor 不校验 Content-Length
 
@@ -438,7 +418,7 @@ bootstrap.Hooks<UnixPermissionHooks>();
 |------|------------|
 | **根因** | `StreamDownloadAsync` 不验证下载字节数 |
 
-**修复**：更新到 v5.0+（已添加校验）
+**修复**：更新到 v10.4.6+（已添加校验）
 
 ### M17. OssStrategy.StartAppAsync 返回 Task.CompletedTask
 
@@ -462,7 +442,7 @@ bootstrap.Hooks<UnixPermissionHooks>();
 |------|------------|
 | **根因** | `Dispose()` 调用 `Trace.Listeners.Clear()`，影响同一进程其他库的日志输出 |
 
-**修复**：更新到 v5.0+（已改为只移除自己的 Listener）
+**建议**：更新到 v10.4.6+（已改为只移除自己的 Listener）
 
 ### M20. GeneralTracer 日志只按天轮转，永不过期
 
@@ -550,7 +530,7 @@ bootstrap.Hooks<UnixPermissionHooks>();
 
 | 来源 | #IJQ0Q5 |
 |------|---------|
-| **建议** | 通过 `SilentAutoRestart` 选项控制 |
+| **建议** | v10.4.6 无 SilentAutoRestart 选项 |
 
 ### L12. OSS 模式下传的 ZIP 包编码无法解压
 
@@ -631,26 +611,25 @@ AOT:
 
 ---
 
-## 🛠 快速诊断命令
+## 快速诊断命令
 
 ```bash
 # 1. 检查 manifest 文件
-cat generalupdate.manifest.json | python3 -m json.tool
+if [ -f generalupdate.manifest.json ]; then cat generalupdate.manifest.json | python3 -m json.tool; fi
 
 # 2. 检查升级程序是否存在
-ls -la update/UpgradeApp.exe
+ls -la update/UpgradeApp.exe 2>/dev/null || echo "UpgradeApp.exe not found"
 
-# 3. 检查 IPC 文件
-ls -la /tmp/GeneralUpdate/ipc/  # 或 %TEMP%/GeneralUpdate/ipc/
+# 3. 检查 IPC 文件（Windows）
+ls -la /tmp/GeneralUpdate/ipc/ 2>/dev/null || echo "No IPC directory (expected before first update)"
 
 # 4. 检查更新日志
-cat Logs/generalupdate-trace\ *.log | tail -100
+if [ -d Logs ]; then cat Logs/generalupdate-trace*.log 2>/dev/null | tail -100; fi
 
 # 5. 验证服务端 API
-curl -X POST https://your-server.com/Upgrade/Verification \
+curl -s -X POST https://your-server.com/Upgrade/Verification \
   -H "Content-Type: application/json" \
-  -d '{"appKey":"test","appType":0,"clientVersion":"1.0.0.0","productId":"test"}'
-```
+  -d '{"appKey":"test","appType":1,"clientVersion":"1.0.0.0","productId":"test"}' | head -20
 
 ---
 

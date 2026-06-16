@@ -8,7 +8,7 @@ applyTo: "**/*.cs"
 
 ## Verification Endpoint
 POST /Upgrade/Verification
-Request: appKey, appType, clientVersion, productId, platform, tenantId
+Request: appKey, appType (1=Client/2=Upgrade/3=OssClient/4=OssUpgrade), clientVersion, productId, platform, tenantId
 Response: body[{ id, version, url, hash, size, name, appType, isCrossVersion }]
 
 ## Report Endpoint

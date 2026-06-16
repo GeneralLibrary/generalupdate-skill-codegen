@@ -17,3 +17,5 @@ SetSource(url, key) -> SetOption(AppType.Client) -> LaunchAsync()
 MainAppName, UpdateAppName, ProductId, InstallPath, UpdatePath, ClientVersion, UpgradeClientVersion
 
 ## 关键: UpgradeApp须随首个版本发布, 双进程AppSecretKey一致, 版本4段式
+
+## AppType枚举: Client=1, Upgrade=2, OssClient=3, OssUpgrade=4

@@ -3,12 +3,13 @@
 ## Architecture
 - Dual-process: Client (verification/download/IPC) + Upgrade (file replacement)
 - 4 scenes: None/UpgradeOnly/MainOnly/Both
-- IPC: Encrypted file(AES, default), NamedPipe, SharedMemory, AutoFallback
+- IPC: Encrypted file (AES, default), custom IPC via Strategy override
 
 ## Bootstrap
 - Minimal: SetSource(url, key) -> SetOption(Client) -> LaunchAsync()
 - Standard: SetConfig(UpdateRequest) -> SetOption() -> AddListener*() -> LaunchAsync()
 - From config: LoadFromConfiguration(config.GetSection("GeneralUpdate"))
+- From file: SetConfig("config.json")
 
 ## NuGet
 Core(required), Differential(delta), Bowl(crash), Extension(plugins), Drivelution(drivers)
@@ -16,8 +17,12 @@ Core(required), Differential(delta), Bowl(crash), Extension(plugins), Drivelutio
 ## UpdateRequest Required
 UpdateUrl, AppSecretKey, InstallPath, ClientVersion, MainAppName, UpdateAppName, ProductId
 
+## AppType Enum
+Client=1, Upgrade=2, OssClient=3, OssUpgrade=4
+
 ## Options
-MaxConcurrency=3, PatchEnabled=false, BackupEnabled=false(v5+), Silent=false, Format=Zip, DownloadTimeout=60
+MaxConcurrency=3, PatchEnabled=true(v5+), BackupEnabled=false(v5+), Silent=false, Format=Zip, DownloadTimeout=30, RetryCount=3
+RetryInterval=1s, LaunchClientAfterUpdate=true, DiffMode=Serial
 
 ## 6 Strategies
 1. Client-Server (needs backend)
@@ -32,7 +37,16 @@ Windows: Hash->Decompress->Patch+Bowl+Drivelution
 Linux/Mac: Hash->Decompress->Patch (no Bowl, need UnixPermissionHooks)
 
 ## Extension Points
-Hooks, Strategy, UpdateReporter, DownloadSource, DownloadOrchestrator, DownloadPolicy, DownloadExecutor, DownloadPipeline, SslValidationPolicy, HttpAuthProvider
+Hooks, Strategy, UpdateReporter, DownloadSource, DownloadOrchestrator, DownloadPolicy, DownloadExecutor, DownloadPipeline, HttpAuthProvider, DirtyStrategy, CleanStrategy
+
+## Event Args (v5.0+)
+- UpdateInfoEventArgs: Info?.Body (List<VersionEntry>)
+- MultiDownloadStatisticsEventArgs: ProgressPercentage, Speed, Remaining, TotalBytesToReceive, BytesReceived
+- MultiDownloadCompletedEventArgs: Version (object), IsCompleted
+- MultiDownloadErrorEventArgs: Exception, Version (object)
+- MultiAllDownloadCompletedEventArgs: IsAllDownloadCompleted, FailedVersions
+- ProgressEventArgs: Progress (DownloadProgress?), DiffProgress (DiffProgress?)
+- ExceptionEventArgs: Exception, Message
 
 ## Quick Fixes
 - Upgrade not starting: Check UpdatePath

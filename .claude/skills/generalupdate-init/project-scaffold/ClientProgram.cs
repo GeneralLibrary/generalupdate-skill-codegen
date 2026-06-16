@@ -1,38 +1,38 @@
 using GeneralUpdate.Core;
-using GeneralUpdate.Core.Configuration;
-using GeneralUpdate.Core.Enum;
+using GeneralUpdate.Common.Shared.Object;
+using GeneralUpdate.Common.Download;
 
 string updateUrl = args.Length > 0 ? args[0] : "https://your-server.com/api";
 string secretKey = args.Length > 1 ? args[1] : "your-secret-key";
 
 Console.WriteLine($"[Client] 启动版本检查: {updateUrl}");
-Console.WriteLine($"[Client] 当前版本: {GetCurrentVersion()}");
 
-var result = await new GeneralUpdateBootstrap()
-    .SetSource(updateUrl, secretKey)
-    .SetOption(Option.AppType, AppType.Client)
+var config = new Configinfo
+{
+    UpdateUrl = updateUrl,
+    AppSecretKey = secretKey,
+    AppName = "MyApp.exe",
+    MainAppName = "MyApp.exe",
+    ClientVersion = GetCurrentVersion(),
+    ProductId = "my-product-001",
+    InstallPath = "."
+};
+
+await new GeneralUpdateBootstrap()
+    .SetConfig(config)
     .AddListenerUpdateInfo((_, e) =>
-        Console.WriteLine($"[Client] 发现新版本: {e.Version} ({e.Size} bytes)"))
+        Console.WriteLine($"[Client] 发现 {e.Info?.Body?.Count ?? 0} 个版本"))
     .AddListenerMultiDownloadStatistics((_, e) =>
-        Console.WriteLine($"[Client] 下载进度: {e.ProgressValue}% | {e.Speed}/s"))
+        Console.WriteLine($"[Client] 下载进度: {e.ProgressPercentage}% | {e.Speed}"))
     .AddListenerMultiDownloadCompleted((_, e) =>
-        Console.WriteLine($"[Client] 版本 {e.Versions?.LastOrDefault()?.Version} 下载完成"))
+        Console.WriteLine($"[Client] 版本 {e.Version} 下载完成"))
     .AddListenerMultiAllDownloadCompleted((_, e) =>
-        Console.WriteLine("[Client] 全部下载完成，即将启动升级程序"))
+        Console.WriteLine("[Client] 全部下载完成"))
     .AddListenerException((_, e) =>
         Console.WriteLine($"[Client] 错误: {e.Message}"))
     .LaunchAsync();
 
-if (result)
-{
-    Console.WriteLine("[Client] 更新完成，应用重启中...");
-}
-else
-{
-    Console.WriteLine("[Client] 已是最新版本");
-    Console.WriteLine("按任意键退出...");
-    Console.ReadKey();
-}
+Console.WriteLine("[Client] 更新流程完成，进程即将退出/继续执行");
 
 static string GetCurrentVersion()
 {
