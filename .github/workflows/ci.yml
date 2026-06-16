@@ -132,8 +132,9 @@ jobs:
 
       - name: Generate test project from ${{ matrix.template }}
         run: |
+          $templateName = "${{ matrix.template }}"
           $templatePath = ".claude/skills/generalupdate-init/templates"
-          $testDir = "C:\tmp\verify-${{ matrix.template }}"
+          $testDir = "C:\tmp\verify-$templateName"
           New-Item -ItemType Directory -Path $testDir -Force | Out-Null
 
           # Create minimal .csproj
@@ -152,15 +153,14 @@ jobs:
           "@ | Out-File -FilePath "$testDir\TestProject.csproj" -Encoding UTF8
 
           # Copy template and r-w AssemblyName to config
-          $code = Get-Content "$templatePath\$($args[0]).cs" -Raw
+          $code = Get-Content "$templatePath\$templateName.cs" -Raw
           $code = $code -replace 'MyApp\.exe', 'TestApp.exe'
           $code = $code -replace '1\.0\.0\.0', '1.0.0.1'
           $code = $code -replace 'my-product-001', 'test-001'
           $code | Out-File -FilePath "$testDir\Program.cs" -Encoding UTF8
 
-          Write-Host "=== Verifying: $($args[0]) ==="
+          Write-Host "=== Verifying: $templateName ==="
           dotnet build "$testDir\TestProject.csproj" 2>&1
-        } -ArgumentList "${{ matrix.template }}"
 
       - name: Verify build success
         run: |
