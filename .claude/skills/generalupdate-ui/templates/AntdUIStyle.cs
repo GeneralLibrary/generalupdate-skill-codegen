@@ -1,6 +1,6 @@
 using AntdUI;
 using GeneralUpdate.Core;
-using GeneralUpdate.Core.Configuration;
+using GeneralUpdate.Common.Shared.Object;
 
 namespace Upgrade;
 
@@ -22,7 +22,6 @@ public partial class UpdateForm : AntdUI.Window
 {
     private readonly string _updateUrl;
     private readonly string _secretKey;
-    private readonly AppType _appType;
     private CancellationTokenSource? _cts;
 
     // UI 控件
@@ -32,11 +31,10 @@ public partial class UpdateForm : AntdUI.Window
     private Label lbl_version;
     private Label lbl_note;
 
-    public UpdateForm(string updateUrl, string secretKey, AppType appType = AppType.Client)
+    public UpdateForm(string updateUrl, string secretKey)
     {
         _updateUrl = updateUrl;
         _secretKey = secretKey;
-        _appType = appType;
 
         InitializeComponent();
         SetTheme();
@@ -88,9 +86,20 @@ public partial class UpdateForm : AntdUI.Window
     {
         try
         {
-            var bootstrap = new GeneralUpdateBootstrap()
-                .SetSource(_updateUrl, _secretKey)
-                .SetOption(Option.AppType, _appType)
+            var config = new Configinfo
+            {
+                UpdateUrl = _updateUrl,
+                AppSecretKey = _secretKey,
+                AppName = "MyApp.exe",
+                MainAppName = "MyApp.exe",
+                ClientVersion = "1.0.0.0",
+                ProductId = "my-product-001",
+                InstallPath = ".",
+            };
+
+            // v10.4.6 稳定版 API
+            await new GeneralUpdateBootstrap()
+                .SetConfig(config)
                 .AddListenerMultiDownloadStatistics((_, e) =>
                 {
                     // 更新 UI 进度（在 UI 线程上）
@@ -107,25 +116,13 @@ public partial class UpdateForm : AntdUI.Window
                 })
                 .AddListenerMultiAllDownloadCompleted((_, e) =>
                 {
-                    Invoke(() =>
-                    {
-                        OnUpdateSuccess();
-                    });
+                    Invoke(() => OnUpdateSuccess());
                 })
                 .AddListenerException((_, e) =>
                 {
-                    Invoke(() =>
-                    {
-                        OnUpdateError(e.Message);
-                    });
-                });
-
-            var result = await bootstrap.LaunchAsync();
-
-            if (!result)
-            {
-                Invoke(() => Close());
-            }
+                    Invoke(() => OnUpdateError(e.Message));
+                })
+                .LaunchAsync();
         }
         catch (Exception ex)
         {

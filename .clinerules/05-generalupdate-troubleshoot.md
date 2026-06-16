@@ -47,7 +47,7 @@ tags: ["dotnet", "generalupdate"]
 
 | 问题 | 原因 | 排查/解决 |
 |------|------|-----------|
-| **分发包过大** | 未使用差分 | 安装 `GeneralUpdate.Differential` |
+| **分发包过大** | 未使用差分 | 差分已内嵌在 Core，启用 `PatchEnabled` 即可 |
 | **首次更新慢** | CDN 冷启动 | 预热 CDN |
 
 ## 日志文件位置

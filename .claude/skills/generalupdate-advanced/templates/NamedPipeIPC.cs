@@ -68,8 +68,11 @@ public class NamedPipeIpcProvider : IAsyncDisposable
             if (read == 0) throw new EndOfStreamException("管道连接已关闭");
             lengthRead += read;
         }
-        var length = BitConverter.ToInt32(lengthBuffer);
+        // 先处理大端序，再解析长度
         if (!BitConverter.IsLittleEndian) Array.Reverse(lengthBuffer);
+        var length = BitConverter.ToInt32(lengthBuffer);
+        if (length <= 0 || length > 10 * 1024 * 1024) // 限制最大 10MB
+            throw new InvalidDataException($"无效的消息长度: {length}");
         var buffer = new byte[length];
         var offset = 0;
         while (offset < length)

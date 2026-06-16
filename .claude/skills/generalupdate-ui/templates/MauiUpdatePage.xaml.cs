@@ -7,7 +7,7 @@ namespace MauiUpdate.ViewModels;
 
 /// <summary>
 /// 【Skill 自动生成】MAUI 更新页面 ViewModel
-/// 使用 GeneralUpdate.Maui.Android 或 GeneralUpdate.Core
+/// 针对 NuGet v10.4.6 稳定版 API
 /// </summary>
 public partial class UpdateViewModel : ObservableObject
 {
@@ -40,9 +40,20 @@ public partial class UpdateViewModel : ObservableObject
         {
             StatusText = "正在连接服务器...";
 
-            var bootstrap = new GeneralUpdateBootstrap()
-                .SetSource(_updateUrl, _secretKey)
-                .SetOption(Option.AppType, AppType.OssClient)
+            var config = new Configinfo
+            {
+                UpdateUrl = _updateUrl,
+                AppSecretKey = _secretKey,
+                AppName = "MyApp.exe",
+                MainAppName = "MyApp.exe",
+                ClientVersion = "1.0.0.0",
+                ProductId = "my-product-001",
+                InstallPath = ".",
+            };
+
+            // v10.4.6 稳定版 API：Configinfo + SetConfig + LaunchAsync
+            await new GeneralUpdateBootstrap()
+                .SetConfig(config)
                 .AddListenerUpdateInfo((_, e) =>
                 {
                     MainThread.BeginInvokeOnMainThread(() =>
@@ -79,9 +90,8 @@ public partial class UpdateViewModel : ObservableObject
                     {
                         StatusText = $"错误: {e.Message}";
                     });
-                });
-
-            await bootstrap.LaunchAsync();
+                })
+                .LaunchAsync();
         }
         catch (Exception ex)
         {

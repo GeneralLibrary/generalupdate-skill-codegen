@@ -14,10 +14,9 @@ using GeneralUpdate.Common.Download;
 ///
 /// NuGet:
 ///   dotnet add package GeneralUpdate.Core
-///   dotnet add package GeneralUpdate.Differential
 ///
-/// ⚠️ 注意：GeneralUpdate.Core v10.4.6 稳定版内置差分支持，
-/// 无需手动配置 DiffPipelineBuilder。安装 Differential 包即可。
+/// ⚠️ 注意：GeneralUpdate.Core v10.4.6 稳定版已内置差分支持，
+/// 无需额外安装 GeneralUpdate.Differential 包。
 ///
 /// ⚠️ 已知问题：
 /// 1. 同名文件在不同目录可能封包出错
