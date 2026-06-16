@@ -4,9 +4,9 @@
 
 Covers 50+ known issues discovered from real GitHub/Gitee feedback, providing production-ready code generation and deep troubleshooting.
 
-> **Current Version: 0.0.1-bate.1** — targets NuGet `GeneralUpdate.Core ≥ 10.4.6` stable release
-> Compatibility: `v10.4.6` (NuGet latest stable)
-> All 32 template files verified via `dotnet build` (0 errors).
+> **Current Version: 0.0.2-bate.1** — targets NuGet `GeneralUpdate.Core 10.5.0-beta.4`
+> Compatibility: `v10.5.0-beta.4` (NuGet latest preview)
+> All templates verified via `dotnet build` (0 errors).
 
 ---
 
@@ -121,14 +121,7 @@ All skill content is derived from real-world sources:
 > - With Bowl: reference **only** `GeneralUpdate.Bowl` (it transitively includes Core — the two cannot coexist)
 > - Differential types are already embedded in Core, **no need** for `GeneralUpdate.Differential`
 
-> ⚠️ **API Surface**: The NuGet stable release (v10.4.6) has a simpler API than the development branch (v10.5.0-beta.2). The following are **not available** in the current stable release:
-> - No programmable `Option` config system (only `Configinfo` properties)
-> - No `IUpdateHooks` lifecycle hooks
-> - No `IStrategy` replaceable strategy interface
-> - No `SilentPollOrchestrator`
-> - No `ProcessContract`/IPC replacement interface
->
-> These features may ship in a future version. All templates target the **stable v10.4.6** API.
+> ⚠️ **API Surface**: v10.5.0-beta.4 introduces the new `UpdateRequest` config system and adds programmable `Option`, `IUpdateHooks`, `IStrategy`, and other extension points. See the full API compatibility table below.
 
 See [BUGS.md](BUGS.md) for the full audit trail.
 
@@ -136,28 +129,19 @@ See [BUGS.md](BUGS.md) for the full audit trail.
 
 ## Version History
 
+### 0.0.2-bate.1 — 2026-06-16
+
+Updated for GeneralUpdate v10.5.0-beta.4 API:
+- Updated all templates to use `UpdateRequest` instead of `Configinfo`
+- Fixed namespaces: `GeneralUpdate.Core.Configuration`, `GeneralUpdate.Core.Download`, `GeneralUpdate.Core.Event`
+- Fixed `IsComplated` → `IsCompleted`
+- Added `SetSource()`, `SetOption()`, `Hooks<T>()`, `Strategy<T>()` API coverage
+- Updated CustomHooks.cs and CustomStrategy.cs with active v10.5 implementations
+- Updated NuGet versions to 10.5.0-beta.4
+
 ### 0.0.1-bate.1 — 2026-06-16
 
-**The NuGet stable release (v10.4.6) API is fundamentally different from the development branch (v10.5.0-beta.2).**
-All templates have been rewritten for the **stable API** and verified to compile.
-
-**Key API Differences**:
-- ❌ No `SetSource()`, `SetOption()`, `Hooks<T>()`, `Strategy<T>()`, `SilentOrchestrator`
-- ❌ No `IUpdateHooks`, `IStrategy` extension point interfaces
-- ✅ `Configinfo` + `SetConfig()` + `LaunchAsync()` is the core API
-- ✅ `AppType` is a class (not enum), `ClientApp = 1`, `UpgradeApp = 2`
-- ✅ `LaunchAsync()` returns `Task<GeneralUpdateBootstrap>` (not `Task<bool>`)
-- ⚠️ NuGet reference rule: when using Bowl, reference **only** `GeneralUpdate.Bowl`, do not reference Core separately
-
-**Changelog**:
-- **Rewritten**: All 12 template/example files to use the `Configinfo` API
-- **Rewritten**: All 5 strategy examples (adapted for v10.4.6 stable)
-- **Rewritten**: UI bridge templates (`RealDownloadService.cs`)
-- **Fixed**: Code uses `using GeneralUpdate.Common.Shared.Object` namespace
-- **Removed**: Nonexistent `SetOption`, extension points, `IUpdateHooks`, `IProcessInfoProvider` references
-- **Added**: English README (`README.en.md`)
-- **Added**: Simplified Chinese README (`README.zh-Hans.md`)
-- **Added**: `BUGS.md` (audit report with fixes)
+Initial beta release. All templates written for NuGet v10.4.6 stable API.
 
 See [BUGS.md](BUGS.md) for details.
 

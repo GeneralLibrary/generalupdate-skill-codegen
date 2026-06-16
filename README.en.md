@@ -4,7 +4,7 @@
 
 Covers 50+ known issues discovered from real GitHub/Gitee feedback, providing production-ready code generation and deep troubleshooting.
 
-> Version: 0.0.1-bate.1 (2026-06-16)
+> Version: 0.0.2-bate.1 (2026-06-16) — targets NuGet `GeneralUpdate.Core 10.5.0-beta.4`
 
 ---
 
@@ -119,14 +119,7 @@ All skill content is derived from real-world sources:
 > - With Bowl: reference **only** `GeneralUpdate.Bowl` (it transitively includes Core — the two cannot coexist)
 > - Differential types are already embedded in Core, **no need** for `GeneralUpdate.Differential`
 
-> ⚠️ **API Surface**: The NuGet stable release (v10.4.6) has a simpler API than the development branch (v10.5.0-beta.2). The following are **not available** in the current stable release:
-> - No programmable `Option` config system (only `Configinfo` properties)
-> - No `IUpdateHooks` lifecycle hooks
-> - No `IStrategy` replaceable strategy interface
-> - No `SilentPollOrchestrator`
-> - No `ProcessContract`/IPC replacement interface
->
-> These features may ship in a future version. All templates target the **stable v10.4.6** API.
+> ⚠️ **API Surface**: v10.5.0-beta.4 introduces the new `UpdateRequest` config system and adds programmable `Option`, `IUpdateHooks`, `IStrategy`, and other extension points.
 
 See [BUGS.md](BUGS.md) for the full audit trail.
 

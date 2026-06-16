@@ -68,8 +68,8 @@
 
 **修复**：
 ```csharp
-// 使用 Configinfo 的 SkipDirectorys 属性
-var config = new Configinfo
+// 使用 UpdateRequest 的 Directories 属性
+var config = new UpdateRequest
 {
     // ...
     SkipDirectorys = new List<string> { ".backups", "backup-" }
@@ -146,7 +146,7 @@ var config = new Configinfo
 // ① 应用关闭时显式触发（替代 ProcessExit 依赖）
 public void OnAppClosing()
 {
-    // v10.4.6 稳定版无 SilentOrchestrator
+    // v10.5+ 支持 SilentOrchestrator
     // 应用正常退出即可，GeneralUpdate 内部处理
 }
 
@@ -258,8 +258,8 @@ public void OnAppClosing()
 
 **修复**：更新到 v10.4.6+（已实现 WriteBack）。旧版本手动处理：
 ```csharp
-/// v10.4.6 稳定版无 IUpdateHooks 接口。
-/// 如需在更新后回写版本号，可在服务端处理。
+/// v10.5.0-beta.4 支持 IUpdateHooks 接口，可通过 Hooks<T>() 注册 UnixPermissionHooks 或自定义实现。
+/// 如需在更新后回写版本号，可使用 ManifestInfo.TryUpdateVersion()。
 ```
 
 ---
@@ -323,12 +323,8 @@ new DiffPipelineBuilder()
 
 **修复**：
 ```csharp
-// 增加重试次数
-var config = new Configinfo
-{
-    // ...
-};
-// 更新到 v10.4.6+ 内置重试逻辑
+// 增加重试次数（v10.5+ 通过 Option 配置）
+bootstrap.SetOption(Option.RetryCount, 5);
 ```
 
 ### M7. Linux 下 Environment.GetEnvironmentVariable("ProcessInfo") 为空
@@ -350,7 +346,7 @@ var config = new Configinfo
 bootstrap.Hooks<UnixPermissionHooks>();
 ```
 
-> ⚠️ v10.4.6 稳定版无 IUpdateHooks 接口。Linux 权限问题需手动处理 chmod +x。
+> ✅ v10.5.0-beta.4 支持 IUpdateHooks 接口。Linux 权限问题使用 `bootstrap.Hooks<UnixPermissionHooks>()` 自动解决。
 
 ### M9. IPC 加密文件被防病毒软件隔离
 
@@ -530,7 +526,7 @@ bootstrap.Hooks<UnixPermissionHooks>();
 
 | 来源 | #IJQ0Q5 |
 |------|---------|
-| **建议** | v10.4.6 无 SilentAutoRestart 选项 |
+| **建议** | v10.5.0-beta.4 支持 Option.Silent 选项 |
 
 ### L12. OSS 模式下传的 ZIP 包编码无法解压
 

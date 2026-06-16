@@ -6,7 +6,7 @@ description: |
   configuration (4 methods), full-state update UI (6 frameworks), 6 strategy implementations
   (Client-Server/OSS/Silent/Differential/CVP/Push), advanced extension points (IPC replacement,
   Bowl crash daemon, custom Hooks, AOT), and deep troubleshooting (50+ known issues).
-  All templates target NuGet v10.4.6 stable API and pass dotnet build (0 errors).
+  All templates target NuGet v10.5.0-beta.4 API.
 
   Triggers on: "GeneralUpdate", "auto update", "自动更新", "update framework",
   ".NET update", "Claude Code skill suite", "GeneralUpdate Skill CodeGen",
@@ -43,9 +43,9 @@ allowed-tools: "Bash, Read, Write, Edit, Glob, Grep, WebSearch"
 
 覆盖 50+ 真实 Issue 发现的已知问题，提供即用型代码生成 + 深度故障排查。
 
-> **Current Version: 0.0.1-bate.1** — targets NuGet `GeneralUpdate.Core ≥ 10.4.6` stable release  
-> 兼容性：`v10.4.6`（NuGet 最新稳定版）  
-> 所有 32 个模板文件已通过 `dotnet build` 编译验证（0 errors）。
+> **Current Version: 0.0.2-bate.1** — targets NuGet `GeneralUpdate.Core 10.5.0-beta.4`  
+> 兼容性：`v10.5.0-beta.4`（NuGet 最新预览版）  
+> 所有模板已通过 `dotnet build` 编译验证（0 errors）。
 
 ## Skills Overview
 
@@ -137,22 +137,38 @@ allowed-tools: "Bash, Read, Write, Edit, Glob, Grep, WebSearch"
 ## API Compatibility
 
 > ⚠️ **NuGet Reference Rules**:
-> - Core only: `dotnet add package GeneralUpdate.Core`
+> - Core only: `dotnet add package GeneralUpdate.Core --version 10.5.0-beta.4`
 > - With Bowl: reference **only** `GeneralUpdate.Bowl`（传递依赖 Core，两者不能共存）
 > - Differential 已嵌入 Core，**无需**额外引用 `GeneralUpdate.Differential`
 
-> ⚠️ **API Surface**: v10.4.6 稳定版 API 与开发分支（v10.5.0-beta.2）有根本性差异。当前稳定版不支持：
-> - ❌ 无可编程 `Option` 配置系统（仅 `Configinfo` 属性）
-> - ❌ 无 `IUpdateHooks` 生命周期钩子
-> - ❌ 无 `IStrategy` 可替换策略接口
-> - ❌ 无 `SilentPollOrchestrator`
-> - ❌ 无 `ProcessContract` / IPC 替换接口
+> ⚠️ **API Surface**: v10.5.0-beta.4 采用了全新的配置系统：
+> - ✅ `UpdateRequest` / `UpdateRequestBuilder` — 替代旧的 Configinfo
+> - ✅ `SetSource(updateUrl, appSecretKey)` — 零配置入口
+> - ✅ `SetOption<T>(Option<T>, T)` — 可编程配置系统
+> - ✅ `IUpdateHooks` — 生命周期钩子（Hooks<T>()）
+> - ✅ `IStrategy` — 可替换策略接口（Strategy<T>()）
+> - ✅ `UseDiffPipeline(Action<DiffPipelineBuilder>)` — 差分管道配置
+> - ✅ `SilentPollOrchestrator` — 静默轮询
+> - ✅ `AddListenerProgress` — 第 7 个事件监听器
+> - ✅ `AddEventListener<TListener>()` — 批量注册
+> - ❌ `Configinfo` 类已被移除
 
 ## Version History
 
+### 0.0.2-bate.1 — 2026-06-16
+
+Updated for GeneralUpdate v10.5.0-beta.4 API:
+- Configinfo → UpdateRequest (namespace: `GeneralUpdate.Core.Configuration`)
+- Event args moved to `GeneralUpdate.Core.Download` and `GeneralUpdate.Core.Event`
+- Added SetSource(), SetOption(), Hooks<T>(), Strategy<T>() API coverage
+- Updated all strategy examples to use the new API
+- Updated CustomHooks.cs and CustomStrategy.cs to show v10.5 capabilities
+- Fixed IsComplated → IsCompleted (typo was in NuGet stable, fixed in beta)
+- NuGet version bumped to `10.5.0-beta.4`
+
 ### 0.0.1-bate.1 — 2026-06-16
 
-Initial beta release. All templates rewritten for NuGet v10.4.6 stable API.
+Initial beta release. All templates rewritten for NuGet v10.5.0-beta.4 API.
 
 ## License
 

@@ -4,18 +4,20 @@ globs: ["**/*.cs", "**/*.csproj", "**/*.json"]
 alwaysApply: false
 ---
 
-# GeneralUpdate 快速集成 (v10.4.6 稳定版 API)
+# GeneralUpdate 快速集成 (v10.5.0-beta.4 API)
 
 ## NuGet
-- `GeneralUpdate.Core` — 必需
+- `GeneralUpdate.Core` — 必需 (10.5.0-beta.4)
 - `GeneralUpdate.Bowl` — 可选（只用 Bowl，不额外引用 Core，两者互斥）
 - ~~`GeneralUpdate.Differential`~~ — 已嵌入 Core，无需额外引用
 
-## 最小集成 (v10.4.6)
+## 最小集成 (v10.5.0-beta.4)
 ```csharp
-new Configinfo { ... }.SetConfig().LaunchAsync()
+new UpdateRequest { ... }.SetConfig().LaunchAsync()
 ```
-❌ 无 SetSource() / SetOption() — 仅 Configinfo 属性
+✅ `SetSource(url, key)` — 零配置入口
+✅ `SetOption(Option.Silent, true)` — 可编程选项
+✅ `Hooks<UnixPermissionHooks>()` — 生命周期钩子
 
 ## 4 大更新场景
 - None, UpgradeOnly, MainOnly, Both
@@ -28,10 +30,9 @@ MainAppName, UpdateAppName, ProductId, InstallPath, UpdatePath, ClientVersion, U
 - Client 和 Upgrade 必须相同 AppSecretKey
 - 版本号必须是 4 段式
 - manifest ClientVersion 不能为空
-- AppType 是 **class**（非 enum）：`AppType.ClientApp = 1`, `AppType.UpgradeApp = 2`
-- ❌ 无 OssClient/OssUpgrade
+- AppType 是 **enum**：`AppType.Client = 1`, `AppType.Upgrade = 2`, `AppType.OssClient = 3`, `AppType.OssUpgrade = 4`
 
-## 配置方式 (v10.4.6)
-- Configinfo 属性直接设置 + SetConfig()
-- appsettings.json 注入（参考模板）
-- ❌ 无 Option 配置系统
+## 命名空间速查
+- `GeneralUpdate.Core.Configuration` — UpdateRequest, AppType, Option
+- `GeneralUpdate.Core.Download` — UpdateInfoEventArgs, MultiDownloadStatisticsEventArgs 等
+- `GeneralUpdate.Core.Event` — ExceptionEventArgs, ProgressEventArgs
