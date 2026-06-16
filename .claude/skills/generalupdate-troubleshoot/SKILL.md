@@ -128,7 +128,7 @@ reference.md 中的问题按严重度分级：
 - [ ] `AppType` 设置正确（Client = 1, Upgrade = 2）
 
 ### 配置检查
-- [ ] `Configinfo` 的 6 个必填字段都已设置
+- [ ] `UpdateRequest` 的 6 个必填字段都已设置
 - [ ] `UpdateUrl` 可通过 HTTP GET 访问并返回合法 JSON
 - [ ] `AppSecretKey` 与服务端配置一致（长度 ≥ 16 字符）
 - [ ] UpgradeApp.exe 存在于发布目录的 `update/` 子目录中
