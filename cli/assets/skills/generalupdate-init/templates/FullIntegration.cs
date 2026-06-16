@@ -1,18 +1,19 @@
 using GeneralUpdate.Core;
-using GeneralUpdate.Common.Shared.Object;
-using GeneralUpdate.Common.Download;
+using GeneralUpdate.Core.Configuration;
+using GeneralUpdate.Core.Download;
+using GeneralUpdate.Core.Event;
 
 /// <summary>
 /// GeneralUpdate 完整集成示例 — 包含所有配置选项和事件监听
 ///
 /// 覆盖：
-/// - Configinfo 完整配置
-/// - 全部 6 个事件监听器
+/// - UpdateRequest 完整配置
+/// - 全部 7 个事件监听器
 /// - 升级场景理解
 /// - 错误处理
 /// - Upgrade 进程配置
 ///
-/// 针对 NuGet v10.4.6 稳定版
+/// 针对 NuGet v10.5.0-beta.4
 /// </summary>
 public static class FullIntegration
 {
@@ -21,14 +22,13 @@ public static class FullIntegration
         try
         {
             // ========== 1. 构建配置 ==========
-            var config = new Configinfo
+            var config = new UpdateRequest
             {
                 // --- 必填 ---
                 UpdateUrl = "{{UPDATE_URL}}",
                 AppSecretKey = "{{APP_SECRET_KEY}}",
 
                 // --- 应用信息 ---
-                AppName = "{{PROJECT_NAME}}.exe",
                 MainAppName = "{{PROJECT_NAME}}.exe",
                 ClientVersion = "{{CLIENT_VERSION}}",         // ⚠️ 4 段式
                 ProductId = "{{PRODUCT_ID}}",
@@ -55,6 +55,8 @@ public static class FullIntegration
                 .AddListenerMultiDownloadError(OnDownloadError)
                 // 事件：异常
                 .AddListenerException(OnException)
+                // 事件：进度（新增于 v10.5）
+                .AddListenerProgress(OnProgress)
 
                 // ========== 3. 执行 ==========
                 .LaunchAsync();
@@ -88,7 +90,7 @@ public static class FullIntegration
 
     private static void OnDownloadCompleted(object? sender, MultiDownloadCompletedEventArgs e)
     {
-        Console.WriteLine($"\n[下载完成] 版本: {e.Version} (IsComplated={e.IsComplated})");
+        Console.WriteLine($"\n[下载完成] 版本: {e.Version} (IsCompleted={e.IsCompleted})");
     }
 
     private static void OnAllDownloadCompleted(object? sender, MultiAllDownloadCompletedEventArgs e)
@@ -104,6 +106,11 @@ public static class FullIntegration
     private static void OnException(object? sender, ExceptionEventArgs e)
     {
         Console.WriteLine($"[异常] {e.Message}");
+    }
+
+    private static void OnProgress(object? sender, ProgressEventArgs e)
+    {
+        Console.WriteLine($"[进度] {(e.Progress != null ? $"下载: {e.Progress.Percentage:F0}%" : e.DiffProgress != null ? $"差分: {e.DiffProgress.Percentage:F0}%" : "")}");
     }
 }
 

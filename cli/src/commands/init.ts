@@ -5,7 +5,7 @@ import ora from 'ora';
 import prompts from 'prompts';
 import type { AIType } from '../types/index.js';
 import { AI_TYPES } from '../types/index.js';
-import { generatePlatformFiles } from '../utils/template.js';
+import { generatePlatformFiles, generateAllPlatformFiles } from '../utils/template.js';
 import { detectAIType, getAITypeDescription } from '../utils/detect.js';
 
 interface InitOptions {
@@ -56,7 +56,9 @@ export async function initCommand(options: InitOptions): Promise<void> {
 
   try {
     const effectiveDir = isGlobal ? homedir() : cwd;
-    const copiedFolders = await generatePlatformFiles(effectiveDir, aiType, isGlobal);
+    const copiedFolders = aiType === 'all'
+      ? await generateAllPlatformFiles(effectiveDir, isGlobal)
+      : await generatePlatformFiles(effectiveDir, aiType, isGlobal);
 
     spinner.succeed('Skill files installed!');
 

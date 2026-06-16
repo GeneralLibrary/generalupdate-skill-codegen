@@ -1,6 +1,6 @@
 using GeneralUpdate.Core;
-using GeneralUpdate.Common.Shared.Object;
-using GeneralUpdate.Common.Download;
+using GeneralUpdate.Core.Configuration;
+using GeneralUpdate.Core.Download;
 
 /// <summary>
 /// OSS 对象存储更新策略
@@ -14,21 +14,16 @@ using GeneralUpdate.Common.Download;
 ///   └── v1.1.0.0/
 ///       └── update.zip
 ///
-/// ⚠️ 已知问题：
-/// 1. OSS 模式不区分 MainApp 和 UpgradeApp 更新
-/// 2. UpgradeApp.exe 必须放在 update/ 子目录中
-///
 /// NuGet: dotnet add package GeneralUpdate.Core
 /// </summary>
 public static class OssStrategy
 {
     public static async Task RunAsync()
     {
-        var config = new Configinfo
+        var config = new UpdateRequest
         {
             UpdateUrl = "https://your-storage.com/versions.json",
             AppSecretKey = "your-secret-key",
-            AppName = "MyApp.exe",
             MainAppName = "MyApp.exe",
             ClientVersion = "1.0.0.0",
             ProductId = "my-product-001",

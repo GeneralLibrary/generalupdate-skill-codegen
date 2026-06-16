@@ -1,6 +1,6 @@
 using GeneralUpdate.Core;
-using GeneralUpdate.Common.Shared.Object;
-using GeneralUpdate.Common.Download;
+using GeneralUpdate.Core.Configuration;
+using GeneralUpdate.Core.Download;
 using Microsoft.AspNetCore.SignalR.Client;
 
 /// <summary>
@@ -12,10 +12,6 @@ using Microsoft.AspNetCore.SignalR.Client;
 /// NuGet:
 ///   dotnet add package GeneralUpdate.Core
 ///   dotnet add package Microsoft.AspNetCore.SignalR.Client
-///
-/// ⚠️ 已知问题：
-/// HubConnection Dispose 后不置 null，重连时抛 ObjectDisposedException。
-/// 解决方案：在 Dispose 后将 _connection 置 null。
 /// </summary>
 public static class PushStrategy
 {
@@ -25,11 +21,10 @@ public static class PushStrategy
         var secretKey = "your-secret-key";
         var hubUrl = "https://your-server.com/hub/upgrade";
 
-        var config = new Configinfo
+        var config = new UpdateRequest
         {
             UpdateUrl = updateUrl,
             AppSecretKey = secretKey,
-            AppName = "MyApp.exe",
             MainAppName = "MyApp.exe",
             ClientVersion = "1.0.0.0",
             ProductId = "my-product-001",
@@ -68,7 +63,7 @@ public static class PushStrategy
         await Task.Delay(Timeout.Infinite);
     }
 
-    private static async Task StartUpdateAsync(Configinfo config)
+    private static async Task StartUpdateAsync(UpdateRequest config)
     {
         try
         {

@@ -1,4 +1,4 @@
-import { mkdir, writeFile, cp, access, readdir, stat } from 'node:fs/promises';
+import { readFile, mkdir, writeFile, cp, access } from 'node:fs/promises';
 import { join, dirname, basename } from 'node:path';
 import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -26,24 +26,23 @@ const AI_TO_PLATFORM: Record<string, string> = {
 };
 
 const AI_ROOT_DIRS: Record<string, string> = {
-  claude: '.claude',
-  cursor: '.cursor',
-  windsurf: '.windsurf',
-  antigravity: '.agents',
-  copilot: '.github',
-  kiro: '.kiro',
-  codex: '.codex',
-  roocode: '.roo',
-  qoder: '.qoder',
-  gemini: '.gemini',
-  trae: '.trae',
-  opencode: '.opencode',
-  continue: '.continue',
-  codebuddy: '.codebuddy',
-  droid: '.factory',
-  kilocode: '.kilocode',
-  warp: '.warp',
-  augment: '.augment',
+  claude: '.claude', cursor: '.cursor', windsurf: '.windsurf',
+  antigravity: '.agents', copilot: '.github',
+  kiro: '.kiro', codex: '.codex', roocode: '.roo',
+  qoder: '.qoder', gemini: '.gemini', trae: '.trae',
+  opencode: '.opencode', continue: '.continue', codebuddy: '.codebuddy',
+  droid: '.factory', kilocode: '.kilocode', warp: '.warp', augment: '.augment',
+};
+
+// Platform-specific skill subdirectory (some platforms use different paths)
+// e.g. Copilot -> .github/prompts/, Kiro -> .kiro/steering/, most -> .<root>/skills/
+const AI_SKILL_SUBDIRS: Record<string, string> = {
+  claude: 'skills', cursor: 'skills', windsurf: 'skills',
+  antigravity: 'skills', copilot: 'prompts',
+  kiro: 'steering', codex: 'skills', roocode: 'skills',
+  qoder: 'skills', gemini: 'skills', trae: 'skills',
+  opencode: 'skills', continue: 'skills', codebuddy: 'skills',
+  droid: 'skills', kilocode: 'skills', warp: 'skills', augment: 'skills',
 };
 
 async function exists(path: string): Promise<boolean> {
@@ -52,8 +51,7 @@ async function exists(path: string): Promise<boolean> {
 
 /**
  * Install ALL GeneralUpdate skills for a given AI platform.
- * Copies the complete .claude/skills/ directory tree from assets
- * into the target platform's skills directory.
+ * Uses platform-specific subdirectories (e.g. .github/prompts/ for Copilot).
  */
 export async function generatePlatformFiles(
   targetDir: string,
@@ -64,10 +62,12 @@ export async function generatePlatformFiles(
   const rootDir = AI_ROOT_DIRS[aiType];
   if (!rootDir) throw new Error(`Unknown AI type: ${aiType}`);
 
-  const targetSkillsDir = join(effectiveDir, rootDir, 'skills');
+  const skillSubdir = AI_SKILL_SUBDIRS[aiType] || 'skills';
+  const targetBaseDir = join(effectiveDir, rootDir, skillSubdir);
+  const targetSkillsDir = join(targetBaseDir, 'generalupdate-skill');
   const sourceSkillsDir = join(ASSETS_DIR, 'skills');
 
-  // Ensure target directory exists
+  // Ensure target skill directory exists
   await mkdir(targetSkillsDir, { recursive: true });
   const createdFolders: string[] = [];
   let copiedAny = false;
@@ -77,12 +77,12 @@ export async function generatePlatformFiles(
     const dst = join(targetSkillsDir, skillName);
 
     if (!(await exists(src))) {
-      continue; // Skip skills not yet synced
+      continue;
     }
 
     try {
       await cp(src, dst, { recursive: true, force: true });
-      createdFolders.push(`${rootDir}/skills/${skillName}`);
+      createdFolders.push(`${rootDir}/${skillSubdir}/generalupdate-skill/${skillName}`);
       copiedAny = true;
     } catch {
       // Fallback to shell copy
@@ -90,12 +90,14 @@ export async function generatePlatformFiles(
       const { promisify } = await import('node:util');
       const execAsync = promisify(exec);
       try {
+        const srcEscaped = src.replace(/'/g, "'\\''");
+        const dstEscaped = dst.replace(/'/g, "'\\''");
         if (process.platform === 'win32') {
-          await execAsync(`xcopy "${src}" "${dst}" /E /I /Y`);
+          await execAsync(`xcopy "${src.replace(/"/g, '\\"')}" "${dst.replace(/"/g, '\\"')}" /E /I /Y`);
         } else {
-          await execAsync(`cp -r "${src}/." "${dst}"`);
+          await execAsync(`cp -r '${srcEscaped}/.' '${dstEscaped}'`);
         }
-        createdFolders.push(`${rootDir}/skills/${skillName}`);
+        createdFolders.push(`${rootDir}/${skillSubdir}/generalupdate-skill/${skillName}`);
         copiedAny = true;
       } catch {
         // Skip individual skill copy failures
@@ -106,7 +108,7 @@ export async function generatePlatformFiles(
   if (!copiedAny) {
     // Fall back to single platform config (legacy)
     const config = await loadPlatformConfig(aiType);
-    const skillDir = join(effectiveDir, rootDir, config.folderStructure.skillPath);
+    const skillDir = join(targetBaseDir, config.folderStructure.skillPath);
     await mkdir(skillDir, { recursive: true });
     const skillContentPath = join(ASSETS_DIR, 'templates', 'base', 'skill-content.md');
     if (await exists(skillContentPath)) {
@@ -114,7 +116,7 @@ export async function generatePlatformFiles(
       const frontmatter = renderFrontmatter(config.frontmatter);
       await writeFile(join(skillDir, config.folderStructure.filename), frontmatter + content, 'utf-8');
     }
-    createdFolders.push(rootDir);
+    createdFolders.push(`${rootDir}/${skillSubdir}`);
   }
 
   return createdFolders;

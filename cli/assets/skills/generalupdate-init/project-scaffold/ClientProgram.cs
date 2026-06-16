@@ -1,20 +1,27 @@
 using GeneralUpdate.Core;
-using GeneralUpdate.Common.Shared.Object;
-using GeneralUpdate.Common.Download;
+using GeneralUpdate.Core.Configuration;
+using GeneralUpdate.Core.Download;
 
-string updateUrl = args.Length > 0 ? args[0] : "{{UPDATE_URL}}";
-string secretKey = args.Length > 1 ? args[1] : "{{APP_SECRET_KEY}}";
+// =====================================================
+// 使用说明
+// 1. 将此文件放入 Client 项目
+// 2. install GeneralUpdate.Core NuGet 包
+// 3. 按需修改 UpdateUrl 和 AppSecretKey
+// 4. 确保 Upgrade 项目已存在并一同发布
+// =====================================================
+
+string updateUrl = args.Length > 0 ? args[0] : "https://your-server.com/Upgrade/Verification";
+string secretKey = args.Length > 1 ? args[1] : "your-32-char-secret-key-here!";
 
 Console.WriteLine($"[Client] 启动版本检查: {updateUrl}");
 
-var config = new Configinfo
+var config = new UpdateRequest
 {
     UpdateUrl = updateUrl,
     AppSecretKey = secretKey,
-    AppName = "{{PROJECT_NAME}}.exe",
-    MainAppName = "{{PROJECT_NAME}}.exe",
+    MainAppName = "MyApp.exe",
     ClientVersion = GetCurrentVersion(),
-    ProductId = "{{PRODUCT_ID}}",
+    ProductId = "my-product-001",
     InstallPath = "."
 };
 

@@ -1,5 +1,5 @@
 using GeneralUpdate.Core;
-using GeneralUpdate.Common.Shared.Object;
+using GeneralUpdate.Core.Configuration;
 
 /// <summary>
 /// GeneralUpdate 最小集成示例
@@ -16,18 +16,17 @@ using GeneralUpdate.Common.Shared.Object;
 /// 如果以上条件不满足，请使用 FullIntegration.cs 显式配置。
 ///
 /// NuGet: dotnet add package GeneralUpdate.Core
-/// ⚠️ 针对 NuGet v10.4.6 稳定版
+/// ⚠️ 针对 NuGet v10.5.0-beta.4
 /// </summary>
 public static class MinimalIntegration
 {
     public static async Task RunAsync()
     {
         // 1. 创建配置对象
-        var config = new Configinfo
+        var config = new UpdateRequest
         {
             UpdateUrl = "{{UPDATE_URL}}",
             AppSecretKey = "{{APP_SECRET_KEY}}",
-            AppName = "{{PROJECT_NAME}}.exe",
             MainAppName = "{{PROJECT_NAME}}.exe",
             ClientVersion = "{{CLIENT_VERSION}}",
             ProductId = "{{PRODUCT_ID}}",

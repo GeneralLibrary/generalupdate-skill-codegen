@@ -1,8 +1,8 @@
 {
   "name": "generalupdate-skill",
   "displayName": "GeneralUpdate Skill CodeGen",
-  "description": "AI-powered skill suite for integrating GeneralUpdate (.NET auto-update) into any .NET application. Generates dual-project scaffolding (Client+Upgrade), full-state update UI (6 frameworks), 6 update strategies (Client-Server/OSS/Silent/Differential/CVP/Push), advanced extension points (Bowl crash daemon, IPC replacement, AOT), and deep troubleshooting (50+ known issues). All templates target NuGet v10.4.6 stable API.",
-  "version": "0.0.1-bate.1",
+  "description": "AI-powered skill suite for integrating GeneralUpdate (.NET auto-update) into any .NET application. Generates dual-project scaffolding (Client+Upgrade), full-state update UI (6 frameworks), 6 update strategies (Client-Server/OSS/Silent/Differential/CVP/Push), advanced extension points (Bowl crash daemon, IPC replacement, AOT), and deep troubleshooting (50+ known issues). All templates target NuGet v10.5.0-beta.4.",
+  "version": "0.0.1-beta.1",
   "author": "JusterZhu",
   "license": "Apache-2.0",
   "homepage": "https://github.com/GeneralLibrary/GeneralUpdate",

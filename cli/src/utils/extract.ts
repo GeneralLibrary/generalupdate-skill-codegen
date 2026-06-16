@@ -1,12 +1,12 @@
 import { mkdir, rm, access, cp, mkdtemp, readdir } from 'node:fs/promises';
 import { join, basename } from 'node:path';
-import { exec } from 'node:child_process';
+import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { tmpdir } from 'node:os';
 import type { AIType } from '../types/index.js';
 import { AI_FOLDERS } from '../types/index.js';
 
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 const EXCLUDED_FILES = ['settings.local.json'];
 
 async function exists(path: string): Promise<boolean> {
@@ -22,11 +22,13 @@ export async function extractZip(zipPath: string, destDir: string): Promise<void
   try {
     const isWindows = process.platform === 'win32';
     if (isWindows) {
-      await execAsync(
-        `powershell -Command "Expand-Archive -Path '${zipPath}' -DestinationPath '${destDir}' -Force"`
-      );
+      // Use execFile to avoid shell injection
+      await execFileAsync('powershell', [
+        '-Command',
+        `Expand-Archive -Path '${zipPath.replace(/'/g, "''")}' -DestinationPath '${destDir.replace(/'/g, "''")}' -Force`,
+      ]);
     } else {
-      await execAsync(`unzip -o "${zipPath}" -d "${destDir}"`);
+      await execFileAsync('unzip', ['-o', zipPath, '-d', destDir]);
     }
   } catch (error) {
     throw new Error(`Failed to extract zip: ${error}`);
@@ -61,12 +63,12 @@ export async function copyFolders(
       await cp(sourcePath, targetPath, { recursive: true, filter: filterFn });
       copiedFolders.push(folder);
     } catch {
-      // Fallback to shell copy for older Node
+      // Fallback to shell copy for older Node — use execFile to avoid injection
       try {
         if (process.platform === 'win32') {
-          await execAsync(`xcopy "${sourcePath}" "${targetPath}" /E /I /Y`);
+          await execFileAsync('xcopy', [sourcePath, targetPath, '/E', '/I', '/Y']);
         } else {
-          await execAsync(`cp -r "${sourcePath}/." "${targetPath}"`);
+          await execFileAsync('cp', ['-r', `${sourcePath}/.`, targetPath]);
         }
         copiedFolders.push(folder);
       } catch {

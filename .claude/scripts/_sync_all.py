@@ -39,8 +39,13 @@ def sync_file(src: Path, dst: Path, apply: bool, dry_run: bool) -> str:
     if not src.exists():
         return f"⚠️  SOURCE MISSING: {src.relative_to(REPO_ROOT)}"
 
-    if dst.exists() and filecmp.cmp(src, dst) if src.is_file() else _dirs_equal(src, dst):
-        return f"✓  UP TO DATE: {src.relative_to(REPO_ROOT)}"
+    if dst.exists():
+        if src.is_file():
+            up_to_date = filecmp.cmp(src, dst, shallow=False)
+        else:
+            up_to_date = _dirs_equal(src, dst)
+        if up_to_date:
+            return f"✓  UP TO DATE: {src.relative_to(REPO_ROOT)}"
 
     if dry_run or not apply:
         return f"→  NEEDS SYNC: {src.relative_to(REPO_ROOT)}  →  {dst.relative_to(REPO_ROOT)}"
@@ -105,11 +110,11 @@ def main():
     for desc, status in statuses:
         print(f"  {status}")
 
-    if args.verify and not all_ok:
-        print("\n❌ Verify FAILED: some sources are missing")
-        sys.exit(1)
-
     if args.verify:
+        needs_sync = any(status.startswith("→") for _, status in statuses)
+        if not all_ok or needs_sync:
+            print("\n❌ Verify FAILED: sources are out of sync")
+            sys.exit(1)
         print("\n✅ Verify PASSED: all sources are in sync")
         sys.exit(0)
 

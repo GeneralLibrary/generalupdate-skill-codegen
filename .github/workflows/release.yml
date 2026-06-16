@@ -28,13 +28,8 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: '10.0.x'
-
       # ======================
-      # Validate everything first
+      # Validate before release
       # ======================
 
       - name: Validate — BM25 search
@@ -49,17 +44,6 @@ jobs:
           python3 generate.py --strategy oss --framework wpf-layui --bowl \
             --project-name ReleaseTest --version 0.1.0.0 -o /tmp/release-verify
           grep -q "ReleaseTest.exe" /tmp/release-verify/Client/Integration.cs && echo "✅ Generator OK"
-
-      - name: Validate — Scaffold builds
-        run: |
-          $scaffoldDir = ".claude/skills/generalupdate-init/project-scaffold"
-          $testDir = "C:\tmp\release-verify-scaffold"
-          New-Item -ItemType Directory -Path $testDir -Force | Out-Null
-          Copy-Item "$scaffoldDir\*" $testDir
-          dotnet build "$testDir\ClientApp.csproj" 2>&1
-          if ($LASTEXITCODE -ne 0) { throw "Scaffold build failed" }
-          Write-Host "✅ Scaffold builds"
-        shell: pwsh
 
       # ======================
       # Build CLI

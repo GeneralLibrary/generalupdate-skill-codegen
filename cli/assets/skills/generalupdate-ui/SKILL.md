@@ -25,7 +25,7 @@ allowed-tools: "Read, Write, Edit, Glob, Grep"
 
 自动检测开发者的 UI 框架类型，生成带真实 GeneralUpdate.Core 事件绑定的完整更新窗口代码。
 
-> ⚠️ 针对 NuGet v10.4.6 稳定版。`RealDownloadService.cs` 为抽象桥接模板，需手动适配。
+> ⚠️ 针对 NuGet v10.5.0-beta.4。`RealDownloadService.cs` 已使用 `UpdateRequest` 和正确的命名空间。
 
 ---
 
@@ -150,7 +150,7 @@ allowed-tools: "Read, Write, Edit, Glob, Grep"
 
 所有 UI 模板共享这个桥接类，将 GeneralUpdate.Core 的事件映射到 `IDownloadService` 接口。
 
-### 桥接逻辑（v10.4.6 稳定版）
+### 桥接逻辑（v10.5.0-beta.4）
 
 ```csharp
 // GeneralUpdate.Core 事件 → DownloadStatus 状态机映射：

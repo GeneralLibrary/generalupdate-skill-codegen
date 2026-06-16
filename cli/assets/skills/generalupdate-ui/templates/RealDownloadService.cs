@@ -1,7 +1,8 @@
 using System.Text;
 using System.Text.Json;
 using GeneralUpdate.Core;
-using GeneralUpdate.Common.Shared.Object;
+using GeneralUpdate.Core.Configuration;
+using GeneralUpdate.Core.Download;
 using Common.Avalonia.Models;
 
 namespace Common.Avalonia.Services;
@@ -13,16 +14,8 @@ namespace Common.Avalonia.Services;
 /// 覆盖全部 UI 状态：Idle → Checking → FoundUpdate → Downloading → Paused
 /// → DownloadError → Applying → Success / Failed → RollingBack
 ///
-/// ⚠️ 针对 NuGet v10.4.6 稳定版 API。
-/// LaunchAsync 返回 Task&lt;GeneralUpdateBootstrap&gt;（非 bool）。
-///
-/// 使用方式（DI 注册）：
-///   services.AddSingleton&lt;IDownloadService&gt;(sp => new RealDownloadService(
-///       "https://your-server.com/api", "your-secret-key"));
-///
-/// 或直接替换 MockDownloadService：
-///   // 之前：_downloadService = new MockDownloadService();
-///   // 之后：_downloadService = new RealDownloadService(url, key);
+/// ⚠️ 针对 NuGet v10.5.0-beta.4 API。
+/// Configinfo → UpdateRequest 替换，命名空间更新。
 /// </summary>
 public class RealDownloadService : IDownloadService
 {
@@ -125,12 +118,10 @@ public class RealDownloadService : IDownloadService
 
         try
         {
-            var config = new Configinfo
+            var config = new UpdateRequest
             {
                 UpdateUrl = _updateUrl,
                 AppSecretKey = _secretKey,
-                AppName = "check.exe",
-                MainAppName = "check.exe",
                 ClientVersion = GetCurrentVersion(),
                 ProductId = "check",
                 InstallPath = ".",
@@ -182,19 +173,16 @@ public class RealDownloadService : IDownloadService
 
         try
         {
-            var config = new Configinfo
+            var config = new UpdateRequest
             {
                 UpdateUrl = _updateUrl,
                 AppSecretKey = _secretKey,
-                AppName = "MyApp.exe",
                 MainAppName = "MyApp.exe",
                 ClientVersion = GetCurrentVersion(),
                 ProductId = "my-product-001",
                 InstallPath = ".",
             };
 
-            // v10.4.6 稳定版：LaunchAsync 返回 Task<GeneralUpdateBootstrap>
-            // 无需检查返回值，更新完成后由 Upgrade 进程接管
             await new GeneralUpdateBootstrap()
                 .SetConfig(config)
                 .AddListenerUpdateInfo((_, e) =>

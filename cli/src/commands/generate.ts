@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import { execSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -37,22 +37,25 @@ export async function generateCommand(options: GenerateOptions): Promise<void> {
     return;
   }
 
+  // Build argument array (no string concatenation — prevents injection)
   const args = [
-    `--framework "${options.framework}"`,
-    `--strategy "${options.strategy}"`,
-    options.bowl ? '--bowl' : '',
-    options.projectName ? `--project-name "${options.projectName}"` : '',
-    options.output ? `--output "${options.output}"` : '',
-    options.version ? `--version "${options.version}"` : '',
-    options.updateUrl ? `--update-url "${options.updateUrl}"` : '',
-  ].filter(Boolean).join(' ');
+    '--framework', options.framework,
+    '--strategy', options.strategy,
+  ];
+  if (options.bowl) args.push('--bowl');
+  if (options.projectName) args.push('--project-name', options.projectName);
+  if (options.output) args.push('--output', options.output);
+  if (options.version) args.push('--version', options.version);
+  if (options.updateUrl) args.push('--update-url', options.updateUrl);
 
-  const cmd = `python3 "${scriptPath}" ${args}`;
-  console.log(chalk.dim(`Running: ${cmd}\n`));
+  console.log(chalk.dim(`Running: python3 "${scriptPath}" ${args.join(' ')}\n`));
 
-  try {
-    execSync(cmd, { stdio: 'inherit' });
-  } catch (error) {
+  const result = spawnSync('python3', [scriptPath, ...args], {
+    stdio: 'inherit',
+    shell: false,
+  });
+
+  if (result.error || result.status !== 0) {
     console.error(chalk.red('Code generation failed. Is Python 3 installed?'));
     process.exit(1);
   }
