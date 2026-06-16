@@ -159,6 +159,13 @@ jobs:
           $code = $code -replace 'MyApp\.exe', 'TestApp.exe'
           $code = $code -replace '1\.0\.0\.0', '1.0.0.1'
           $code = $code -replace 'my-product-001', 'test-001'
+
+          # Prepend top-level entry point call so the file compiles as a console app
+          $nl = [Environment]::NewLine
+          $entryPoint = "// Entry point for build verification$nl" +
+                        'Console.WriteLine("Verifying ' + $templateName + ' compiles...");' + "$nl" +
+                        "await $templateName.RunAsync();$nl$nl"
+          $code = "$entryPoint$code"
           $code | Out-File -FilePath "$testDir\Program.cs" -Encoding UTF8
 
           Write-Host "=== Verifying: $templateName ==="

@@ -2,6 +2,7 @@ using GeneralUpdate.Core;
 using GeneralUpdate.Core.Configuration;
 using GeneralUpdate.Core.Download;
 using GeneralUpdate.Core.Event;
+using GeneralUpdate.Core.Models;
 
 /// <summary>
 /// GeneralUpdate 完整集成示例 — 包含所有配置选项和事件监听
