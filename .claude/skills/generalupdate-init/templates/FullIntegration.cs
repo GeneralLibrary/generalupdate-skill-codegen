@@ -111,7 +111,7 @@ public static class FullIntegration
 
     private static void OnProgress(object? sender, ProgressEventArgs e)
     {
-        Console.WriteLine($"[进度] {(e.Progress != null ? $"下载: {e.Progress.Percentage:F0}%" : e.DiffProgress != null ? $"差分: {e.DiffProgress.Percentage:F0}%" : "")}");
+        Console.WriteLine($"[进度] {(e.Progress != null ? $"下载: {e.Progress.Percentage:F0}%" : e.DiffProgress != null ? $"差分: {e.DiffProgress.Value.Completed}/{e.DiffProgress.Value.Total}" : "")}");
     }
 }
 
