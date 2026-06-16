@@ -160,12 +160,14 @@ jobs:
           $code = $code -replace '1\.0\.0\.0', '1.0.0.1'
           $code = $code -replace 'my-product-001', 'test-001'
 
-          # Prepend top-level entry point call so the file compiles as a console app
+          # Insert top-level entry point after using directives (C# requires
+          # top-level statements before type declarations, but after usings)
           $nl = [Environment]::NewLine
           $entryPoint = "// Entry point for build verification$nl" +
-                        'Console.WriteLine("Verifying ' + $templateName + ' compiles...");' + "$nl" +
-                        "await $templateName.RunAsync();$nl$nl"
-          $code = "$entryPoint$code"
+                        "Console.WriteLine(""Verifying $templateName compiles..."");$nl" +
+                        "await $templateName.RunAsync();$nl"
+          # Insert before the first /// documentation comment
+          $code = $code -replace '(?=/// <summary>)', "$entryPoint$nl"
           $code | Out-File -FilePath "$testDir\Program.cs" -Encoding UTF8
 
           Write-Host "=== Verifying: $templateName ==="
