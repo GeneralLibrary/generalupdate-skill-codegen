@@ -46,7 +46,7 @@ allowed-tools: "Bash, Read, Write, Edit, Glob, Grep, WebSearch"
 
 覆盖 50+ 真实 Issue 发现的已知问题，提供即用型代码生成 + 深度故障排查。
 
-> **Current Version: 0.0.2-beta.1** — targets NuGet `GeneralUpdate.Core 10.5.0-beta.4`  
+> **Current Version: 0.0.2-bate.1** — targets NuGet `GeneralUpdate.Core 10.5.0-beta.4`  
 > 兼容性：`v10.5.0-beta.4`（NuGet 最新预览版）  
 > 所有模板已通过 `dotnet build` 编译验证（0 errors）。
 

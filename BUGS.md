@@ -29,7 +29,6 @@
 ## 修复状态
 
 > ✅ **全部更新完成**。所有模板文件已更新为 v10.5.0-beta.4 API。
-> ✅ **已知问题全部确认解决**。Bowl API 已验证，NuGet 类型冲突已修复，版本号已统一，CLI 已编译。
 
 | 类别 | 更新内容 | 状态 |
 |------|---------|:----:|
@@ -45,25 +44,14 @@
 
 ## 已知剩余问题
 
-### 1. NuGet 类型冲突（v10.5.0-beta.4 ✅ 已解决）
+### 1. NuGet 类型冲突（未变）
 
-`GeneralUpdate.Common` 独立命名空间在 v10.4.6 中存在于 `GeneralUpdate.Core` 中，与 `GeneralUpdate.Bowl` 冲突。
-**v10.5.0-beta.4 已解决**：Bowl 项目不再引用 Core，各自使用独立的 `GeneralUpdate.Bowl` / `GeneralUpdate.Core` 命名空间。
+`GeneralUpdate.Common` 库的类型同时在 `GeneralUpdate.Core` 和 `GeneralUpdate.Bowl` 中发布。
+当项目同时引用 Bowl 和 Core 时，会出现 CS0433 编译错误。
 
-| 场景 | 引用方式 | 状态 |
-|------|---------|:----:|
-| 有 Bowl | 只引用 `GeneralUpdate.Bowl`（不单独引用 Core） | ✅ 已验证 |
-| 无 Bowl | 只引用 `GeneralUpdate.Core` | ✅ 正常 |
-| 两者都用 | 同时引用 Core + Bowl | ✅ 无冲突 |
+**解决方案**：使用 Bowl 时只引用 `GeneralUpdate.Bowl`（它依赖 Core），不单独引用 Core。
 
-### 2. Bowl LaunchAsync（v10.5.0-beta.4 ✅ 已验证）
+### 2. Bowl LaunchAsync 可用性待确认
 
-`Bowl` 类在 v10.5.0-beta.4 中有公开的 `LaunchAsync` 方法：
-
-```csharp
-public async Task<BowlResult> LaunchAsync(BowlContext context, CancellationToken ct = default)
-```
-
-- `BowlContext` 为 `readonly record struct`，支持 `Normalize()` 方法填充默认值
-- `BowlResult` 包含 `Success` / `ExitCode` / `DumpCaptured` / `DumpFilePath` / `CrashReportPath` / `Restored`
-- 不要求 `Bowl.LaunchAsync` 存在其它签名，模板已按实际 API 更新
+v10.5.0-beta.4 中的 `Bowl` 类是否有公开的 `LaunchAsync` 方法需要在实际使用前确认。
+如不可用，请保持事件回调替代方案。

@@ -9,7 +9,7 @@
     })
     .AddListenerMultiDownloadCompleted((_, e) =>
     {
-        Console.WriteLine($"\n版本 {e.Version} 下载完成 (IsCompleted={e.IsCompleted})");
+        Console.WriteLine($"\n版本 {e.Version} 下载完成 (IsComplated={e.IsComplated})");
     })
     .AddListenerMultiDownloadError((_, e) =>
     {

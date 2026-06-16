@@ -98,11 +98,11 @@ export async function uninstallCommand(options: UninstallOptions): Promise<void>
 
     if (aiType === 'all') {
       for (const type of initialDetected) {
-        const removed = await removeSkillDir(baseDir, type as Exclude<AIType, 'all'>);
+        const removed = await removeSkillDir(baseDir, type);
         allRemoved.push(...removed);
       }
     } else {
-      const removed = await removeSkillDir(baseDir, aiType as Exclude<AIType, 'all'>);
+      const removed = await removeSkillDir(baseDir, aiType);
       allRemoved.push(...removed);
     }
 

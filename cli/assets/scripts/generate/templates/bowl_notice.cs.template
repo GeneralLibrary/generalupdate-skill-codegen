@@ -1,16 +1,10 @@
 // ⚠️ Bowl 崩溃守护 — 使用 GeneralUpdate.Bowl，不单独引用 Core
 // dotnet add package GeneralUpdate.Bowl
-// Refer to generalupdate-advanced/templates/BowlIntegration.cs for full example
-var context = new GeneralUpdate.Bowl.BowlContext
+var bowlParam = new GeneralUpdate.Bowl.MonitorParameter
 {
     ProcessNameOrId = "{{PROJECT_NAME}}.exe",
     TargetPath = {{INSTALL_PATH}},
-    ExtendedField = "{{CLIENT_VERSION}}",
-    DumpFileName = "{{CLIENT_VERSION}}_fail.dmp",
-    FailFileName = "{{CLIENT_VERSION}}_fail.json",
-    FailDirectory = System.IO.Path.Combine({{INSTALL_PATH}}, "fail", "{{CLIENT_VERSION}}"),
-    BackupDirectory = System.IO.Path.Combine({{INSTALL_PATH}}, "{{CLIENT_VERSION}}"),
     WorkModel = "Upgrade",
-    DumpType = GeneralUpdate.Bowl.DumpType.Mini,
-    AutoRestore = true,
+    FailDirectory = System.IO.Path.Combine({{INSTALL_PATH}}, "fail"),
+    BackupDirectory = System.IO.Path.Combine({{INSTALL_PATH}}, "backup"),
 };

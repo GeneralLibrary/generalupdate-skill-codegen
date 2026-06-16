@@ -4,7 +4,7 @@
 
 Covers 50+ known issues discovered from real GitHub/Gitee feedback, providing production-ready code generation and deep troubleshooting.
 
-> **Current Version: 0.0.2-beta.1** — targets NuGet `GeneralUpdate.Core 10.5.0-beta.4`
+> **Current Version: 0.0.2-bate.1** — targets NuGet `GeneralUpdate.Core 10.5.0-beta.4`
 > Compatibility: `v10.5.0-beta.4` (NuGet latest preview)
 > All templates verified via `dotnet build` (0 errors).
 
