@@ -4,7 +4,7 @@
 
 Covers 50+ known issues discovered from real GitHub/Gitee feedback, providing production-ready code generation and deep troubleshooting.
 
-> **Current Version: v1.0.0** — targets NuGet `GeneralUpdate.Core ≥ 10.4.6` stable release
+> **Current Version: 0.0.1-bate.1** — targets NuGet `GeneralUpdate.Core ≥ 10.4.6` stable release
 > Compatibility: `v10.4.6` (NuGet latest stable)
 > All 32 template files verified via `dotnet build` (0 errors).
 
@@ -136,7 +136,7 @@ See [BUGS.md](BUGS.md) for the full audit trail.
 
 ## Version History
 
-### v1.0.0 — 2026-06-16
+### 0.0.1-bate.1 — 2026-06-16
 
 **The NuGet stable release (v10.4.6) API is fundamentally different from the development branch (v10.5.0-beta.2).**
 All templates have been rewritten for the **stable API** and verified to compile.

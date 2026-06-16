@@ -4,7 +4,7 @@
 
 覆盖 50+ 真实 Issue 发现的已知问题，提供即用型代码生成 + 深度故障排查。
 
-> 当前版本：v1.0.0 — 针对 NuGet `GeneralUpdate.Core ≥ 10.4.6` 稳定版
+> 当前版本：0.0.1-bate.1 — 针对 NuGet `GeneralUpdate.Core ≥ 10.4.6` 稳定版
 > 兼容性：`v10.4.6`（NuGet 最新稳定版）
 > **所有模板已通过 `dotnet build` 编译验证（0 errors）。**
 

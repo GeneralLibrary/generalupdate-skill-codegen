@@ -4,7 +4,7 @@
 
 Covers 50+ known issues discovered from real GitHub/Gitee feedback, providing production-ready code generation and deep troubleshooting.
 
-> Version: v1.0 (2026-06-16)
+> Version: 0.0.1-bate.1 (2026-06-16)
 
 ---
 
