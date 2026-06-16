@@ -3,7 +3,7 @@ name: generalupdate-advanced
 description: |
   Reference guide for GeneralUpdate internal architecture — Pipeline, middleware,
   Strategy, Differential engine, Bowl crash monitor, FileTree, blacklist, and AOT.
-  Covers what is and isn't available in v10.4.6 stable release vs dev branch.
+  Covers all extension points available in v10.5.0-beta.4 including Pipeline, Hooks, Bowl, AOT, and DiffPipeline.
   Triggers on: "extension points", "custom hooks", "Bowl", "crash dump", "IPC",
   "named pipe", "shared memory", "custom strategy", "download pipeline",
   "SSL policy", "auth provider", "custom download", "extension management",
