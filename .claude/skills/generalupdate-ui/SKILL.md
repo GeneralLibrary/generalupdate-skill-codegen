@@ -192,8 +192,8 @@ GeneralUpdateBootstrap.AddListenerException
 
 ### 事件桥接
 - [ ] 所有 6 个事件都已绑定（UpdateInfo, MultiDownloadStatistics, MultiDownloadCompleted, MultiDownloadError, MultiAllDownloadCompleted, Exception）
-- [ ] 桥接代码使用正确的 EventArgs 类型（检查命名空间 `GeneralUpdate.Common.Download`）
-- [ ] `IsComplated` 注意拼写（v10.4.6 API 中的实际拼写，不是 `IsCompleted`）
+- [ ] 桥接代码使用正确的 EventArgs 类型（检查命名空间 `GeneralUpdate.Core.Download` / `GeneralUpdate.Core.Event`）
+- [ ] `IsCompleted` 属性名正确（v10.5.0-beta.4 使用 `IsCompleted`）
 
 ### 线程安全
 - [ ] UI 更新操作在正确的线程上执行（WPF/Avalonia 用 `Dispatcher`，WinForms 用 `Invoke`，MAUI 用 `MainThread`）

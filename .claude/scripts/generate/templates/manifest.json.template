@@ -2,7 +2,7 @@
   "mainAppName": "{{PROJECT_NAME}}.exe",
   "updateAppName": "Upgrade{{PROJECT_NAME}}.exe",
   "updatePath": "./update/",
-  "appType": 1,
-  "version": "{{CLIENT_VERSION}}",
+  "appType": "Client",
+  "clientVersion": "{{CLIENT_VERSION}}",
   "productId": "{{PRODUCT_ID}}"
 }

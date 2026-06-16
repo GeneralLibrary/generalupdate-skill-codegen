@@ -256,11 +256,14 @@ def generate(args):
     from datetime import date
     today = date.today().isoformat()
 
+    report_url = (args.report_url or "").strip() or update_url.rstrip('/').rstrip('/check').rstrip('/Verification').rstrip('/') + "/Report"
+
     bowl_lower = "yes" if with_bowl else "no"
     variables = {
         "PROJECT_NAME": project_name,
         "APP_SECRET_KEY": app_secret,
         "UPDATE_URL": update_url,
+        "REPORT_URL": report_url,
         "CLIENT_VERSION": version,
         "PRODUCT_ID": product_id,
         "STRATEGY": strategy,
@@ -329,6 +332,7 @@ if __name__ == "__main__":
                         help="Project name (default: MyApp)")
     parser.add_argument("--app-secret-key", help="AppSecretKey (min 32 chars)")
     parser.add_argument("--update-url", help="Update API URL")
+    parser.add_argument("--report-url", help="Report API URL (default: derived from update-url)")
     parser.add_argument("--version", "-v", default="1.0.0.0",
                         help="Client version (default: 1.0.0.0)")
     parser.add_argument("--product-id", help="Product ID (default: <project-name>-001)")

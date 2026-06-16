@@ -1,11 +1,25 @@
 using GeneralUpdate.Core;
+using GeneralUpdate.Core.Configuration;
+using GeneralUpdate.Core.Event;
 
-// Upgrade 进程入口 — 从 IPC 文件读取配置，无需 SetConfig
-// 注意: Upgrade 项目的 AppType 设为 2 (UpgradeApp)
+// ================================================================
+// Upgrade — standalone upgrade process
+// No SetConfig() needed — parameters come via encrypted IPC from Client
+// ================================================================
 
 await new GeneralUpdateBootstrap()
+    .SetOption(Option.AppType, AppType.Upgrade)
+    .AddListenerMultiDownloadStatistics((_, e) =>
+    {
+        System.Console.WriteLine($"\rApplying: {e.ProgressPercentage:F0}%");
+    })
+    .AddListenerMultiDownloadCompleted((_, e) =>
+    {
+        System.Console.WriteLine();
+        System.Console.WriteLine($"Patch {(e.IsCompleted ? "✓ done" : "✗ failed")}");
+    })
     .AddListenerException((_, e) =>
     {
-        System.Console.Error.WriteLine($"升级错误: {e.Message}");
+        System.Console.Error.WriteLine($"Error: {e.Exception.Message}");
     })
     .LaunchAsync();

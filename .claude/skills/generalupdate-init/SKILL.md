@@ -3,7 +3,7 @@ name: generalupdate-init
 description: |
   Integrate GeneralUpdate auto-update into any .NET application. Generates Bootstrap
   configuration code, manifest files, and dual-project (Client+Upgrade) scaffolding.
-  Covers 4 update scenes, Configinfo configuration, appsettings.json, HTTP auth (HMAC/Basic/Bearer),
+  Covers 4 update scenes, UpdateRequest configuration, appsettings.json, HTTP auth (HMAC/Basic/Bearer),
   and complete deployment checklist. Triggers on: "add auto update", "integrate GeneralUpdate",
   "configure bootstrap", "我需要自动更新", "配置更新", "初始化GeneralUpdate", "添加更新功能",
   "接入更新", "升级框架". Also triggers when user mentions their project type + update.
@@ -13,7 +13,7 @@ when_to_use: |
   - First-time integration of GeneralUpdate into a .NET project
   - User wants Bootstrap configuration code (Minimal or Full)
   - User needs the Client + Upgrade dual-project structure explained
-  - User asks about manifest.json, Configinfo, or generalupdate.manifest.json
+  - User asks about manifest.json, UpdateRequest, or generalupdate.manifest.json
   - User mentions their specific .NET framework (WPF/WinForms/Avalonia/MAUI/console)
   - User asks about deployment considerations or CI/CD integration
   - Best used as the entry point; guide to other skills as needed
@@ -47,7 +47,7 @@ allowed-tools: "Bash, Read, Write, Edit, Glob, Grep, WebSearch"
 
 ### 已有配置（如果存在）
 - 是否已安装 NuGet: ______（是/否，版本号）
-- 是否已有 Configinfo 配置: ______（是/否）
+- 是否已有 UpdateRequest 配置: ______（是/否）
 - 是否已有 manifest.json: ______（是/否）
 ```
 
@@ -60,7 +60,7 @@ allowed-tools: "Bash, Read, Write, Edit, Glob, Grep, WebSearch"
 ```
 ├── 检查 .csproj → 目标框架、UI 类型、是否有 NuGet 引用
 ├── 检查是否存在 generalupdate.manifest.json
-├── 检查是否存在 Configinfo/Bootstrap 配置代码
+├── 检查是否存在 UpdateRequest/Bootstrap 配置代码
 └── 检查项目结构 → 是否已有独立的 Upgrade 项目
 ```
 
@@ -71,7 +71,7 @@ allowed-tools: "Bash, Read, Write, Edit, Glob, Grep, WebSearch"
 | 模式 | 适用场景 | 产出 |
 |------|---------|------|
 | **[Minimal]** | 新用户快速上手，控制台/服务应用 | 3 行 Bootstrap 代码 |
-| **[Standard]** | 需要精确控制更新过程 | Configinfo + 完整事件监听 |
+| **[Standard]** | 需要精确控制更新过程 | UpdateRequest + 完整事件监听 |
 | **[Scaffold]** | 团队项目，从零开始 | 完整 Client + Upgrade 双项目结构 |
 
 ### Step 3：生成输出
@@ -345,7 +345,7 @@ v10.5.0-beta.4 新增以下功能：
 ## ✅ 集成验证清单（交付前逐项检查）
 
 ### Bootstrap 配置
-- [ ] `Configinfo` 的 6 个必填字段都已设置（UpdateUrl, AppSecretKey, AppName, MainAppName, ClientVersion, ProductId, InstallPath）
+- [ ] `UpdateRequest` 的 6 个必填字段都已设置（UpdateUrl, AppSecretKey, MainAppName, ClientVersion, ProductId, InstallPath）
 - [ ] `UpdateUrl` 指向的服务端 API 可正常返回版本信息
 - [ ] `AppSecretKey` 长度 ≥ 16 字符，与服务端一致
 - [ ] `AppType` 设置正确（Client = 1, Upgrade = 2）
@@ -358,7 +358,7 @@ v10.5.0-beta.4 新增以下功能：
 - [ ] 无需额外引用 `GeneralUpdate.Differential`（已嵌入 Core）
 
 ### 部署结构
-- [ ] UpgradeApp.exe 存在于发布目录（首个版本就必须有）
+- [ ] UpgradeApp.exe 存在于发布目录 update/ 子目录中（首个版本就必须有）
 - [ ] `generalupdate.manifest.json` 的 `UpdateAppName` 包含 `.exe`
 - [ ] IPC 文件（`UpdateInfo.msg`）路径在 Client/Upgrade 间一致
 - [ ] `Encoding` 设置为 `Encoding.UTF8`（防止 Linux/macOS 中文乱码）
