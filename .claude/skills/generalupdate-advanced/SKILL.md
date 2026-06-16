@@ -157,7 +157,7 @@ Console.WriteLine($"Result: Success={result.Success}, Restored={result.Restored}
 | `DumpType` | DumpType | Mini / Full | Full |
 | `OnCrash` | delegate | 崩溃回调 | null |
 
-> ⚠️ Bowl 和 Core 不能同时引用（CS0433）。使用 Bowl 时**只引用 `GeneralUpdate.Bowl`**，它传递依赖 Core 的所有功能。
+> ⚠️ NuGet v10.5.0-beta.4 中 Bowl 和 Core **无类型冲突**，可以同时引用。
 
 ---
 
@@ -332,7 +332,7 @@ var result = GeneralDrivelution.InstallDriver(driverPath);
 ## ✅ 高级定制验证清单
 
 ### Bowl 崩溃守护
-- [ ] 只引用了 `GeneralUpdate.Bowl`（不单独引用 Core）
+- [ ] 如果用 Bowl：项目中同时引用 `GeneralUpdate.Core` 和 `GeneralUpdate.Bowl`（v10.5.0-beta.4 无冲突）
 - [ ] `MonitorParameter` 的 `ProcessNameOrId` 与实际进程名匹配
 - [ ] `TargetPath` 设置为应用安装根目录，非子目录
 - [ ] `WorkModel` 根据场景选择 Correct（Normal/Upgrade）

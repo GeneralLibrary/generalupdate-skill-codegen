@@ -14,10 +14,10 @@
 | `GeneralUpdate.Extension` | 插件管理系统 | ❌ 可选 | net8.0;net10.0 | ≥ 10.5.0 |
 | `GeneralUpdate.Drivelution` | Windows 驱动更新 | ❌ 可选 | net8.0;net10.0 | 10.5.0-beta.4 |
 
-> ⚠️ **NuGet 类型冲突**：
+> ⚠️ **NuGet 注意事项**（v10.5.0-beta.4）：
 > - `GeneralUpdate.Differential` 的 `DifferentialCore` 等类型已内嵌在 `GeneralUpdate.Core` 中，**不需额外引用**（直接使用 Core 即可）
-> - `GeneralUpdate.Bowl` 和 `GeneralUpdate.Core` **不能同时引用**（两者都发布了 `GeneralUpdate.Common` 导致 CS0433）
-> - 使用 Bowl 时**只引用 `GeneralUpdate.Bowl`**（它传递依赖 Core 的所有功能）
+> - `GeneralUpdate.Bowl` 和 `GeneralUpdate.Core` **可以同时引用**（v10.5.0-beta.4 中 Bowl 与 Core 无共用类型，不再冲突）
+> - 使用 Bowl 时仍需引用 `GeneralUpdate.Bowl`（它**不**传递依赖 Core）
 
 ## UpdateRequest 字段完整说明
 
