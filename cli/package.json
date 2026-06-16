@@ -1,7 +1,7 @@
 {
   "name": "gskill-cli",
   "version": "0.1.0",
-  "description": "CLI to install GeneralUpdate skill for AI coding assistants",
+  "description": "CLI to install GeneralUpdate skill for AI coding assistants (version independent from skill version; skill matches manifest version)",
   "type": "module",
   "bin": {
     "gskill": "./dist/index.js"

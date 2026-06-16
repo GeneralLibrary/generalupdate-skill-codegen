@@ -323,11 +323,10 @@ publish/
 
 ## ⚠️ 已知问题
 
-### NuGet 类型冲突
-`GeneralUpdate.Core` 和 `GeneralUpdate.Bowl` **不能同时引用**（CS0433 类型冲突）。
-请根据需求选择：
+### NuGet 注意事项（v10.5.0-beta.4）
+`GeneralUpdate.Core` 和 `GeneralUpdate.Bowl` **可以同时引用**（v10.5.0-beta.4 中无 CS0433 冲突）。
 - 使用 Core：`dotnet add package GeneralUpdate.Core`
-- 使用 Bowl：**只引用** `GeneralUpdate.Bowl`（它传递依赖 Core 所有功能）
+- 使用 Bowl：`dotnet add package GeneralUpdate.Bowl`（它**不**传递依赖 Core，需要同时引用 Core）
 - 差分类型已内嵌在 Core，**无需额外** `GeneralUpdate.Differential` 包
 
 ### 稳定版功能增强
@@ -354,7 +353,7 @@ v10.5.0-beta.4 新增以下功能：
 
 ### NuGet & 编译
 - [ ] Client 和 Upgrade 项目使用**完全相同**的 GeneralUpdate NuGet 版本
-- [ ] 如果用 Bowl：项目中只能有 `GeneralUpdate.Bowl`，不能同时有 `GeneralUpdate.Core`
+- [ ] 如果用 Bowl：项目中同时引用 `GeneralUpdate.Core` 和 `GeneralUpdate.Bowl`（v10.5.0-beta.4 无冲突）
 - [ ] 项目能正常 `dotnet build`（0 errors）
 - [ ] 无需额外引用 `GeneralUpdate.Differential`（已嵌入 Core）
 
@@ -376,14 +375,15 @@ v10.5.0-beta.4 新增以下功能：
 
 | # | 反模式 | 后果 | 正确做法 |
 |---|--------|------|---------|
-| 1 | **Core 和 Bowl 引用到同一个项目** | CS0433 类型冲突，编译失败 | 用 Bowl 时只引 Bowl（传递依赖 Core） |
-| 2 | **Client/Upgrade NuGet 版本号不一致** | 运行时 MethodNotFoundException | 锁定完全相同版本 |
-| 3 | **UpgradeApp.exe 不随首个版本发布** | 第一次更新时 FileNotFoundException | 首个版本就包含 UpgradeApp |
-| 4 | **事件监听中做耗时操作（网络 IO / 磁盘 IO）** | Update 进程 UI 卡死，超时被 Kill | 仅更新 UI 状态，耗时操作异步 |
-| 5 | **IPC 文件编码未设置 UTF-8** | Linux/macOS 中文乱码 | `Encoding.UTF8` |
-| 6 | **版本号不是 4 段式（如 1.0.0.0）** | 版本比较逻辑异常 | 始终用 `x.y.z.w` 格式 |
-| 7 | **manifest.json 的 mainAppName 不匹配真实进程名** | 更新后主程序找不到 | 和实际 exe 名称一致 |
-| 8 | **为 v9.x 编写的代码直接用在 v10** | API 不兼容，编译失败 | 对照 v10.4.6 稳定版 API 重写 |
+| 1 | **Core 和 Bowl NuGet 版本不一致** | 运行时 MethodNotFoundException | 使用相同 NuGet 版本 |
+| 2 | **Bowl 缺少 `GeneralUpdate.Core` 引用** | 编译失败，缺少 Core 类型 | Bowl 不传递依赖 Core，需同时引用 Core |
+| 3 | **Bowl 传递依赖 Core 的误解** | 编译失败 | v10.5.0-beta.4 中 Bowl 是独立包，需单独引用 Core |
+| 4 | **Client/Upgrade NuGet 版本号不一致** | 运行时 MethodNotFoundException | 锁定完全相同版本 |
+| 5 | **事件监听中做耗时操作（网络 IO / 磁盘 IO）** | Update 进程 UI 卡死，超时被 Kill | 仅更新 UI 状态，耗时操作异步 |
+| 6 | **IPC 文件编码未设置 UTF-8** | Linux/macOS 中文乱码 | `Encoding.UTF8` |
+| 7 | **版本号不是 4 段式（如 1.0.0.0）** | 版本比较逻辑异常 | 始终用 `x.y.z.w` 格式 |
+| 8 | **manifest.json 的 mainAppName 不匹配真实进程名** | 更新后主程序找不到 | 和实际 exe 名称一致 |
+| 9 | **为 v9.x 编写的代码直接用在 v10** | API 不兼容，编译失败 | 对照 v10.4.6 稳定版 API 重写 |
 
 ---
 

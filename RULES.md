@@ -21,7 +21,7 @@
 
 ## NuGet Package Rules
 - Core only: `dotnet add package GeneralUpdate.Core --version 10.5.0-beta.4`
-- With Bowl: **reference only** `GeneralUpdate.Bowl` (transitively includes Core, the two conflict)
+- With Bowl: reference **both** `GeneralUpdate.Core` and `GeneralUpdate.Bowl` (v10.5.0-beta.4: Bowl is standalone, no type conflict)
 - Differential: types are **embedded in Core**, no extra package needed
 - Extension, Drivelution: standalone, no conflicts
 
