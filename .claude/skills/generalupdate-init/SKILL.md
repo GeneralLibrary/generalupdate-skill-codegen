@@ -28,28 +28,69 @@ allowed-tools: "Bash, Read, Write, Edit, Glob, Grep, WebSearch"
 
 ---
 
-## 工作流程
+## 📋 用户需求提取
+
+在生成代码前，必须先提取以下信息。**不确定的必须追问：**
 
 ```
-1. 探测项目状态
-   ├── 检查 .csproj → 目标框架、UI 类型
-   └── 检查现有配置 → 已安装 NuGet？已有 manifest？
-   
-2. 选择集成模式
-   ├── [Minimal] （UpdateRequest + SetConfig + LaunchAsync）— 推荐新用户
-   ├── [Standard]（UpdateRequest + 事件监听）— 需要精细控制
-   └── [Zero-Config]（SetSource + LaunchAsync）— 自动从 manifest 发现配置
+### 项目状态
+- 现有项目类型: ______（新项目 / 已有项目 / 从旧版迁移）
+- .NET 版本: ______
+- UI 框架: ______（WPF/WinForms/Avalonia/MAUI/控制台/无）
+- 目标平台: ______（Windows/Linux/macOS/多平台）
 
-3. 生成输出
-   ├── NuGet 安装命令
-   ├── Bootstrap 配置代码
-   ├── manifest.json 模板
-   └── 部署检查清单
+### 更新需求
+- 是否需要显示进度 UI: ______（是/否）
+- 是否有后端服务: ______（是/否）
+- 更新策略倾向: ______（标准/OSS/静默/差分/跨版本/推送）
+- 是否需要崩溃守护 Bowl: ______（是/否）
 
-4. 后续引导
-   ├── 需要 UI → generalupdate-ui
-   ├── 选择策略 → generalupdate-strategy
-   └── 遇到问题 → generalupdate-troubleshoot
+### 已有配置（如果存在）
+- 是否已安装 NuGet: ______（是/否，版本号）
+- 是否已有 Configinfo 配置: ______（是/否）
+- 是否已有 manifest.json: ______（是/否）
+```
+
+---
+
+## 工作流程（按顺序执行）
+
+### Step 1：探测项目状态
+
+```
+├── 检查 .csproj → 目标框架、UI 类型、是否有 NuGet 引用
+├── 检查是否存在 generalupdate.manifest.json
+├── 检查是否存在 Configinfo/Bootstrap 配置代码
+└── 检查项目结构 → 是否已有独立的 Upgrade 项目
+```
+
+### Step 2：选择集成模式
+
+基于需求提取结果，选择以下模式之一：
+
+| 模式 | 适用场景 | 产出 |
+|------|---------|------|
+| **[Minimal]** | 新用户快速上手，控制台/服务应用 | 3 行 Bootstrap 代码 |
+| **[Standard]** | 需要精确控制更新过程 | Configinfo + 完整事件监听 |
+| **[Scaffold]** | 团队项目，从零开始 | 完整 Client + Upgrade 双项目结构 |
+
+### Step 3：生成输出
+
+```
+├── NuGet 安装命令（按平台选 Core/Bowl）
+├── Bootstrap 配置代码（按模式）
+├── manifest.json 模板
+├── 部署检查清单
+└── 已知问题预警（针对你的配置组合）
+```
+
+### Step 4：引导下一步
+
+```
+├── 需要 UI → /generalupdate-ui
+├── 选择策略 → /generalupdate-strategy
+├── 需要 Bowl 守护 → /generalupdate-advanced
+└── 遇到问题 → /generalupdate-troubleshoot
 ```
 
 ---
@@ -299,6 +340,50 @@ v10.5.0-beta.4 新增以下功能：
 - ✅ `AddListenerProgress()` 第 7 个事件
 - ✅ `IStrategy` 自定义策略注入 — `Strategy<T>()`
 - ✅ `IUpdateReporter` / `IHttpAuthProvider` 等扩展点
+
+---
+
+## ✅ 集成验证清单（交付前逐项检查）
+
+### Bootstrap 配置
+- [ ] `Configinfo` 的 6 个必填字段都已设置（UpdateUrl, AppSecretKey, AppName, MainAppName, ClientVersion, ProductId, InstallPath）
+- [ ] `UpdateUrl` 指向的服务端 API 可正常返回版本信息
+- [ ] `AppSecretKey` 长度 ≥ 16 字符，与服务端一致
+- [ ] `AppType` 设置正确（Client = 1, Upgrade = 2）
+- [ ] 生产环境使用 `AppDomain.CurrentDomain.BaseDirectory` 作为 InstallPath
+
+### NuGet & 编译
+- [ ] Client 和 Upgrade 项目使用**完全相同**的 GeneralUpdate NuGet 版本
+- [ ] 如果用 Bowl：项目中只能有 `GeneralUpdate.Bowl`，不能同时有 `GeneralUpdate.Core`
+- [ ] 项目能正常 `dotnet build`（0 errors）
+- [ ] 无需额外引用 `GeneralUpdate.Differential`（已嵌入 Core）
+
+### 部署结构
+- [ ] UpgradeApp.exe 存在于发布目录（首个版本就必须有）
+- [ ] `generalupdate.manifest.json` 的 `UpdateAppName` 包含 `.exe`
+- [ ] IPC 文件（`UpdateInfo.msg`）路径在 Client/Upgrade 间一致
+- [ ] `Encoding` 设置为 `Encoding.UTF8`（防止 Linux/macOS 中文乱码）
+
+### 迁移场景（从 v9.x 升级）
+- [ ] 检查旧代码中是否有 `SetSource()` / `SetOption()` / `Hooks<T>()` 等不存在的方法
+- [ ] `AppType` 原来是 enum 吗？v10.4.6 中是 class，`ClientApp = 1`, `UpgradeApp = 2`
+- [ ] `LaunchAsync()` 在 v10.4.6 中返回 `Task<GeneralUpdateBootstrap>`（不是 `Task<bool>`）
+- [ ] 删除 `OssClient` 相关引用（v10.4.6 不支持）
+
+---
+
+## ⚠️ 反模式清单
+
+| # | 反模式 | 后果 | 正确做法 |
+|---|--------|------|---------|
+| 1 | **Core 和 Bowl 引用到同一个项目** | CS0433 类型冲突，编译失败 | 用 Bowl 时只引 Bowl（传递依赖 Core） |
+| 2 | **Client/Upgrade NuGet 版本号不一致** | 运行时 MethodNotFoundException | 锁定完全相同版本 |
+| 3 | **UpgradeApp.exe 不随首个版本发布** | 第一次更新时 FileNotFoundException | 首个版本就包含 UpgradeApp |
+| 4 | **事件监听中做耗时操作（网络 IO / 磁盘 IO）** | Update 进程 UI 卡死，超时被 Kill | 仅更新 UI 状态，耗时操作异步 |
+| 5 | **IPC 文件编码未设置 UTF-8** | Linux/macOS 中文乱码 | `Encoding.UTF8` |
+| 6 | **版本号不是 4 段式（如 1.0.0.0）** | 版本比较逻辑异常 | 始终用 `x.y.z.w` 格式 |
+| 7 | **manifest.json 的 mainAppName 不匹配真实进程名** | 更新后主程序找不到 | 和实际 exe 名称一致 |
+| 8 | **为 v9.x 编写的代码直接用在 v10** | API 不兼容，编译失败 | 对照 v10.4.6 稳定版 API 重写 |
 
 ---
 

@@ -25,13 +25,13 @@ public static class FullIntegration
             var config = new UpdateRequest
             {
                 // --- 必填 ---
-                UpdateUrl = "https://your-server.com/Upgrade/Verification",
-                AppSecretKey = "your-32-char-secret-key-here!",
+                UpdateUrl = "{{UPDATE_URL}}",
+                AppSecretKey = "{{APP_SECRET_KEY}}",
 
                 // --- 应用信息 ---
-                MainAppName = "MyApp.exe",
-                ClientVersion = "1.0.0.0",         // ⚠️ 4 段式
-                ProductId = "my-product-001",
+                MainAppName = "{{PROJECT_NAME}}.exe",
+                ClientVersion = "{{CLIENT_VERSION}}",         // ⚠️ 4 段式
+                ProductId = "{{PRODUCT_ID}}",
                 InstallPath = AppDomain.CurrentDomain.BaseDirectory,
 
                 // --- 可选 ---

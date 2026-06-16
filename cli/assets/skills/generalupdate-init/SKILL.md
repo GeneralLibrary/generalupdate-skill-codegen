@@ -1,0 +1,367 @@
+---
+name: generalupdate-init
+description: |
+  Integrate GeneralUpdate auto-update into any .NET application. Generates Bootstrap
+  configuration code, manifest files, and dual-project (Client+Upgrade) scaffolding.
+  Covers 4 update scenes, Configinfo configuration, appsettings.json, HTTP auth (HMAC/Basic/Bearer),
+  and complete deployment checklist. Triggers on: "add auto update", "integrate GeneralUpdate",
+  "configure bootstrap", "我需要自动更新", "配置更新", "初始化GeneralUpdate", "添加更新功能",
+  "接入更新", "升级框架". Also triggers when user mentions their project type + update.
+  Always pair with generalupdate-ui if a UI framework is detected, and with
+  generalupdate-strategy if the user asks about different update approaches.
+when_to_use: |
+  - First-time integration of GeneralUpdate into a .NET project
+  - User wants Bootstrap configuration code (Minimal or Full)
+  - User needs the Client + Upgrade dual-project structure explained
+  - User asks about manifest.json, Configinfo, or generalupdate.manifest.json
+  - User mentions their specific .NET framework (WPF/WinForms/Avalonia/MAUI/console)
+  - User asks about deployment considerations or CI/CD integration
+  - Best used as the entry point; guide to other skills as needed
+allowed-tools: "Bash, Read, Write, Edit, Glob, Grep, WebSearch"
+---
+
+# 🚀 GeneralUpdate 集成完全指南
+
+帮助开发者在任意 .NET 应用中集成 GeneralUpdate 自动更新。从零开始，覆盖所有配置方式、部署场景和生产环境考量。
+
+> ⚠️ **针对 NuGet v10.4.6 稳定版**。开发分支（v10.5.0-beta.2）有不同 API。
+
+---
+
+## 📋 用户需求提取
+
+在生成代码前，必须先提取以下信息。**不确定的必须追问：**
+
+```
+### 项目状态
+- 现有项目类型: ______（新项目 / 已有项目 / 从旧版迁移）
+- .NET 版本: ______
+- UI 框架: ______（WPF/WinForms/Avalonia/MAUI/控制台/无）
+- 目标平台: ______（Windows/Linux/macOS/多平台）
+
+### 更新需求
+- 是否需要显示进度 UI: ______（是/否）
+- 是否有后端服务: ______（是/否）
+- 更新策略倾向: ______（标准/OSS/静默/差分/跨版本/推送）
+- 是否需要崩溃守护 Bowl: ______（是/否）
+
+### 已有配置（如果存在）
+- 是否已安装 NuGet: ______（是/否，版本号）
+- 是否已有 Configinfo 配置: ______（是/否）
+- 是否已有 manifest.json: ______（是/否）
+```
+
+---
+
+## 工作流程（按顺序执行）
+
+### Step 1：探测项目状态
+
+```
+├── 检查 .csproj → 目标框架、UI 类型、是否有 NuGet 引用
+├── 检查是否存在 generalupdate.manifest.json
+├── 检查是否存在 Configinfo/Bootstrap 配置代码
+└── 检查项目结构 → 是否已有独立的 Upgrade 项目
+```
+
+### Step 2：选择集成模式
+
+基于需求提取结果，选择以下模式之一：
+
+| 模式 | 适用场景 | 产出 |
+|------|---------|------|
+| **[Minimal]** | 新用户快速上手，控制台/服务应用 | 3 行 Bootstrap 代码 |
+| **[Standard]** | 需要精确控制更新过程 | Configinfo + 完整事件监听 |
+| **[Scaffold]** | 团队项目，从零开始 | 完整 Client + Upgrade 双项目结构 |
+
+### Step 3：生成输出
+
+```
+├── NuGet 安装命令（按平台选 Core/Bowl）
+├── Bootstrap 配置代码（按模式）
+├── manifest.json 模板
+├── 部署检查清单
+└── 已知问题预警（针对你的配置组合）
+```
+
+### Step 4：引导下一步
+
+```
+├── 需要 UI → /generalupdate-ui
+├── 选择策略 → /generalupdate-strategy
+├── 需要 Bowl 守护 → /generalupdate-advanced
+└── 遇到问题 → /generalupdate-troubleshoot
+```
+
+---
+
+## 核心概念：4 大更新场景
+
+GeneralUpdate 根据服务端返回的包类型决定更新策略：
+
+| 场景 | 行为 |
+|------|------|
+| **None** | 无需更新，直接启动主程序 |
+| **UpgradeOnly** | 只更新升级程序自身：Client 原地解压 Upgrade 包 |
+| **MainOnly** | 只更新主程序：Client → IPC → 启动 Upgrade 进程 |
+| **Both** | 两者都更新 |
+
+**双进程架构**：
+```
+App.exe (Client) 负责:
+  ├── 版本验证（HTTP 请求服务端）
+  ├── 下载所有更新包
+  ├── IPC 写入（加密文件传递参数给 Upgrade）
+  └── 启动 Upgrade.exe 然后自己退出
+
+Upgrade.exe (Upgrade 进程) 负责:
+  ├── 读取 IPC 文件
+  ├── 应用更新（解压/补丁/替换文件）
+  └── 启动主程序然后自己退出
+```
+
+---
+
+## Configinfo 配置详解
+
+### Configinfo 完整属性
+
+```csharp
+var config = new Configinfo
+{
+    // === 必需 ===
+    UpdateUrl = "https://your-server.com/Upgrade/Verification",
+    AppSecretKey = "your-secret-key",
+    AppName = "MyApp.exe",
+    MainAppName = "MyApp.exe",
+    ClientVersion = "1.0.0.0",
+    ProductId = "my-product-001",
+    InstallPath = ".",
+    
+    // === 可选 ===
+    ReportUrl = "https://your-server.com/Upgrade/Report",
+    UpdateLogUrl = "https://your-server.com/Upgrade/Log",
+    UpgradeClientVersion = "1.0.0.0",
+    
+    // === 安全认证 ===
+    Scheme = "Bearer",           // HTTP 认证方案
+    Token = "your-token",        // HTTP 认证令牌
+    
+    // === 黑名单（备份/复制时排除）===
+    BlackFiles = new List<string> { "*.log", "*.tmp" },
+    BlackFormats = new List<string> { ".pdb" },
+    SkipDirectorys = new List<string> { "logs", "cache" },
+};
+```
+
+### 应用角色（AppType）
+
+`AppType` 是一个 class，包含两个静态字段：
+
+| 字段 | 值 | 说明 |
+|------|-----|------|
+| `AppType.ClientApp` | 1 | 标准客户端（主程序） |
+| `AppType.UpgradeApp` | 2 | 标准升级程序 |
+
+> ⚠️ v10.4.6 不支持 OssClient（值 3-4），这些在开发分支中。
+
+### 事件监听器完整清单
+
+```csharp
+// 全部 6 个事件
+.AddListenerUpdateInfo((_, e) => {
+    /* 版本验证结果（e.Info?.Body 含 VersionInfo 列表） */
+})
+.AddListenerMultiDownloadStatistics((_, e) => {
+    /* 批量下载进度（e.ProgressPercentage, e.Speed, e.Remaining） */
+})
+.AddListenerMultiDownloadCompleted((_, e) => {
+    /* 每版本下载完成（e.Version, e.IsComplated） */
+})
+.AddListenerMultiDownloadError((_, e) => {
+    /* 下载错误（e.Exception, e.Version） */
+})
+.AddListenerMultiAllDownloadCompleted((_, e) => {
+    /* 全部下载完成（e.IsAllDownloadCompleted, e.FailedVersions） */
+})
+.AddListenerException((_, e) => {
+    /* 异常（e.Message, e.Exception） */
+})
+```
+
+---
+
+## 集成方式的完整代码
+
+### 方式 A：Minimal — 使用 Configinfo
+
+```csharp
+using GeneralUpdate.Core;
+using GeneralUpdate.Common.Shared.Object;
+
+var config = new Configinfo
+{
+    UpdateUrl = "https://your-server.com/api",
+    AppSecretKey = "your-32-char-secret-key-here!",
+    AppName = "MyApp.exe",
+    MainAppName = "MyApp.exe",
+    ClientVersion = "1.0.0.0",
+    ProductId = "my-product-001",
+    InstallPath = "."
+};
+
+await new GeneralUpdateBootstrap()
+    .SetConfig(config)
+    .LaunchAsync();
+```
+
+### 方式 B：Standard — Configinfo + 事件 + 监听
+
+```csharp
+using GeneralUpdate.Core;
+using GeneralUpdate.Common.Shared.Object;
+using GeneralUpdate.Common.Download;
+
+var config = new Configinfo
+{
+    UpdateUrl = "https://your-server.com/Upgrade/Verification",
+    AppSecretKey = "your-secret-key",
+    AppName = "MyApp.exe",
+    MainAppName = "MyApp.exe",
+    ClientVersion = "1.0.0.0",
+    ProductId = "my-product-001",
+    InstallPath = AppDomain.CurrentDomain.BaseDirectory,
+    ReportUrl = "https://your-server.com/Upgrade/Report",
+};
+
+await new GeneralUpdateBootstrap()
+    .SetConfig(config)
+    .AddListenerUpdateInfo((_, e) =>
+    {
+        Console.WriteLine($"发现 {e.Info?.Body?.Count ?? 0} 个版本");
+    })
+    .AddListenerMultiDownloadStatistics((_, e) =>
+    {
+        Console.WriteLine($"进度: {e.ProgressPercentage}% | {e.Speed}");
+    })
+    .AddListenerMultiDownloadCompleted((_, e) =>
+    {
+        Console.WriteLine($"版本 {e.Version} 下载完成");
+    })
+    .AddListenerMultiAllDownloadCompleted((_, e) =>
+    {
+        Console.WriteLine($"全部完成 (IsAllDownloadCompleted={e.IsAllDownloadCompleted})");
+    })
+    .AddListenerMultiDownloadError((_, e) =>
+    {
+        Console.WriteLine($"下载失败: 版本 {e.Version} — {e.Exception?.Message}");
+    })
+    .AddListenerException((_, e) =>
+    {
+        Console.WriteLine($"异常: {e.Message}");
+    })
+    .LaunchAsync();
+```
+
+### Upgrade 进程配置
+
+```csharp
+using GeneralUpdate.Core;
+
+// Upgrade 模式从 IPC 文件读取配置，无需 SetConfig
+await new GeneralUpdateBootstrap()
+    .AddListenerException((_, e) =>
+        Console.WriteLine($"错误: {e.Message}"))
+    .LaunchAsync();
+```
+
+---
+
+## 生产环境部署检查清单
+
+### 发布目录结构
+
+```
+publish/
+├── MyApp.exe                  ← MainAppName（主程序）
+├── generalupdate.manifest.json
+└── update/
+    └── UpgradeApp.exe         ← 升级程序，必须随首个版本发布
+```
+
+### 双进程验证
+
+| 检查项 | 说明 |
+|--------|------|
+| UpgradeApp.exe 存在于发布目录 | 首个版本就必须有 |
+| Client 和 Upgrade 使用相同 AppSecretKey | IPC 加密通信依赖此 Key |
+| Client 和 Upgrade 使用相同 NuGet 版本号 | 版本不一致导致 "Method not found" |
+| Upgrade 进程不需要网络 | 所有数据由 Client 预下载 |
+
+---
+
+## ⚠️ 已知问题
+
+### NuGet 类型冲突
+`GeneralUpdate.Core` 和 `GeneralUpdate.Bowl` **不能同时引用**（CS0433 类型冲突）。
+请根据需求选择：
+- 使用 Core：`dotnet add package GeneralUpdate.Core`
+- 使用 Bowl：**只引用** `GeneralUpdate.Bowl`（它传递依赖 Core 所有功能）
+- 差分类型已内嵌在 Core，**无需额外** `GeneralUpdate.Differential` 包
+
+### 稳定版功能限制
+v10.4.6 无 `IUpdateHooks`、无可编程 `Option`、无静默轮询器。
+这些功能在开发分支（v10.5.0-beta.2）中可用。
+
+---
+
+## ✅ 集成验证清单（交付前逐项检查）
+
+### Bootstrap 配置
+- [ ] `Configinfo` 的 6 个必填字段都已设置（UpdateUrl, AppSecretKey, AppName, MainAppName, ClientVersion, ProductId, InstallPath）
+- [ ] `UpdateUrl` 指向的服务端 API 可正常返回版本信息
+- [ ] `AppSecretKey` 长度 ≥ 16 字符，与服务端一致
+- [ ] `AppType` 设置正确（Client = 1, Upgrade = 2）
+- [ ] 生产环境使用 `AppDomain.CurrentDomain.BaseDirectory` 作为 InstallPath
+
+### NuGet & 编译
+- [ ] Client 和 Upgrade 项目使用**完全相同**的 GeneralUpdate NuGet 版本
+- [ ] 如果用 Bowl：项目中只能有 `GeneralUpdate.Bowl`，不能同时有 `GeneralUpdate.Core`
+- [ ] 项目能正常 `dotnet build`（0 errors）
+- [ ] 无需额外引用 `GeneralUpdate.Differential`（已嵌入 Core）
+
+### 部署结构
+- [ ] UpgradeApp.exe 存在于发布目录（首个版本就必须有）
+- [ ] `generalupdate.manifest.json` 的 `UpdateAppName` 包含 `.exe`
+- [ ] IPC 文件（`UpdateInfo.msg`）路径在 Client/Upgrade 间一致
+- [ ] `Encoding` 设置为 `Encoding.UTF8`（防止 Linux/macOS 中文乱码）
+
+### 迁移场景（从 v9.x 升级）
+- [ ] 检查旧代码中是否有 `SetSource()` / `SetOption()` / `Hooks<T>()` 等不存在的方法
+- [ ] `AppType` 原来是 enum 吗？v10.4.6 中是 class，`ClientApp = 1`, `UpgradeApp = 2`
+- [ ] `LaunchAsync()` 在 v10.4.6 中返回 `Task<GeneralUpdateBootstrap>`（不是 `Task<bool>`）
+- [ ] 删除 `OssClient` 相关引用（v10.4.6 不支持）
+
+---
+
+## ⚠️ 反模式清单
+
+| # | 反模式 | 后果 | 正确做法 |
+|---|--------|------|---------|
+| 1 | **Core 和 Bowl 引用到同一个项目** | CS0433 类型冲突，编译失败 | 用 Bowl 时只引 Bowl（传递依赖 Core） |
+| 2 | **Client/Upgrade NuGet 版本号不一致** | 运行时 MethodNotFoundException | 锁定完全相同版本 |
+| 3 | **UpgradeApp.exe 不随首个版本发布** | 第一次更新时 FileNotFoundException | 首个版本就包含 UpgradeApp |
+| 4 | **事件监听中做耗时操作（网络 IO / 磁盘 IO）** | Update 进程 UI 卡死，超时被 Kill | 仅更新 UI 状态，耗时操作异步 |
+| 5 | **IPC 文件编码未设置 UTF-8** | Linux/macOS 中文乱码 | `Encoding.UTF8` |
+| 6 | **版本号不是 4 段式（如 1.0.0.0）** | 版本比较逻辑异常 | 始终用 `x.y.z.w` 格式 |
+| 7 | **manifest.json 的 mainAppName 不匹配真实进程名** | 更新后主程序找不到 | 和实际 exe 名称一致 |
+| 8 | **为 v9.x 编写的代码直接用在 v10** | API 不兼容，编译失败 | 对照 v10.4.6 稳定版 API 重写 |
+
+---
+
+## 相关技能
+
+- `/generalupdate-ui` — UI 框架自动检测 + 更新窗口代码生成
+- `/generalupdate-strategy` — 6 种更新策略选择与配置
+- `/generalupdate-advanced` — 高级定制（适用于开发分支）
+- `/generalupdate-troubleshoot` — 已知问题诊断

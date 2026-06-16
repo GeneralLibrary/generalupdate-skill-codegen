@@ -1,0 +1,10 @@
+// ⚠️ Bowl 崩溃守护 — 使用 GeneralUpdate.Bowl，不单独引用 Core
+// dotnet add package GeneralUpdate.Bowl
+var bowlParam = new GeneralUpdate.Bowl.MonitorParameter
+{
+    ProcessNameOrId = "{{PROJECT_NAME}}.exe",
+    TargetPath = {{INSTALL_PATH}},
+    WorkModel = "Upgrade",
+    FailDirectory = System.IO.Path.Combine({{INSTALL_PATH}}, "fail"),
+    BackupDirectory = System.IO.Path.Combine({{INSTALL_PATH}}, "backup"),
+};

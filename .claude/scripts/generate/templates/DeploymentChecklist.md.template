@@ -1,0 +1,44 @@
+# Deployment Checklist — {{PROJECT_NAME}}
+
+Generated for: **{{STRATEGY_NAME}}** + **{{FRAMEWORK}}** | Bowl: **{{BOWL_UPPER}}** | Updated: {{DATE}}
+
+---
+
+## ✅ Pre-Deployment Checklist
+
+### Bootstrap
+- [ ] `Configinfo` 6 个必填字段都已设置
+- [ ] `UpdateUrl` 已指向正确的服务端 API
+- [ ] `AppSecretKey` 长度 ≥ 32 字符
+
+### NuGet
+- [ ] Client 和 Upgrade 项目使用相同 GeneralUpdate 版本
+{{#BOWL}}
+- [ ] 只引用了 `GeneralUpdate.Bowl`（未同时引 Core）
+{{/BOWL}}
+{{^BOWL}}
+- [ ] 只引用了 `GeneralUpdate.Core`
+{{/BOWL}}
+
+### Deployment
+- [ ] UpgradeApp.exe 存在于发布目录
+- [ ] manifest.json 的 mainAppName 与进程名匹配
+- [ ] Encoding.UTF8 已设置
+- [ ] 版本号为 4 段式 (x.y.z.w)
+
+### Strategy-Specific
+{{STRATEGY_CHECKS}}
+
+---
+
+## ⚠️ Known Issues for This Configuration
+
+{{ISSUE_WARNINGS}}
+
+---
+
+## Rollback Plan
+
+- [ ] 保留上一个版本的备份目录
+- [ ] 验证回滚后版本号是否正确
+- [ ] 通知用户回滚事件

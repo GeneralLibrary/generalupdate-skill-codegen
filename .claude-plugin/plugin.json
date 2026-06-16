@@ -1,0 +1,32 @@
+{
+  "name": "generalupdate-skill",
+  "description": "Complete .NET auto-update skill suite for GeneralUpdate. 7 skills covering: Bootstrap scaffolding, update UI (6 frameworks), 6 strategies (Client-Server/OSS/Silent/Differential/CVP/Push), advanced extension points (Bowl, IPC, AOT), 50+ known issues diagnosis with BM25 search engine, version migration, and security audit. All templates target NuGet v10.4.6 stable.",
+  "version": "0.0.1-bate.1",
+  "author": {
+    "name": "JusterZhu"
+  },
+  "license": "Apache-2.0",
+  "keywords": [
+    "generalupdate",
+    "auto-update",
+    "dotnet",
+    ".net",
+    "wpf",
+    "avalonia",
+    "maui",
+    "winforms",
+    "bootstrap",
+    "bowl",
+    "differential",
+    "nuget"
+  ],
+  "skills": [
+    ".claude/skills/generalupdate-init",
+    ".claude/skills/generalupdate-ui",
+    ".claude/skills/generalupdate-strategy",
+    ".claude/skills/generalupdate-advanced",
+    ".claude/skills/generalupdate-troubleshoot",
+    ".claude/skills/generalupdate-migration",
+    ".claude/skills/generalupdate-security-audit"
+  ]
+}

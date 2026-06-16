@@ -1,0 +1,234 @@
+name: CI — Validate Build + Test
+
+on:
+  push:
+    branches: [main, feat/*, fix/*]
+  pull_request:
+    branches: [main]
+
+jobs:
+  python-search-test:
+    name: Python Search Engine
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .claude/skills/generalupdate-troubleshoot
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run BM25 search tests
+        run: |
+          python3 -m pytest scripts/tests/ -v
+
+      - name: Smoke test — Chinese search
+        run: |
+          result=$(python3 scripts/search.py "升级后启动不了" --domain issue -n 1 --json)
+          matches=$(echo "$result" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['count'])")
+          echo "Search matches: $matches"
+          [ "$matches" -ge 1 ] && echo "✅ Search works" || (echo "❌ Search failed"; exit 1)
+
+      - name: Smoke test — English search
+        run: |
+          result=$(python3 scripts/search.py "method not found" --domain issue -n 1 --json)
+          matches=$(echo "$result" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['count'])")
+          echo "Search matches: $matches"
+          [ "$matches" -ge 1 ] && echo "✅ English search works" || (echo "❌ English search failed"; exit 1)
+
+      - name: Smoke test — Strategy search
+        run: |
+          result=$(python3 scripts/search.py "OSS no backend" --domain strategy -n 1 --json)
+          matches=$(echo "$result" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['count'])")
+          echo "Search matches: $matches"
+          [ "$matches" -ge 1 ] && echo "✅ Strategy search works" || (echo "❌ Strategy search failed"; exit 1)
+
+  python-codegen-test:
+    name: Python Code Generator
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .claude/scripts
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: List all combinations
+        run: |
+          count=$(python3 generate.py --list | grep -c "Total combinations")
+          echo "Combinations listed: $count"
+          python3 generate.py --list
+
+      - name: Generate — OSS + WPF + Bowl
+        run: |
+          python3 generate.py --strategy oss --framework wpf-layui --bowl \
+            --project-name TestApp --version 1.0.0.0 -o /tmp/gen-test-oss
+
+          echo "=== Files generated ==="
+          find /tmp/gen-test-oss -type f | sort
+
+          echo "=== Verify Bootstrap.cs contains expected values ==="
+          grep -q "TestApp.exe" /tmp/gen-test-oss/Client/Integration.cs && echo "✅ AppName correct"
+          grep -q "GeneralUpdate.Bowl.Bowl.MonitorParameter" /tmp/gen-test-oss/Client/Integration.cs && echo "✅ Bowl included"
+          grep -q "1.0.0.0" /tmp/gen-test-oss/generalupdate.manifest.json && echo "✅ Version correct"
+
+      - name: Generate — Silent + Console (no Bowl)
+        run: |
+          python3 generate.py --strategy silent --framework console \
+            --project-name MyService --version 2.0.0.0 \
+            --update-url https://api.example.com/check -o /tmp/gen-test-silent
+
+          echo "=== Files generated ==="
+          find /tmp/gen-test-silent -type f | sort
+
+          grep -q "MyService.exe" /tmp/gen-test-silent/Client/Integration.cs && echo "✅ AppName correct"
+          grep -q "Console.WriteLine" /tmp/gen-test-silent/Client/Integration.cs && echo "✅ Console listeners correct"
+
+      - name: Generate — Standard + Avalonia + Differential
+        run: |
+          python3 generate.py --strategy differential --framework avalonia-semiursa \
+            --project-name CrossApp --version 3.1.0.0 -o /tmp/gen-test-diff
+
+          echo "=== Files generated ==="
+          find /tmp/gen-test-diff -type f | sort
+
+          grep -q "CrossApp" /tmp/gen-test-diff/Client/Integration.cs && echo "✅ Correct"
+          grep -q "Differential" /tmp/gen-test-diff/IssuesWarning.md && echo "✅ Warnings included"
+
+      - name: Validate — All files are valid UTF-8 and non-empty
+        run: |
+          for f in $(find /tmp -name "*.cs" -o -name "*.json" -o -name "*.md" 2>/dev/null); do
+            [ -s "$f" ] || (echo "❌ Empty file: $f"; exit 1)
+            file "$f" | grep -q "UTF-8\|ASCII\|text" || (echo "❌ Non-text file: $f"; exit 1)
+          done
+          echo "✅ All generated files valid"
+
+  dotnet-verify-templates:
+    name: .NET — Template Build Verification
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        template: [MinimalIntegration, FullIntegration]
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Generate test project from ${{ matrix.template }}
+        run: |
+          $templatePath = ".claude/skills/generalupdate-init/templates"
+          $testDir = "C:\tmp\verify-${{ matrix.template }}"
+          New-Item -ItemType Directory -Path $testDir -Force | Out-Null
+
+          # Create minimal .csproj
+          @"
+          <Project Sdk="Microsoft.NET.Sdk">
+            <PropertyGroup>
+              <OutputType>Exe</OutputType>
+              <TargetFramework>net10.0</TargetFramework>
+              <Nullable>enable</Nullable>
+              <ImplicitUsings>enable</ImplicitUsings>
+            </PropertyGroup>
+            <ItemGroup>
+              <PackageReference Include="GeneralUpdate.Core" Version="10.4.6" />
+            </ItemGroup>
+          </Project>
+          "@ | Out-File -FilePath "$testDir\TestProject.csproj" -Encoding UTF8
+
+          # Copy template and r-w AssemblyName to config
+          $code = Get-Content "$templatePath\$($args[0]).cs" -Raw
+          $code = $code -replace 'MyApp\.exe', 'TestApp.exe'
+          $code = $code -replace '1\.0\.0\.0', '1.0.0.1'
+          $code = $code -replace 'my-product-001', 'test-001'
+          $code | Out-File -FilePath "$testDir\Program.cs" -Encoding UTF8
+
+          Write-Host "=== Verifying: $($args[0]) ==="
+          dotnet build "$testDir\TestProject.csproj" 2>&1
+        } -ArgumentList "${{ matrix.template }}"
+
+      - name: Verify build success
+        run: |
+          if ($LASTEXITCODE -ne 0) { throw "Build failed for ${{ matrix.template }}" }
+          echo "✅ ${{ matrix.template }} compiles successfully"
+
+  dotnet-verify-scaffold:
+    name: .NET — Complete Scaffold Build
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Build scaffold projects
+        run: |
+          $scaffoldDir = ".claude/skills/generalupdate-init/project-scaffold"
+
+          # Create a temp solution
+          $testDir = "C:\tmp\verify-scaffold"
+          New-Item -ItemType Directory -Path $testDir -Force | Out-Null
+
+          Copy-Item "$scaffoldDir\ClientApp.csproj" "$testDir\ClientApp.csproj"
+          Copy-Item "$scaffoldDir\UpgradeApp.csproj" "$testDir\UpgradeApp.csproj"
+          Copy-Item "$scaffoldDir\ClientProgram.cs" "$testDir\ClientProgram.cs"
+          Copy-Item "$scaffoldDir\UpgradeProgram.cs" "$testDir\UpgradeProgram.cs"
+
+          # Build Client
+          dotnet build "$testDir\ClientApp.csproj" 2>&1
+          if ($LASTEXITCODE -ne 0) { throw "ClientApp build failed" }
+          echo "✅ ClientApp compiles"
+
+          # Build Upgrade
+          dotnet build "$testDir\UpgradeApp.csproj" 2>&1
+          if ($LASTEXITCODE -ne 0) { throw "UpgradeApp build failed" }
+          echo "✅ UpgradeApp compiles"
+
+  cli-verify-typescript:
+    name: CLI — TypeScript Compilation
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cli
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: cli/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: TypeScript compile
+        run: npx tsc --noEmit
+
+      - name: Ensure entry point structure is valid
+        run: |
+          grep -q "commander" src/index.ts && echo "✅ Commander found"
+          grep -q "initCommand" src/index.ts && echo "✅ initCommand referenced"

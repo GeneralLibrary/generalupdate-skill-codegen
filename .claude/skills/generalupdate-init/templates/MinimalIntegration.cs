@@ -25,12 +25,12 @@ public static class MinimalIntegration
         // 1. 创建配置对象
         var config = new UpdateRequest
         {
-            UpdateUrl = "https://your-server.com/api",
-            AppSecretKey = "your-32-char-secret-key-here!",
-            MainAppName = "MyApp.exe",
-            ClientVersion = "1.0.0.0",
-            ProductId = "my-product-001",
-            InstallPath = "."
+            UpdateUrl = "{{UPDATE_URL}}",
+            AppSecretKey = "{{APP_SECRET_KEY}}",
+            MainAppName = "{{PROJECT_NAME}}.exe",
+            ClientVersion = "{{CLIENT_VERSION}}",
+            ProductId = "{{PRODUCT_ID}}",
+            InstallPath = "{{INSTALL_PATH}}"
         };
 
         // 2. 启动更新
