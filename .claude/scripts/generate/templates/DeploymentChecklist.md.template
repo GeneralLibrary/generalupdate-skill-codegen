@@ -7,7 +7,7 @@ Generated for: **{{STRATEGY_NAME}}** + **{{FRAMEWORK}}** | Bowl: **{{BOWL_UPPER}
 ## ✅ Pre-Deployment Checklist
 
 ### Bootstrap
-- [ ] `Configinfo` 6 个必填字段都已设置
+- [ ] `UpdateRequest` 6 个必填字段都已设置
 - [ ] `UpdateUrl` 已指向正确的服务端 API
 - [ ] `AppSecretKey` 长度 ≥ 32 字符
 
