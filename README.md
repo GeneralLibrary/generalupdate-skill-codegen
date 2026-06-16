@@ -1,79 +1,87 @@
 # GeneralUpdate Skill CodeGen
 
-**Claude Code 技能套件** — 帮助 .NET 开发者在 5 分钟内将 [GeneralUpdate](https://github.com/GeneralLibrary/GeneralUpdate) 自动更新系统集成到任意 .NET 应用中。
+**Claude Code Skill Suite** — helps .NET developers integrate the [GeneralUpdate](https://github.com/GeneralLibrary/GeneralUpdate) auto-update system into any .NET application in under 5 minutes.
 
-覆盖 50+ 真实 Issue 发现的已知问题，提供即用型代码生成 + 深度故障排查。
+Covers 50+ known issues discovered from real GitHub/Gitee feedback, providing production-ready code generation and deep troubleshooting.
 
-> **当前版本：v1.0.0** — 针对 NuGet `GeneralUpdate.Core ≥ 10.4.6` 稳定版
-> 兼容性：`v10.4.6`（NuGet 最新稳定版）
-> 所有 32 个模板文件已通过 `dotnet build` 编译验证（0 errors）。
+> **Current Version: v1.0.0** — targets NuGet `GeneralUpdate.Core ≥ 10.4.6` stable release
+> Compatibility: `v10.4.6` (NuGet latest stable)
+> All 32 template files verified via `dotnet build` (0 errors).
 
-## 技能总览
+---
 
-| 技能 | 命令 | 一句话功能 | 覆盖量 |
-|------|------|-----------|--------|
-| 🚀 `generalupdate-init` | `/generalupdate-init` | 双项目脚手架 + Bootstrap 配置（4 种方式） | 4 大场景 + 4 种配置方式 + 完整 API |
-| 🎨 `generalupdate-ui` | `/generalupdate-ui` | 自动识别 UI 框架，生成全状态更新窗口（11 种状态） | 6 UI 框架 + 全状态机 + 桥接代码 |
-| ⚙️ `generalupdate-strategy` | `/generalupdate-strategy` | 6 种策略决策树 + 混合组合 + 平台差异 | 6 策略 + 4 组合 + 平台对照 |
-| 🔧 `generalupdate-advanced` | `/generalupdate-advanced` | 10+ 扩展点 + 4 种 IPC + Bowl + AOT | 10+ 扩展点 + 完整架构图 |
-| 🩺 `generalupdate-troubleshoot` | `/generalupdate-troubleshoot` | 50+ 已知问题诊断 + 6 步通用排查 | 8 致命 + 11 高 + 20 中 + 12 低 |
+## Skills Overview
 
-## 快速开始
+| Skill | Command | One-Liner | Coverage |
+|-------|---------|-----------|----------|
+| 🚀 `generalupdate-init` | `/generalupdate-init` | Dual-project scaffold + Bootstrap config (4 methods) | 4 scenes + 4 config methods + full API |
+| 🎨 `generalupdate-ui` | `/generalupdate-ui` | Auto-detect UI framework, generate full-state update window (11 states) | 6 UI frameworks + full state machine + bridge code |
+| ⚙️ `generalupdate-strategy` | `/generalupdate-strategy` | 6-strategy decision tree + mixed combinations + platform diff | 6 strategies + 4 combos + platform matrix |
+| 🔧 `generalupdate-advanced` | `/generalupdate-advanced` | 10+ extension points + 4 IPC + Bowl + AOT | 10+ ext points + full architecture diagram |
+| 🩺 `generalupdate-troubleshoot` | `/generalupdate-troubleshoot` | 50+ known issues diagnosis + 6-step universal check | 8 critical + 11 high + 20 medium + 12 low |
 
-在 Claude Code 中，只需描述你的需求：
+---
+
+## Quick Start
+
+In Claude Code, simply describe your needs:
 
 ```
-"给我的 WPF 应用添加自动更新"
-→ 自动激活 generalupdate-init + generalupdate-ui
+"Add auto-update to my WPF app"
+→ Automatically activates generalupdate-init + generalupdate-ui
 
-"更新成功了但启动报错"
-→ 自动激活 generalupdate-troubleshoot
+"Update succeeded but the app crashes on startup"
+→ Automatically activates generalupdate-troubleshoot
 
-"配置 OSS 静默更新"
-→ 自动激活 generalupdate-strategy
+"Configure OSS silent update"
+→ Automatically activates generalupdate-strategy
 
-"添加 Bowl 崩溃守护 + 自定义 Hooks"
-→ 自动激活 generalupdate-advanced
+"Add Bowl crash daemon + custom Hooks"
+→ Automatically activates generalupdate-advanced
 ```
 
-### 使用前提
+### Prerequisites
 
-1. **Claude Code**：需要安装并配置 [Claude Code CLI](https://claude.com/claude-code)
-2. **.NET SDK**：目标项目需基于 .NET 8+（推荐 .NET 10）
-3. **GeneralUpdate 服务端**：对于标准策略，需要部署 [GeneralSpacestation](https://github.com/JusterZhu/GeneralSpacestation) 或兼容的后端服务
-4. **双进程架构**：需要理解 Client + Upgrade 双进程的核心理念
+1. **Claude Code**: requires [Claude Code CLI](https://claude.com/claude-code) installed and configured
+2. **.NET SDK**: target project must target .NET 8+ (.NET 10 recommended)
+3. **GeneralUpdate Server**: for standard strategies, deploy [GeneralSpacestation](https://github.com/JusterZhu/GeneralSpacestation) or a compatible backend
+4. **Dual-Process Architecture**: basic understanding of the Client + Upgrade dual-process model
 
-## 数据来源
+---
 
-所有技能的内容基于以下真实数据：
+## Data Sources
 
-- **GitHub Issues**: #308–#517（重构、Bug、功能、测试）
-- **Gitee Issues**: 30 个真实用户反馈（中文社区痛点）
-- **全面代码审计**: 17 CRITICAL/HIGH + 14 MEDIUM + 10 INFO 发现
-- **Samples 源码**: CompleteUpdateSample、SilentUpdateSample、OssSample、DifferentialSample、PushSample、BowlSample、ExtensionSample、CompressSample、ImDiskQuickInstallSample
-- **UI Samples**: SemiUrsa、LayUI、AntdUI、WPFDevelopers、MauiUpdate、AndroidUpdate
+All skill content is derived from real-world sources:
 
-## 技能文件结构
+- **GitHub Issues**: #308–#517 (refactoring, bugs, features, tests)
+- **Gitee Issues**: 30 real user reports (Chinese community pain points)
+- **Full Code Audit**: 17 CRITICAL/HIGH + 14 MEDIUM + 10 INFO findings
+- **Samples Source**: CompleteUpdateSample, SilentUpdateSample, OssSample, DifferentialSample, PushSample, BowlSample, ExtensionSample, CompressSample, ImDiskQuickInstallSample
+- **UI Samples**: SemiUrsa, LayUI, AntdUI, WPFDevelopers, MauiUpdate, AndroidUpdate
+
+---
+
+## Skill File Structure
 
 ```
 .claude/skills/
 ├── generalupdate-init/         (7 files)
-│   ├── SKILL.md                     ← 4大场景 + 4种配置 + API详解
-│   ├── reference.md                 ← NuGet/API/协议/框架兼容性
+│   ├── SKILL.md                     ← 4 scenes + 3 config methods + API deep-dive
+│   ├── reference.md                 ← NuGet/API/protocol/framework compatibility
 │   └── templates/
-│       ├── MinimalIntegration.cs    ← 3行代码 + 注释说明
-│       ├── FullIntegration.cs       ← 完整配置 + Upgrade进程 + appsettings
+│       ├── MinimalIntegration.cs    ← 3 lines + annotations
+│       ├── FullIntegration.cs       ← Full config + Upgrade process + appsettings
 │       ├── generalupdate.manifest.json
 │       └── project-scaffold/
 │           ├── ClientApp.csproj / ClientProgram.cs
 │           └── UpgradeApp.csproj / UpgradeProgram.cs
 │
 ├── generalupdate-ui/           (10 files)
-│   ├── SKILL.md                     ← 11状态UI状态机 + 框架检测逻辑
+│   ├── SKILL.md                     ← 11-state UI state machine + framework detection
 │   └── templates/
-│       ├── RealDownloadService.cs   ← ★ 核心桥接 Mock→GeneralUpdate
-│       ├── DownloadViewModels.cs    ← 全状态MVVM ViewModel
-│       ├── SemiUrsaClientView.axaml ← Avalonia全状态窗口
+│       ├── RealDownloadService.cs   ← ★ Core bridge: Mock→GeneralUpdate
+│       ├── DownloadViewModels.cs    ← Full-state MVVM ViewModel
+│       ├── SemiUrsaClientView.axaml ← Avalonia full-state window
 │       ├── SemiUrsaUpgradeView.axaml
 │       ├── LayUIStyle.xaml          ← WPF+LayUI
 │       ├── WPFDevelopersStyle.xaml  ← WPF+WPFDevelopers
@@ -81,79 +89,105 @@
 │       └── MauiUpdatePage.xaml/.cs  ← MAUI
 │
 ├── generalupdate-strategy/     (7 files)
-│   ├── SKILL.md                     ← 决策树 + 6策略详解 + 混合 + 平台对照
+│   ├── SKILL.md                     ← Decision tree + 6 strategies + mixing + platform
 │   └── examples/
-│       ├── ClientServerStrategy.cs  ← 标准服务端模式
-│       ├── OssStrategy.cs           ← 对象存储模式
-│       ├── SilentStrategy.cs        ← 静默轮询模式
-│       ├── DifferentialStrategy.cs  ← 差分更新模式
-│       ├── CrossVersionStrategy.cs  ← 跨版本CVP模式
-│       └── PushStrategy.cs          ← SignalR推送模式
+│       ├── ClientServerStrategy.cs  ← Standard server mode
+│       ├── OssStrategy.cs           ← Object storage mode
+│       ├── SilentStrategy.cs        ← Silent polling mode
+│       ├── DifferentialStrategy.cs  ← Delta update mode
+│       ├── CrossVersionStrategy.cs  ← Cross-version CVP mode
+│       └── PushStrategy.cs          ← SignalR push mode
 │
 ├── generalupdate-advanced/     (6 files)
-│   ├── SKILL.md                     ← 10+扩展点 + IPC + Bowl + 事件系统
-│   ├── reference.md                 ← 扩展点速查 + Bowl选项
+│   ├── SKILL.md                     ← 10+ ext points + 4 IPC + Bowl + event system
+│   ├── reference.md                 ← Extension API quick ref + Bowl options
 │   └── templates/
-│       ├── CustomHooks.cs           ← 完整IUpdateHooks + Unix权限
-│       ├── CustomStrategy.cs        ← 自定义平台策略
-│       ├── BowlIntegration.cs       ← 崩溃守护配置
-│       └── NamedPipeIPC.cs          ← 命名管道IPC替换
+│       ├── CustomHooks.cs           ← Full IUpdateHooks + Unix permissions
+│       ├── CustomStrategy.cs        ← Custom platform strategy
+│       ├── BowlIntegration.cs       ← Crash daemon config
+│       └── NamedPipeIPC.cs          ← Named pipe IPC replacement
 │
 └── generalupdate-troubleshoot/ (2 files)
-    ├── SKILL.md                     ← 诊断工作流
-    └── reference.md                 ← ★ 50+症状清单（C/H/M/L四级）
+    ├── SKILL.md                     ← Diagnostic workflow
+    └── reference.md                 ← ★ 50+ symptom catalog (C/H/M/L levels)
 ```
 
-## 版本历史
+---
+
+## Known Limitations
+
+> ⚠️ **NuGet Reference Rules**:
+> - Core only: `dotnet add package GeneralUpdate.Core`
+> - With Bowl: reference **only** `GeneralUpdate.Bowl` (it transitively includes Core — the two cannot coexist)
+> - Differential types are already embedded in Core, **no need** for `GeneralUpdate.Differential`
+
+> ⚠️ **API Surface**: The NuGet stable release (v10.4.6) has a simpler API than the development branch (v10.5.0-beta.2). The following are **not available** in the current stable release:
+> - No programmable `Option` config system (only `Configinfo` properties)
+> - No `IUpdateHooks` lifecycle hooks
+> - No `IStrategy` replaceable strategy interface
+> - No `SilentPollOrchestrator`
+> - No `ProcessContract`/IPC replacement interface
+>
+> These features may ship in a future version. All templates target the **stable v10.4.6** API.
+
+See [BUGS.md](BUGS.md) for the full audit trail.
+
+---
+
+## Version History
 
 ### v1.0.0 — 2026-06-16
 
-**相比开发分支（v10.5.0-beta.2），稳定版 NuGet v10.4.6 的 API 有根本性差异。**  
-所有模板已根据 **稳定版 API** 重写并通过编译验证。
+**The NuGet stable release (v10.4.6) API is fundamentally different from the development branch (v10.5.0-beta.2).**
+All templates have been rewritten for the **stable API** and verified to compile.
 
-**核心 API 差异**：
-- ❌ 无 `SetSource()`、`SetOption()`、`Hooks<T>()`、`Strategy<T>()`、`SilentOrchestrator`
-- ❌ 无 `IUpdateHooks`、`IStrategy` 扩展点接口
-- ✅ `Configinfo` + `SetConfig()` + `LaunchAsync()` 为核心 API
-- ✅ `AppType` 是 class（非 enum），`ClientApp = 1`、`UpgradeApp = 2`
-- ✅ `LaunchAsync()` 返回 `Task<GeneralUpdateBootstrap>`（非 `Task<bool>`）
-- ⚠️ NuGet 包引用规则：使用 Bowl 时只引用 `GeneralUpdate.Bowl`，不额外引用 Core
+**Key API Differences**:
+- ❌ No `SetSource()`, `SetOption()`, `Hooks<T>()`, `Strategy<T>()`, `SilentOrchestrator`
+- ❌ No `IUpdateHooks`, `IStrategy` extension point interfaces
+- ✅ `Configinfo` + `SetConfig()` + `LaunchAsync()` is the core API
+- ✅ `AppType` is a class (not enum), `ClientApp = 1`, `UpgradeApp = 2`
+- ✅ `LaunchAsync()` returns `Task<GeneralUpdateBootstrap>` (not `Task<bool>`)
+- ⚠️ NuGet reference rule: when using Bowl, reference **only** `GeneralUpdate.Bowl`, do not reference Core separately
 
-**变更清单**：
-- **重写**：全部 12 个模板/示例文件，使用 `Configinfo` API
-- **重写**：全部 5 个策略示例（适配 v10.4.6 稳定版）
-- **重写**：UI 桥接模板（`RealDownloadService.cs`）
-- **修复**：代码使用 `using GeneralUpdate.Common.Shared.Object` 命名空间
-- **删除**：不存在的 `SetOption`、扩展点、`IUpdateHooks`、`IProcessInfoProvider` 等引用
-- **新增**：英文版 README（README.en.md）
-- **新增**：中文版 README（README.zh-Hans.md）
-- **新增**：BUGS.md（审计报告与修复方案）
+**Changelog**:
+- **Rewritten**: All 12 template/example files to use the `Configinfo` API
+- **Rewritten**: All 5 strategy examples (adapted for v10.4.6 stable)
+- **Rewritten**: UI bridge templates (`RealDownloadService.cs`)
+- **Fixed**: Code uses `using GeneralUpdate.Common.Shared.Object` namespace
+- **Removed**: Nonexistent `SetOption`, extension points, `IUpdateHooks`, `IProcessInfoProvider` references
+- **Added**: English README (`README.en.md`)
+- **Added**: Simplified Chinese README (`README.zh-Hans.md`)
+- **Added**: `BUGS.md` (audit report with fixes)
 
-详见 [BUGS.md](BUGS.md)。
+See [BUGS.md](BUGS.md) for details.
 
-## 如何贡献
+---
 
-1. 提交 Issue 报告 Bug 或功能请求
-2. Fork 本仓库，在 `.claude/skills/` 下添加或修改技能
-3. 确保模板代码与 GeneralUpdate 最新版 API 一致
-4. 提交 PR
+## Contributing
 
-### 开发指南
+1. File an Issue to report bugs or request features
+2. Fork this repo, add/modify skills under `.claude/skills/`
+3. Ensure template code aligns with the latest GeneralUpdate API
+4. Submit a PR
+
+### Development Guide
 
 ```bash
-# 本地测试技能
+# Test skills locally in Claude Code
 claude-code --load-skills .claude/skills/
 
-# 验证模板代码可编译
+# Verify template code compiles
 dotnet build your-test-project/
 ```
 
-## 许可证
+---
 
-Apache 2.0 — 与 GeneralUpdate 主项目一致
+## License
 
-## 相关项目
+Apache 2.0 — consistent with the GeneralUpdate main project.
 
-- [GeneralUpdate](https://github.com/GeneralLibrary/GeneralUpdate) — .NET 自动更新核心库
-- [GeneralSpacestation](https://github.com/JusterZhu/GeneralSpacestation) — 更新服务端
-- [GeneralUpdate-Samples](https://github.com/GeneralLibrary/GeneralUpdate-Samples) — 示例项目合集
+## Related Projects
+
+- [GeneralUpdate](https://github.com/GeneralLibrary/GeneralUpdate) — .NET auto-update core library
+- [GeneralSpacestation](https://github.com/JusterZhu/GeneralSpacestation) — Update server backend
+- [GeneralUpdate-Samples](https://github.com/GeneralLibrary/GeneralUpdate-Samples) — Sample projects collection
