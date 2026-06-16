@@ -22,6 +22,8 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Install test dependencies
+        run: pip install pytest
       - name: Run BM25 search tests
         run: |
           python3 -m pytest scripts/tests/ -v
@@ -147,7 +149,7 @@ jobs:
               <ImplicitUsings>enable</ImplicitUsings>
             </PropertyGroup>
             <ItemGroup>
-              <PackageReference Include="GeneralUpdate.Core" Version="10.4.6" />
+              <PackageReference Include="GeneralUpdate.Core" Version="10.5.0-beta.4" />
             </ItemGroup>
           </Project>
           "@ | Out-File -FilePath "$testDir\TestProject.csproj" -Encoding UTF8
@@ -185,23 +187,26 @@ jobs:
       - name: Build scaffold projects
         run: |
           $scaffoldDir = ".claude/skills/generalupdate-init/project-scaffold"
+          $rootDir = "C:\tmp\verify-scaffold"
 
-          # Create a temp solution
-          $testDir = "C:\tmp\verify-scaffold"
-          New-Item -ItemType Directory -Path $testDir -Force | Out-Null
+          # Use separate subdirectories so each project only sees its own .cs files
+          $clientDir = "$rootDir\Client"
+          $upgradeDir = "$rootDir\Upgrade"
+          New-Item -ItemType Directory -Path $clientDir -Force | Out-Null
+          New-Item -ItemType Directory -Path $upgradeDir -Force | Out-Null
 
-          Copy-Item "$scaffoldDir\ClientApp.csproj" "$testDir\ClientApp.csproj"
-          Copy-Item "$scaffoldDir\UpgradeApp.csproj" "$testDir\UpgradeApp.csproj"
-          Copy-Item "$scaffoldDir\ClientProgram.cs" "$testDir\ClientProgram.cs"
-          Copy-Item "$scaffoldDir\UpgradeProgram.cs" "$testDir\UpgradeProgram.cs"
+          Copy-Item "$scaffoldDir\ClientApp.csproj" "$clientDir\ClientApp.csproj"
+          Copy-Item "$scaffoldDir\UpgradeApp.csproj" "$upgradeDir\UpgradeApp.csproj"
+          Copy-Item "$scaffoldDir\ClientProgram.cs" "$clientDir\Program.cs"
+          Copy-Item "$scaffoldDir\UpgradeProgram.cs" "$upgradeDir\Program.cs"
 
           # Build Client
-          dotnet build "$testDir\ClientApp.csproj" 2>&1
+          dotnet build "$clientDir\ClientApp.csproj" 2>&1
           if ($LASTEXITCODE -ne 0) { throw "ClientApp build failed" }
           echo "✅ ClientApp compiles"
 
           # Build Upgrade
-          dotnet build "$testDir\UpgradeApp.csproj" 2>&1
+          dotnet build "$upgradeDir\UpgradeApp.csproj" 2>&1
           if ($LASTEXITCODE -ne 0) { throw "UpgradeApp build failed" }
           echo "✅ UpgradeApp compiles"
 
