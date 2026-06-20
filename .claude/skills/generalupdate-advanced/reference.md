@@ -1,8 +1,8 @@
 # GeneralUpdate 扩展参考
 
-> ⚠️ 基于 **NuGet v10.5.0-beta.4** API。
+> ⚠️ 基于 **NuGet v10.5.0-beta.6** API。
 
-## 注入方法调用链（v10.5.0-beta.4）
+## 注入方法调用链（v10.5.0-beta.6）
 
 ```csharp
 new GeneralUpdateBootstrap()

@@ -1,6 +1,6 @@
 // ⚠️ Bowl 崩溃守护
 // dotnet add package GeneralUpdate.Bowl
-// NuGet v10.5.0-beta.4: Bowl 与 Core 无类型冲突，可按需同时引用
+// NuGet v10.5.0-beta.6: Bowl 与 Core 无类型冲突，可按需同时引用
 // Refer to generalupdate-advanced/templates/BowlIntegration.cs for full example
 var context = new GeneralUpdate.Bowl.BowlContext
 {

@@ -94,7 +94,7 @@ public partial class UpdateForm : AntdUI.Window
                 InstallPath = ".",
             };
 
-            // v10.5.0-beta.4 API
+            // v10.5.0-beta.6 API
             await new GeneralUpdateBootstrap()
                 .SetConfig(config)
                 .AddListenerMultiDownloadStatistics((_, e) =>

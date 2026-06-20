@@ -45,7 +45,7 @@ STRATEGIES = {
         "name": "Differential Update",
         "slug": "differential",
         "description": "Delta patch update to save bandwidth (BSDIFF/HDiffPatch)",
-        "warning": "差分包大小建议不超过 2GB，避免 BSDIFF 整数溢出（v10.5.0-beta.4 已修复 #514）。",
+        "warning": "差分包大小建议不超过 2GB，避免 BSDIFF 整数溢出（v10.5.0-beta.6 已修复 #514）。",
     },
     "cvp": {
         "name": "Cross-Version CVP",
@@ -183,7 +183,7 @@ def generate_issue_warnings(strategy, variables):
   - H4: OSS 不区分 Main/Upgrade 更新包，接受此行为
   - H5: Upgrade.exe 必须放在 update/ 子目录
   - L7: 示例代码中 OSS endpoint/bucket 写死，建议用环境变量
-  - M13: OssClient.AppType 值 3-4 在 v10.5.0-beta.4 中可用""",
+  - M13: OssClient.AppType 值 3-4 在 v10.5.0-beta.6 中可用""",
         "silent": """⚠️ 静默更新特有已知问题:
   - H2: 无限升级循环 — 确保 manifest.json 版本号正确
   - M19: 静默通知可能不尊重系统的免打扰设置

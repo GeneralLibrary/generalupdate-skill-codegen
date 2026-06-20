@@ -4,8 +4,8 @@
 
 Covers 50+ known issues discovered from real GitHub/Gitee feedback, providing production-ready code generation and deep troubleshooting.
 
-> **Current Version: 0.0.2-beta.1** — targets NuGet `GeneralUpdate.Core 10.5.0-beta.4`
-> Compatibility: `v10.5.0-beta.4` (NuGet latest preview)
+> **Current Version: 0.0.2-beta.1** — targets NuGet `GeneralUpdate.Core 10.5.0-beta.6`
+> Compatibility: `v10.5.0-beta.6` (NuGet latest preview)
 > All templates verified via `dotnet build` (0 errors).
 
 ---
@@ -121,7 +121,7 @@ All skill content is derived from real-world sources:
 > - With Bowl: reference **only** `GeneralUpdate.Bowl` (it transitively includes Core — the two cannot coexist)
 > - Differential types are already embedded in Core, **no need** for `GeneralUpdate.Differential`
 
-> ⚠️ **API Surface**: v10.5.0-beta.4 introduces the new `UpdateRequest` config system and adds programmable `Option`, `IUpdateHooks`, `IStrategy`, and other extension points. See the full API compatibility table below.
+> ⚠️ **API Surface**: v10.5.0-beta.6 introduces the new `UpdateRequest` config system and adds programmable `Option`, `IUpdateHooks`, `IStrategy`, and other extension points. See the full API compatibility table below.
 
 See [BUGS.md](BUGS.md) for the full audit trail.
 
@@ -131,13 +131,13 @@ See [BUGS.md](BUGS.md) for the full audit trail.
 
 ### 0.0.2-bate.1 — 2026-06-16
 
-Updated for GeneralUpdate v10.5.0-beta.4 API:
+Updated for GeneralUpdate v10.5.0-beta.6 API:
 - Updated all templates to use `UpdateRequest` instead of `Configinfo`
 - Fixed namespaces: `GeneralUpdate.Core.Configuration`, `GeneralUpdate.Core.Download`, `GeneralUpdate.Core.Event`
 - Fixed `IsComplated` → `IsCompleted`
 - Added `SetSource()`, `SetOption()`, `Hooks<T>()`, `Strategy<T>()` API coverage
 - Updated CustomHooks.cs and CustomStrategy.cs with active v10.5 implementations
-- Updated NuGet versions to 10.5.0-beta.4
+- Updated NuGet versions to 10.5.0-beta.6
 
 ### 0.0.1-bate.1 — 2026-06-16
 

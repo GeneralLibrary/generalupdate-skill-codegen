@@ -11,7 +11,7 @@ using GeneralUpdate.Core.Download;
 /// - (可选) POST /Upgrade/Report — 状态上报
 ///
 /// NuGet: dotnet add package GeneralUpdate.Core
-/// ⚠️ 针对 NuGet v10.5.0-beta.4
+/// ⚠️ 针对 NuGet v10.5.0-beta.6
 /// </summary>
 public static class ClientServerStrategy
 {

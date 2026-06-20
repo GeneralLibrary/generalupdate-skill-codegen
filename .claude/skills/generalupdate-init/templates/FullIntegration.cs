@@ -14,7 +14,7 @@ using GeneralUpdate.Core.Models;
 /// - 错误处理
 /// - Upgrade 进程配置
 ///
-/// 针对 NuGet v10.5.0-beta.4
+/// 针对 NuGet v10.5.0-beta.6
 /// </summary>
 public static class FullIntegration
 {

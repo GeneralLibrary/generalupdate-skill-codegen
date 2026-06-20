@@ -14,7 +14,7 @@ namespace Common.Avalonia.Services;
 /// 覆盖全部 UI 状态：Idle → Checking → FoundUpdate → Downloading → Paused
 /// → DownloadError → Applying → Success / Failed → RollingBack
 ///
-/// ⚠️ 针对 NuGet v10.5.0-beta.4 API。
+/// ⚠️ 针对 NuGet v10.5.0-beta.6 API。
 /// Configinfo → UpdateRequest 替换，命名空间更新。
 /// </summary>
 public class RealDownloadService : IDownloadService

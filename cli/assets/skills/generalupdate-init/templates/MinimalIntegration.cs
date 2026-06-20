@@ -16,7 +16,7 @@ using GeneralUpdate.Core.Configuration;
 /// 如果以上条件不满足，请使用 FullIntegration.cs 显式配置。
 ///
 /// NuGet: dotnet add package GeneralUpdate.Core
-/// ⚠️ 针对 NuGet v10.5.0-beta.4
+/// ⚠️ 针对 NuGet v10.5.0-beta.6
 /// </summary>
 public static class MinimalIntegration
 {

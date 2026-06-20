@@ -8,7 +8,7 @@ using GeneralUpdate.Core.Download;
 /// 适用于用户长期不关闭应用的场景（如桌面工具、监控面板）。
 /// GeneralUpdate 在检测到更新后自动后台下载，下次启动时应用新版本。
 ///
-/// v10.5.0-beta.4 通过 SetOption(Option.Silent, true) 启用静默模式。
+/// v10.5.0-beta.6 通过 SetOption(Option.Silent, true) 启用静默模式。
 ///
 /// NuGet: dotnet add package GeneralUpdate.Core
 /// </summary>

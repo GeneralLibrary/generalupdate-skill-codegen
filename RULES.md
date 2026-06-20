@@ -11,7 +11,7 @@
 - Pre-Delivery Checklist + Anti-Pattern tables in every sub-skill SKILL.md
 - Always extract user requirements template before generating code (frontmatter in SKILL.md)
 
-## Bootstrap (v10.5.0-beta.4 API)
+## Bootstrap (v10.5.0-beta.6 API)
 - UpdateRequest / SetSource() + SetConfig() + LaunchAsync()
 - Events: AddListenerUpdateInfo, AddListenerMultiDownloadStatistics, etc.
 - Zero-config: `SetSource(updateUrl, appSecretKey)` — auto-configures identity from manifest
@@ -20,12 +20,12 @@
 - Strategy: `Strategy<T>()` — custom update strategy (IStrategy)
 
 ## NuGet Package Rules
-- Core only: `dotnet add package GeneralUpdate.Core --version 10.5.0-beta.4`
-- With Bowl: reference **both** `GeneralUpdate.Core` and `GeneralUpdate.Bowl` (v10.5.0-beta.4: Bowl is standalone, no type conflict)
+- Core only: `dotnet add package GeneralUpdate.Core --version 10.5.0-beta.6`
+- With Bowl: reference **both** `GeneralUpdate.Core` and `GeneralUpdate.Bowl` (v10.5.0-beta.6: Bowl is standalone, no type conflict)
 - Differential: types are **embedded in Core**, no extra package needed
 - Extension, Drivelution: standalone, no conflicts
 
-## AppType (v10.5.0-beta.4 — enum)
+## AppType (v10.5.0-beta.6 — enum)
 - `AppType.Client = 1`, `AppType.Upgrade = 2`, `AppType.OssClient = 3`, `AppType.OssUpgrade = 4`
 
 ## UpdateRequest Required
@@ -43,7 +43,7 @@ UpdateUrl, AppSecretKey, ClientVersion, MainAppName, ProductId
 Windows: Hash->Decompress->Patch+Bowl+Drivelution
 Linux/Mac: Hash->Decompress->Patch (no Bowl)
 
-## Event Args (v10.5.0-beta.4)
+## Event Args (v10.5.0-beta.6)
 - UpdateInfoEventArgs: Info?.Body (List<VersionEntry>)
 - MultiDownloadStatisticsEventArgs: ProgressPercentage, Speed, Remaining, TotalBytesToReceive, BytesReceived
 - MultiDownloadCompletedEventArgs: **Version** (object), **IsCompleted** (bool)

@@ -1,6 +1,6 @@
 # GeneralUpdate 参考手册
 
-> ⚠️ **针对 NuGet v10.5.0-beta.4 API**。该版本使用 `UpdateRequest` 配置，支持可编程 `Option` 系统。
+> ⚠️ **针对 NuGet v10.5.0-beta.6 API**。该版本使用 `UpdateRequest` 配置，支持可编程 `Option` 系统。
 
 ## NuGet 包
 
@@ -8,15 +8,15 @@
 
 | 包名 | 用途 | 必需 | .NET 版本 | 典型版本 |
 |------|------|------|-----------|---------|
-| `GeneralUpdate.Core` | 核心引擎（Bootstrap/下载/事件） | ✅ 是 | net8.0;net10.0 | 10.5.0-beta.4 |
-| `GeneralUpdate.Differential` | BSDIFF/HDiffPatch 差分补丁 | ❌ 可选 | net8.0;net10.0 | 10.5.0-beta.4 |
-| `GeneralUpdate.Bowl` | 进程崩溃监控、MiniDump、自动回滚 | ❌ 可选 | net8.0;net10.0 | 10.5.0-beta.4 |
+| `GeneralUpdate.Core` | 核心引擎（Bootstrap/下载/事件） | ✅ 是 | net8.0;net10.0 | 10.5.0-beta.6 |
+| `GeneralUpdate.Differential` | BSDIFF/HDiffPatch 差分补丁 | ❌ 可选 | net8.0;net10.0 | 10.5.0-beta.6 |
+| `GeneralUpdate.Bowl` | 进程崩溃监控、MiniDump、自动回滚 | ❌ 可选 | net8.0;net10.0 | 10.5.0-beta.6 |
 | `GeneralUpdate.Extension` | 插件管理系统 | ❌ 可选 | net8.0;net10.0 | ≥ 10.5.0 |
-| `GeneralUpdate.Drivelution` | Windows 驱动更新 | ❌ 可选 | net8.0;net10.0 | 10.5.0-beta.4 |
+| `GeneralUpdate.Drivelution` | Windows 驱动更新 | ❌ 可选 | net8.0;net10.0 | 10.5.0-beta.6 |
 
-> ⚠️ **NuGet 注意事项**（v10.5.0-beta.4）：
+> ⚠️ **NuGet 注意事项**（v10.5.0-beta.6）：
 > - `GeneralUpdate.Differential` 的 `DifferentialCore` 等类型已内嵌在 `GeneralUpdate.Core` 中，**不需额外引用**（直接使用 Core 即可）
-> - `GeneralUpdate.Bowl` 和 `GeneralUpdate.Core` **可以同时引用**（v10.5.0-beta.4 中 Bowl 与 Core 无共用类型，不再冲突）
+> - `GeneralUpdate.Bowl` 和 `GeneralUpdate.Core` **可以同时引用**（v10.5.0-beta.6 中 Bowl 与 Core 无共用类型，不再冲突）
 > - 使用 Bowl 时仍需引用 `GeneralUpdate.Bowl`（它**不**传递依赖 Core）
 
 ## UpdateRequest 字段完整说明
