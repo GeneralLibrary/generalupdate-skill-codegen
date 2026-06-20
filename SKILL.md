@@ -6,7 +6,7 @@ description: |
   configuration (4 methods), full-state update UI (6 frameworks), 6 strategy implementations
   (Client-Server/OSS/Silent/Differential/CVP/Push), advanced extension points (IPC replacement,
   Bowl crash daemon, custom Hooks, AOT), and deep troubleshooting (50+ known issues).
-  All templates target NuGet v10.5.0-beta.4 API.
+  All templates target NuGet v10.5.0-beta.6 API.
 
   Triggers on: "GeneralUpdate", "auto update", "自动更新", "update framework",
   ".NET update", "Claude Code skill suite", "GeneralUpdate Skill CodeGen",
@@ -46,8 +46,8 @@ allowed-tools: "Bash, Read, Write, Edit, Glob, Grep, WebSearch"
 
 覆盖 50+ 真实 Issue 发现的已知问题，提供即用型代码生成 + 深度故障排查。
 
-> **Current Version: 0.0.2-beta.1** — targets NuGet `GeneralUpdate.Core 10.5.0-beta.4`  
-> 兼容性：`v10.5.0-beta.4`（NuGet 最新预览版）  
+> **Current Version: 0.0.2-beta.1** — targets NuGet `GeneralUpdate.Core 10.5.0-beta.6`  
+> 兼容性：`v10.5.0-beta.6`（NuGet 最新预览版）  
 > 所有模板已通过 `dotnet build` 编译验证（0 errors）。
 
 ---
@@ -310,11 +310,11 @@ Q5（接 Q4 成功）: 你需要什么？
 ## API Compatibility
 
 > ⚠️ **NuGet Reference Rules**:
-> - Core only: `dotnet add package GeneralUpdate.Core --version 10.5.0-beta.4`
+> - Core only: `dotnet add package GeneralUpdate.Core --version 10.5.0-beta.6`
 > - With Bowl: reference **only** `GeneralUpdate.Bowl`（传递依赖 Core，两者不能共存）
 > - Differential 已嵌入 Core，**无需**额外引用 `GeneralUpdate.Differential`
 
-> ⚠️ **API Surface**: v10.5.0-beta.4 采用了全新的配置系统：
+> ⚠️ **API Surface**: v10.5.0-beta.6 采用了全新的配置系统：
 > - ✅ `UpdateRequest` / `UpdateRequestBuilder` — 替代旧的 Configinfo
 > - ✅ `SetSource(updateUrl, appSecretKey)` — 零配置入口
 > - ✅ `SetOption<T>(Option<T>, T)` — 可编程配置系统
@@ -332,18 +332,18 @@ Q5（接 Q4 成功）: 你需要什么？
 
 ### 0.0.2-bate.1 — 2026-06-16
 
-Updated for GeneralUpdate v10.5.0-beta.4 API:
+Updated for GeneralUpdate v10.5.0-beta.6 API:
 - Configinfo → UpdateRequest (namespace: `GeneralUpdate.Core.Configuration`)
 - Event args moved to `GeneralUpdate.Core.Download` and `GeneralUpdate.Core.Event`
 - Added SetSource(), SetOption(), Hooks<T>(), Strategy<T>() API coverage
 - Updated all strategy examples to use the new API
 - Updated CustomHooks.cs and CustomStrategy.cs to show v10.5 capabilities
 - Fixed IsComplated → IsCompleted (typo was in NuGet stable, fixed in beta)
-- NuGet version bumped to `10.5.0-beta.4`
+- NuGet version bumped to `10.5.0-beta.6`
 
 ### 0.0.1-bate.1 — 2026-06-16
 
-Initial beta release. All templates rewritten for NuGet v10.5.0-beta.4 API.
+Initial beta release. All templates rewritten for NuGet v10.5.0-beta.6 API.
 
 ---
 

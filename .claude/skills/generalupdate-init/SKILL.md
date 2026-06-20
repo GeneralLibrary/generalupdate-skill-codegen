@@ -24,7 +24,7 @@ allowed-tools: "Bash, Read, Write, Edit, Glob, Grep, WebSearch"
 
 帮助开发者在任意 .NET 应用中集成 GeneralUpdate 自动更新。从零开始，覆盖所有配置方式、部署场景和生产环境考量。
 
-> ⚠️ **针对 NuGet v10.5.0-beta.4**。`Configinfo` 已被 `UpdateRequest` 替代，命名空间已移至 `GeneralUpdate.Core.Configuration`。
+> ⚠️ **针对 NuGet v10.5.0-beta.6**。`Configinfo` 已被 `UpdateRequest` 替代，命名空间已移至 `GeneralUpdate.Core.Configuration`。
 
 ---
 
@@ -176,7 +176,7 @@ await new GeneralUpdateBootstrap()
 
 ### 应用角色（AppType）
 
-`AppType` 是一个 enum（v10.5.0-beta.4）：
+`AppType` 是一个 enum（v10.5.0-beta.6）：
 
 | 值 | 名称 | 说明 |
 |----|------|------|
@@ -323,14 +323,14 @@ publish/
 
 ## ⚠️ 已知问题
 
-### NuGet 注意事项（v10.5.0-beta.4）
-`GeneralUpdate.Core` 和 `GeneralUpdate.Bowl` **可以同时引用**（v10.5.0-beta.4 中无 CS0433 冲突）。
+### NuGet 注意事项（v10.5.0-beta.6）
+`GeneralUpdate.Core` 和 `GeneralUpdate.Bowl` **可以同时引用**（v10.5.0-beta.6 中无 CS0433 冲突）。
 - 使用 Core：`dotnet add package GeneralUpdate.Core`
 - 使用 Bowl：`dotnet add package GeneralUpdate.Bowl`（它**不**传递依赖 Core，需要同时引用 Core）
 - 差分类型已内嵌在 Core，**无需额外** `GeneralUpdate.Differential` 包
 
 ### 稳定版功能增强
-v10.5.0-beta.4 新增以下功能：
+v10.5.0-beta.6 新增以下功能：
 - ✅ `IUpdateHooks` 生命周期钩子 — `Hooks<T>()`
 - ✅ 可编程 `Option` 系统 — `SetOption(Option.Silent, true)`
 - ✅ `SilentPollOrchestrator` 静默轮询
@@ -353,7 +353,7 @@ v10.5.0-beta.4 新增以下功能：
 
 ### NuGet & 编译
 - [ ] Client 和 Upgrade 项目使用**完全相同**的 GeneralUpdate NuGet 版本
-- [ ] 如果用 Bowl：项目中同时引用 `GeneralUpdate.Core` 和 `GeneralUpdate.Bowl`（v10.5.0-beta.4 无冲突）
+- [ ] 如果用 Bowl：项目中同时引用 `GeneralUpdate.Core` 和 `GeneralUpdate.Bowl`（v10.5.0-beta.6 无冲突）
 - [ ] 项目能正常 `dotnet build`（0 errors）
 - [ ] 无需额外引用 `GeneralUpdate.Differential`（已嵌入 Core）
 
@@ -377,7 +377,7 @@ v10.5.0-beta.4 新增以下功能：
 |---|--------|------|---------|
 | 1 | **Core 和 Bowl NuGet 版本不一致** | 运行时 MethodNotFoundException | 使用相同 NuGet 版本 |
 | 2 | **Bowl 缺少 `GeneralUpdate.Core` 引用** | 编译失败，缺少 Core 类型 | Bowl 不传递依赖 Core，需同时引用 Core |
-| 3 | **Bowl 传递依赖 Core 的误解** | 编译失败 | v10.5.0-beta.4 中 Bowl 是独立包，需单独引用 Core |
+| 3 | **Bowl 传递依赖 Core 的误解** | 编译失败 | v10.5.0-beta.6 中 Bowl 是独立包，需单独引用 Core |
 | 4 | **Client/Upgrade NuGet 版本号不一致** | 运行时 MethodNotFoundException | 锁定完全相同版本 |
 | 5 | **事件监听中做耗时操作（网络 IO / 磁盘 IO）** | Update 进程 UI 卡死，超时被 Kill | 仅更新 UI 状态，耗时操作异步 |
 | 6 | **IPC 文件编码未设置 UTF-8** | Linux/macOS 中文乱码 | `Encoding.UTF8` |

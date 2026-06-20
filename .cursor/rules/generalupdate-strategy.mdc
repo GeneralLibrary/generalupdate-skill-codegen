@@ -25,4 +25,4 @@ alwaysApply: false
 
 ## 平台差异
 Windows: Hash->解压->Patch+Bowl+Drivelution
-Linux/macOS: Hash->解压->Patch（✅ v10.5.0-beta.4 提供 UnixPermissionHooks，通过 `bootstrap.Hooks<UnixPermissionHooks>()` 自动设置执行权限）
+Linux/macOS: Hash->解压->Patch（✅ v10.5.0-beta.6 提供 UnixPermissionHooks，通过 `bootstrap.Hooks<UnixPermissionHooks>()` 自动设置执行权限）

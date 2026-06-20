@@ -2,7 +2,7 @@ using GeneralUpdate.Core;
 using GeneralUpdate.Core.Hooks;
 
 /// <summary>
-/// 【Skill 参考】自定义生命周期 Hooks （v10.5.0-beta.4 可用）
+/// 【Skill 参考】自定义生命周期 Hooks （v10.5.0-beta.6 可用）
 ///
 /// 通过 IUpdateHooks 接口可以拦截更新流程的各个阶段：
 /// - OnBeforeUpdateAsync: 更新开始前（可取消）
