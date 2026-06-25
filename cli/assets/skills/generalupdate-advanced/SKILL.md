@@ -117,7 +117,7 @@ GeneralUpdate 内置三种平台策略，通过 `IStrategy` 接口实现：
 
 ## 3. Bowl 崩溃守护（v10.5.0-rc.1）
 
-Bowl 是一个崩溃监控组件，通过 `MonitorParameter` 配置。
+Bowl 是一个崩溃监控组件，通过 `BowlContext` 配置。
 
 ### BowlContext 配置
 
@@ -138,7 +138,7 @@ var context = new BowlContext
     OnCrash = async (info, ct) => Console.WriteLine($"Crash: {info.DumpFilePath}"),
 };
 
-var bowl = new Bowl();
+var bowl = new BowlBootstrap();
 var result = await bowl.LaunchAsync(context);
 Console.WriteLine($"Result: Success={result.Success}, Restored={result.Restored}");
 ```
@@ -246,32 +246,27 @@ await new GeneralUpdateBootstrap()
 ### ISslValidationPolicy — 自定义 SSL 证书验证
 
 ```csharp
-using GeneralUpdate.Core;
 using GeneralUpdate.Core.Security;
 
 // 开发环境：接受所有证书（仅测试用！）
 public class DevelopmentSslPolicy : ISslValidationPolicy
 {
     public bool ValidateCertificate(
-        System.Net.Security.SslPolicyErrors errors,
         System.Security.Cryptography.X509Certificates.X509Certificate2? certificate,
-        System.Security.Cryptography.X509Certificates.X509Chain? chain)
+        System.Security.Cryptography.X509Certificates.X509Chain? chain,
+        System.Net.Security.SslPolicyErrors sslPolicyErrors)
     {
         return true; // ⚠️ 生产环境不要这样做！
     }
 }
 
-// 注册 SSL 策略
-await new GeneralUpdateBootstrap()
-    .SetConfig(config)
-    .SetOption(Option.SslValidationPolicy, new DevelopmentSslPolicy())
-    .LaunchAsync();
+// 注册 SSL 策略（全局生效）
+VersionService.SetSslValidationPolicy(new DevelopmentSslPolicy());
 ```
 
 ### IHttpAuthProvider — 自定义 HTTP 认证
 
 ```csharp
-using GeneralUpdate.Core;
 using GeneralUpdate.Core.Security;
 
 // Bearer Token 认证提供者
@@ -284,7 +279,7 @@ public class BearerAuthProvider : IHttpAuthProvider
         _token = token;
     }
 
-    public async Task AuthenticateAsync(HttpRequestMessage request, CancellationToken ct = default)
+    public async Task ApplyAuthAsync(HttpRequestMessage request, CancellationToken token = default)
     {
         request.Headers.Authorization =
             new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
@@ -292,12 +287,11 @@ public class BearerAuthProvider : IHttpAuthProvider
     }
 }
 
-// 注册认证提供者
-await new GeneralUpdateBootstrap()
-    .SetConfig(config)
-    .SetOption(Option.HttpAuthProvider, new BearerAuthProvider("your-jwt-token"))
-    .LaunchAsync();
+// 注册认证提供者（全局生效）
+VersionService.SetDefaultAuthProvider(new BearerAuthProvider("your-jwt-token"));
 ```
+
+> ⚠️ SSL 策略和认证提供者通过 `VersionService` 全局注册，而非 `SetOption()`。内置实现包括 `StrictSslValidationPolicy`（默认）、`NoOpAuthProvider`、`BearerTokenAuthProvider`、`ApiKeyAuthProvider`、`HmacAuthProvider`、`BasicAuthProvider`。
 
 ---
 
@@ -349,9 +343,15 @@ var config = new UpdateRequest
 ```csharp
 using GeneralUpdate.Core.FileSystem;
 
-var tree = new FileTree();
-var snapshot = tree.CreateSnapshot(@"C:\Program Files\MyApp");
+// 扫描目录生成文件树快照
+var enumerator = new FileTreeEnumerator(rootPath, blackMatcher: null);
+var snapshot = FileTreeSnapshot.FromEnumerator(rootPath, enumerator);
+
+// 对比两个版本的文件树
+var diff = FileTreeComparer.Compare(oldSnapshot, updatedSnapshot);
 ```
+
+> `FileTree` 是 BST 实现，用于内部文件排序和对比。`FileTreeSnapshot` + `FileTreeEnumerator` + `FileTreeComparer` 提供了完整的文件树快照和差异对比功能。
 
 ---
 

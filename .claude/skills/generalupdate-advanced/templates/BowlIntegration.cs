@@ -9,9 +9,10 @@ using GeneralUpdate.Bowl;
 /// If a crash is detected, it captures a dump, exports diagnostics,
 /// and optionally restores the previous version from backup.
 ///
-/// NuGet: dotnet add package GeneralUpdate.Bowl --version 10.5.0-rc.1
-/// Note: Reference only GeneralUpdate.Bowl (it transitively includes Core).
-/// Do NOT reference GeneralUpdate.Core separately when using Bowl.
+/// NuGet:
+///   dotnet add package GeneralUpdate.Core --version 10.5.0-rc.1
+///   dotnet add package GeneralUpdate.Bowl --version 10.5.0-rc.1
+/// Note: Reference BOTH Core and Bowl (Bowl does NOT transitively depend on Core in v10.5.0-rc.1).
 ///
 /// Platform prerequisites:
 ///   - Windows: Sysinternals procdump.exe is auto-bundled via Bowl NuGet package
@@ -66,7 +67,7 @@ public static class BowlIntegration
         context = context.Normalize();
 
         // Start surveillance. This blocks until the monitored process exits.
-        var bowl = new Bowl();
+        var bowl = new BowlBootstrap();
         BowlResult result = await bowl.LaunchAsync(context);
 
         Console.WriteLine($"""
