@@ -258,7 +258,7 @@ public void OnAppClosing()
 
 **修复**：更新到 v10.4.6+（已实现 WriteBack）。旧版本手动处理：
 ```csharp
-/// v10.5.0-beta.6 支持 IUpdateHooks 接口，可通过 Hooks<T>() 注册 UnixPermissionHooks 或自定义实现。
+/// v10.5.0-rc.1 支持 IUpdateHooks 接口，可通过 Hooks<T>() 注册 UnixPermissionHooks 或自定义实现。
 /// 如需在更新后回写版本号，可使用 ManifestInfo.TryUpdateVersion()。
 ```
 
@@ -346,7 +346,7 @@ bootstrap.SetOption(Option.RetryCount, 5);
 bootstrap.Hooks<UnixPermissionHooks>();
 ```
 
-> ✅ v10.5.0-beta.6 支持 IUpdateHooks 接口。Linux 权限问题使用 `bootstrap.Hooks<UnixPermissionHooks>()` 自动解决。
+> ✅ v10.5.0-rc.1 支持 IUpdateHooks 接口。Linux 权限问题使用 `bootstrap.Hooks<UnixPermissionHooks>()` 自动解决。
 
 ### M9. IPC 加密文件被防病毒软件隔离
 
@@ -526,7 +526,7 @@ bootstrap.Hooks<UnixPermissionHooks>();
 
 | 来源 | #IJQ0Q5 |
 |------|---------|
-| **建议** | v10.5.0-beta.6 支持 Option.Silent 选项 |
+| **建议** | v10.5.0-rc.1 支持 Option.Silent 选项 |
 
 ### L12. OSS 模式下传的 ZIP 包编码无法解压
 

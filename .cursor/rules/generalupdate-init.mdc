@@ -4,14 +4,14 @@ globs: ["**/*.cs", "**/*.csproj", "**/*.json"]
 alwaysApply: false
 ---
 
-# GeneralUpdate 快速集成 (v10.5.0-beta.6 API)
+# GeneralUpdate 快速集成 (v10.5.0-rc.1 API)
 
 ## NuGet
-- `GeneralUpdate.Core` — 必需 (10.5.0-beta.6)
+- `GeneralUpdate.Core` — 必需 (10.5.0-rc.1)
 - `GeneralUpdate.Bowl` — 可选（只用 Bowl，不额外引用 Core，两者互斥）
 - ~~`GeneralUpdate.Differential`~~ — 已嵌入 Core，无需额外引用
 
-## 最小集成 (v10.5.0-beta.6)
+## 最小集成 (v10.5.0-rc.1)
 ```csharp
 new UpdateRequest { ... }.SetConfig().LaunchAsync()
 ```

@@ -1,6 +1,6 @@
 {
   "name": "generalupdate-skill",
-  "description": "Complete .NET auto-update skill suite for GeneralUpdate. 7 skills covering: Bootstrap scaffolding, update UI (6 frameworks), 6 strategies (Client-Server/OSS/Silent/Differential/CVP/Push), advanced extension points (Bowl, IPC, AOT), 50+ known issues diagnosis with BM25 search engine, version migration, and security audit. All templates target NuGet v10.5.0-beta.6.",
+  "description": "Complete .NET auto-update skill suite for GeneralUpdate. 7 skills covering: Bootstrap scaffolding, update UI (6 frameworks), 6 strategies (Client-Server/OSS/Silent/Differential/CVP/Push), advanced extension points (Bowl, IPC, AOT), 50+ known issues diagnosis with BM25 search engine, version migration, and security audit. All templates target NuGet v10.5.0-rc.1.",
   "version": "0.0.2-beta.1",
   "author": {
     "name": "JusterZhu"

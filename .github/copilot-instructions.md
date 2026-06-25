@@ -1,7 +1,7 @@
 # GeneralUpdate Auto-Update Integration Guide
 
 > Comprehensive reference for integrating GeneralUpdate into .NET applications.
-> ⚠️ Targeting **NuGet v10.5.0-beta.6** API (UpdateRequest + SetConfig + LaunchAsync, with SetSource/SetOption/Hooks/Strategy).
+> ⚠️ Targeting **NuGet v10.5.0-rc.1** API (UpdateRequest + SetConfig + LaunchAsync, with SetSource/SetOption/Hooks/Strategy).
 
 ## Architecture
 - Dual-process: Client (verification/download/IPC) + Upgrade (file replacement)
@@ -14,7 +14,7 @@
 - With Bowl: reference **only** `GeneralUpdate.Bowl` (the two conflict if referenced together)
 - Differential: already embedded in Core, no extra package needed
 
-## Bootstrap Setup (v10.5.0-beta.6)
+## Bootstrap Setup (v10.5.0-rc.1)
 ```csharp
 var config = new UpdateRequest
 {
@@ -40,7 +40,7 @@ await new GeneralUpdateBootstrap()
     .LaunchAsync();
 ```
 
-## Events (v10.5.0-beta.6)
+## Events (v10.5.0-rc.1)
 - AddListenerUpdateInfo → UpdateInfoEventArgs (namespace: GeneralUpdate.Core.Download)
 - AddListenerMultiDownloadStatistics → MultiDownloadStatisticsEventArgs
 - AddListenerMultiDownloadCompleted → MultiDownloadCompletedEventArgs **(IsCompleted)**

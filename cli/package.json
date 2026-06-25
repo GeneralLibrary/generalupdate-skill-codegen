@@ -4,7 +4,7 @@
   "description": "CLI to install GeneralUpdate skill for AI coding assistants (version independent from skill version; skill matches manifest version)",
   "type": "module",
   "bin": {
-    "gskill": "./dist/index.js"
+    "gskill": "dist/index.js"
   },
   "scripts": {
     "build": "tsc",

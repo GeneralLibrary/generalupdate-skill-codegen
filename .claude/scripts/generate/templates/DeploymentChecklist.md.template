@@ -14,10 +14,10 @@ Generated for: **{{STRATEGY_NAME}}** + **{{FRAMEWORK}}** | Bowl: **{{BOWL_UPPER}
 ### NuGet
 - [ ] Client 和 Upgrade 项目使用相同 GeneralUpdate 版本
 {{#BOWL}}
-- [ ] 只引用了 `GeneralUpdate.Bowl`（未同时引 Core）
+- [ ] 同时引用了 `GeneralUpdate.Core` 和 `GeneralUpdate.Bowl`（v10.5.0-rc.1 无冲突）
 {{/BOWL}}
 {{^BOWL}}
-- [ ] 只引用了 `GeneralUpdate.Core`
+- [ ] 引用了 `GeneralUpdate.Core`
 {{/BOWL}}
 
 ### Deployment

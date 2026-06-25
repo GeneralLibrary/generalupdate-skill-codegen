@@ -5,7 +5,7 @@ using GeneralUpdate.Core.Strategy;
 using GeneralUpdate.Core.Download.Reporting;
 
 /// <summary>
-/// 【Skill 参考】自定义平台策略（v10.5.0-beta.6 可用）
+/// 【Skill 参考】自定义平台策略（v10.5.0-rc.1 可用）
 ///
 /// 通过 bootstrap.Strategy&lt;T&gt;() 注入自定义策略。
 /// 自定义策略需要实现 IStrategy 接口。

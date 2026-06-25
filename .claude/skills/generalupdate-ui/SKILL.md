@@ -25,7 +25,7 @@ allowed-tools: "Read, Write, Edit, Glob, Grep"
 
 自动检测开发者的 UI 框架类型，生成带真实 GeneralUpdate.Core 事件绑定的完整更新窗口代码。
 
-> ⚠️ 针对 NuGet v10.5.0-beta.6。`RealDownloadService.cs` 已使用 `UpdateRequest` 和正确的命名空间。
+> ⚠️ 针对 NuGet v10.5.0-rc.1。`RealDownloadService.cs` 已使用 `UpdateRequest` 和正确的命名空间。
 
 ---
 
@@ -125,32 +125,11 @@ allowed-tools: "Read, Write, Edit, Glob, Grep"
 
 ---
 
-## 工作流程
-
-```
-1. 框架探测
-   ├── 扫描 .csproj → PackageReference 识别 UI 库
-   ├── 如果无法识别 → 询问用户
-   └── 如果无 UI 框架 → 控制台进度条
-
-2. 状态代码生成
-   ├── IDownloadService 桥接接口
-   ├── RealDownloadService 桥接代码（手动适配 GeneralUpdate.Core 事件）
-   ├── ViewModel（MVVM）或 Code-Behind
-   └── 窗口/页面 XAML
-
-3. 集成指导
-   ├── 如何引入 GeneralUpdateBootstrap
-   └── Bootstrap 配置（与 generalupdate-init 配合）
-```
-
----
-
-## 核心桥接：RealDownloadService
+## 工作流程：RealDownloadService
 
 所有 UI 模板共享这个桥接类，将 GeneralUpdate.Core 的事件映射到 `IDownloadService` 接口。
 
-### 桥接逻辑（v10.5.0-beta.6）
+### 桥接逻辑（v10.5.0-rc.1）
 
 ```csharp
 // GeneralUpdate.Core 事件 → DownloadStatus 状态机映射：
@@ -193,7 +172,7 @@ GeneralUpdateBootstrap.AddListenerException
 ### 事件桥接
 - [ ] 所有 6 个事件都已绑定（UpdateInfo, MultiDownloadStatistics, MultiDownloadCompleted, MultiDownloadError, MultiAllDownloadCompleted, Exception）
 - [ ] 桥接代码使用正确的 EventArgs 类型（检查命名空间 `GeneralUpdate.Core.Download` / `GeneralUpdate.Core.Event`）
-- [ ] `IsCompleted` 属性名正确（v10.5.0-beta.6 使用 `IsCompleted`）
+- [ ] `IsCompleted` 属性名正确（v10.5.0-rc.1 使用 `IsCompleted`）
 
 ### 线程安全
 - [ ] UI 更新操作在正确的线程上执行（WPF/Avalonia 用 `Dispatcher`，WinForms 用 `Invoke`，MAUI 用 `MainThread`）

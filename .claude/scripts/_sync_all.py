@@ -57,7 +57,7 @@ def sync_file(src: Path, dst: Path, apply: bool, dry_run: bool) -> str:
     else:
         if dst.exists():
             shutil.rmtree(dst)
-        shutil.copytree(src, dst)
+        shutil.copytree(src, dst, ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
     return f"✅  SYNCED: {src.relative_to(REPO_ROOT)}"
 
 

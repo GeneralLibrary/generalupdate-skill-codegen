@@ -25,7 +25,7 @@ allowed-tools: "Read, Write, Edit, Glob"
 
 # ⚙️ GeneralUpdate 更新策略完全指南
 
-> ⚠️ **针对 NuGet v10.5.0-beta.6**。该版本使用 `UpdateRequest` 配置，支持可编程 `Option` 系统。
+> ⚠️ **针对 NuGet v10.5.0-rc.1**。该版本使用 `UpdateRequest` 配置，支持可编程 `Option` 系统。
 
 ---
 

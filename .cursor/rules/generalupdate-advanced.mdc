@@ -4,9 +4,9 @@ globs: ["**/*.cs", "**/*.csproj"]
 alwaysApply: false
 ---
 
-# GeneralUpdate 高级定制 (v10.5.0-beta.6 ✅)
+# GeneralUpdate 高级定制 (v10.5.0-rc.1 ✅)
 
-## ✅ v10.5.0-beta.6 支持以下扩展点
+## ✅ v10.5.0-rc.1 支持以下扩展点
 - ✅ `Hooks<T>()` — IUpdateHooks 生命周期钩子
 - ✅ `Strategy<T>()` — IStrategy 自定义策略注入
 - ✅ `HttpAuth<T>()` — IHttpAuthProvider 自定义认证

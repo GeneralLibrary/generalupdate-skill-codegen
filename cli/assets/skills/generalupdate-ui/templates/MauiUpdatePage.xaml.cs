@@ -8,7 +8,7 @@ namespace MauiUpdate.ViewModels;
 
 /// <summary>
 /// 【Skill 自动生成】MAUI 更新页面 ViewModel
-/// 针对 NuGet v10.5.0-beta.6 API
+/// 针对 NuGet v10.5.0-rc.1 API
 /// </summary>
 public partial class UpdateViewModel : ObservableObject
 {
@@ -51,7 +51,7 @@ public partial class UpdateViewModel : ObservableObject
                 InstallPath = ".",
             };
 
-            // v10.5.0-beta.6 API：UpdateRequest + SetConfig + LaunchAsync
+            // v10.5.0-rc.1 API：UpdateRequest + SetConfig + LaunchAsync
             await new GeneralUpdateBootstrap()
                 .SetConfig(config)
                 .AddListenerUpdateInfo((_, e) =>
