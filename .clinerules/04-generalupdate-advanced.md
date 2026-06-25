@@ -4,9 +4,9 @@ globs: ["**/*.cs"]
 tags: ["dotnet", "generalupdate", "advanced"]
 ---
 
-# 高级定制 (v10.5.0-beta.6 可用功能 ✅)
+# 高级定制 (v10.5.0-rc.1 可用功能 ✅)
 
-## ✅ v10.5.0-beta.6 支持以下扩展点
+## ✅ v10.5.0-rc.1 支持以下扩展点
 - ✅ `IUpdateHooks` — 生命周期钩子: `bootstrap.Hooks<MyHooks>()`
 - ✅ `IStrategy` — 自定义策略: `bootstrap.Strategy<MyStrategy>()`
 - ✅ `IUpdateReporter` — 自定义上报
@@ -29,7 +29,7 @@ bootstrap.SetOption(Option.SilentPollIntervalMinutes, 120);
 ## Bowl: procdump->监控->dump->故障报告->AutoRestore（可用，属于独立模块）
 - Bowl 引用规则：只用 `GeneralUpdate.Bowl`，不额外引用 Core
 
-## AOT: v10.5.0-beta.6 支持 NativeAOT (net8.0+), SignalR 推荐 JSON + JsonSerializerContext
+## AOT: v10.5.0-rc.1 支持 NativeAOT (net8.0+), SignalR 推荐 JSON + JsonSerializerContext
 
 ## 命名空间速查
 - `GeneralUpdate.Core.Hooks` — IUpdateHooks, HookContext, NoOpUpdateHooks, UnixPermissionHooks

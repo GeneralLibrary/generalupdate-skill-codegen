@@ -4,7 +4,7 @@ globs: ["**/*.cs", "**/*.csproj", "**/*.json"]
 tags: ["dotnet", "update", "generalupdate"]
 ---
 
-# GeneralUpdate 快速集成 (v10.5.0-beta.6 API)
+# GeneralUpdate 快速集成 (v10.5.0-rc.1 API)
 
 ## NuGet: GeneralUpdate.Core(必需), Bowl(可选, 与Core互斥), Differential(嵌入Core无需额外引用)
 
@@ -13,7 +13,7 @@ tags: ["dotnet", "update", "generalupdate"]
 new UpdateRequest { ... }.SetConfig().LaunchAsync()
 ```
 
-## 核心 API（v10.5.0-beta.6）
+## 核心 API（v10.5.0-rc.1）
 - UpdateRequest 属性: UpdateUrl, AppSecretKey, InstallPath, ClientVersion, MainAppName, ProductId
 - 零配置入口: `SetSource(updateUrl, appSecretKey)`
 - 可编程选项: `SetOption(Option.Silent, true)`, `SetOption(Option.MaxConcurrency, 4)`

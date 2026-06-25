@@ -9,7 +9,7 @@ using GeneralUpdate.Bowl;
 /// If a crash is detected, it captures a dump, exports diagnostics,
 /// and optionally restores the previous version from backup.
 ///
-/// NuGet: dotnet add package GeneralUpdate.Bowl --version 10.5.0-beta.6
+/// NuGet: dotnet add package GeneralUpdate.Bowl --version 10.5.0-rc.1
 /// Note: Reference only GeneralUpdate.Bowl (it transitively includes Core).
 /// Do NOT reference GeneralUpdate.Core separately when using Bowl.
 ///

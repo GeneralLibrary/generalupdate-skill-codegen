@@ -6,7 +6,7 @@ description: |
   configuration (4 methods), full-state update UI (6 frameworks), 6 strategy implementations
   (Client-Server/OSS/Silent/Differential/CVP/Push), advanced extension points (IPC replacement,
   Bowl crash daemon, custom Hooks, AOT), and deep troubleshooting (50+ known issues).
-  All templates target NuGet v10.5.0-beta.6 API.
+  All templates target NuGet v10.5.0-rc.1 API.
 
   Triggers on: "GeneralUpdate", "auto update", "自动更新", "update framework",
   ".NET update", "Claude Code skill suite", "GeneralUpdate Skill CodeGen",
@@ -46,8 +46,8 @@ allowed-tools: "Bash, Read, Write, Edit, Glob, Grep, WebSearch"
 
 覆盖 50+ 真实 Issue 发现的已知问题，提供即用型代码生成 + 深度故障排查。
 
-> **Current Version: 0.0.2-beta.1** — targets NuGet `GeneralUpdate.Core 10.5.0-beta.6`  
-> 兼容性：`v10.5.0-beta.6`（NuGet 最新预览版）  
+> **Current Version: 0.0.2-beta.1** — targets NuGet `GeneralUpdate.Core 10.5.0-rc.1`  
+> 兼容性：`v10.5.0-rc.1`（NuGet 最新预览版）  
 > 所有模板已通过 `dotnet build` 编译验证（0 errors）。
 
 ---
@@ -201,7 +201,7 @@ Q5（接 Q4 成功）: 你需要什么？
 无论使用哪个 skill，完成集成后请逐项检查：
 
 ### Bootstrap 配置
-- [ ] `Configinfo` 的 6 个必填字段都已设置（UpdateUrl, AppSecretKey, AppName, MainAppName, ClientVersion, ProductId, InstallPath）
+- [ ] `UpdateRequest` 的必填字段都已设置（UpdateUrl, AppSecretKey, MainAppName, ClientVersion, ProductId, InstallPath）
 - [ ] `UpdateUrl` 指向的服务端 API 可正常返回版本信息
 - [ ] `AppSecretKey` 长度 ≥ 16 字符，与服务端一致
 - [ ] `InstallPath` 指向正确的安装目录（生产环境用 `AppDomain.CurrentDomain.BaseDirectory`）
@@ -209,7 +209,7 @@ Q5（接 Q4 成功）: 你需要什么？
 
 ### NuGet & 编译
 - [ ] Client 和 Upgrade 项目使用**完全相同**的 GeneralUpdate NuGet 版本
-- [ ] 如果用 Bowl：项目中只能有 `GeneralUpdate.Bowl`，不能同时有 `GeneralUpdate.Core`
+- [ ] 如果用 Bowl：项目中同时引用 `GeneralUpdate.Core` 和 `GeneralUpdate.Bowl`（v10.5.0-rc.1 无类型冲突）
 - [ ] 项目能正常 `dotnet build`（0 errors）
 
 ### 部署结构
@@ -231,7 +231,7 @@ Q5（接 Q4 成功）: 你需要什么？
 
 | # | 反模式 | 后果 | 正确做法 |
 |---|--------|------|---------|
-| 1 | **Core 和 Bowl 引用到同一个项目** | CS0433 类型冲突，编译失败 | 用 Bowl 时只引 Bowl |
+| 1 | **未同时引用 Core 和 Bowl（只用 Bowl 时）** | 编译失败，缺少 Core 类型 | 用 Bowl 时同时引 Core 和 Bowl |
 | 2 | **Client/Upgrade NuGet 版本号不一致** | 运行时 MethodNotFoundException | 锁定完全相同版本 |
 | 3 | **事件监听中做耗时操作（网络 IO / 磁盘 IO）** | Update 进程 UI 卡死，超时被 Kill | 仅更新 UI 状态，耗时操作异步 |
 | 4 | **IPC 文件编码未设置 UTF-8** | Linux/macOS 中文乱码 | `Encoding.UTF8` |
@@ -310,11 +310,11 @@ Q5（接 Q4 成功）: 你需要什么？
 ## API Compatibility
 
 > ⚠️ **NuGet Reference Rules**:
-> - Core only: `dotnet add package GeneralUpdate.Core --version 10.5.0-beta.6`
-> - With Bowl: reference **only** `GeneralUpdate.Bowl`（传递依赖 Core，两者不能共存）
+> - Core only: `dotnet add package GeneralUpdate.Core --version 10.5.0-rc.1`
+> - With Bowl: reference **both** `GeneralUpdate.Core` and `GeneralUpdate.Bowl`（v10.5.0-rc.1 中 Bowl 为独立包，无类型冲突，需独立引用 Core）
 > - Differential 已嵌入 Core，**无需**额外引用 `GeneralUpdate.Differential`
 
-> ⚠️ **API Surface**: v10.5.0-beta.6 采用了全新的配置系统：
+> ⚠️ **API Surface**: v10.5.0-rc.1 采用了全新的配置系统：
 > - ✅ `UpdateRequest` / `UpdateRequestBuilder` — 替代旧的 Configinfo
 > - ✅ `SetSource(updateUrl, appSecretKey)` — 零配置入口
 > - ✅ `SetOption<T>(Option<T>, T)` — 可编程配置系统
@@ -330,20 +330,20 @@ Q5（接 Q4 成功）: 你需要什么？
 
 ## Version History
 
-### 0.0.2-bate.1 — 2026-06-16
+### 0.0.2-beta.1 — 2026-06-16
 
-Updated for GeneralUpdate v10.5.0-beta.6 API:
+Updated for GeneralUpdate v10.5.0-rc.1 API:
 - Configinfo → UpdateRequest (namespace: `GeneralUpdate.Core.Configuration`)
 - Event args moved to `GeneralUpdate.Core.Download` and `GeneralUpdate.Core.Event`
 - Added SetSource(), SetOption(), Hooks<T>(), Strategy<T>() API coverage
 - Updated all strategy examples to use the new API
 - Updated CustomHooks.cs and CustomStrategy.cs to show v10.5 capabilities
 - Fixed IsComplated → IsCompleted (typo was in NuGet stable, fixed in beta)
-- NuGet version bumped to `10.5.0-beta.6`
+- NuGet version bumped to `10.5.0-rc.1`
 
-### 0.0.1-bate.1 — 2026-06-16
+### 0.0.1-beta.1 — 2026-06-16
 
-Initial beta release. All templates rewritten for NuGet v10.5.0-beta.6 API.
+Initial beta release. All templates rewritten for NuGet v10.5.0-rc.1 API.
 
 ---
 

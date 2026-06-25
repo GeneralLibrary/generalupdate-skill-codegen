@@ -16,7 +16,7 @@
 
 ## 🧪 Validation
 
-> Run `python3 .claude/scripts/generate.py --list` to confirm all 288 combinations resolve.
+> Run `python3 .claude/scripts/generate.py --list` to confirm all 336 combinations resolve.
 
 - [ ] CI — **Python search engine tests**
   ```bash
@@ -26,18 +26,18 @@
   ```bash
   # OSS + WPF + Bowl
   python3 .claude/scripts/generate.py --strategy oss --framework wpf-layui --bowl \
-    --project-name TestApp --version 1.0.0.0 -o /tmp/verify-oss
+    --project-name TestApp --version 1.0.0.0 -o ${TMPDIR:-/tmp}/verify-oss
 
   # Silent + Console
   python3 .claude/scripts/generate.py --strategy silent --framework console \
-    --project-name MyService --version 2.0.0.0 -o /tmp/verify-silent
+    --project-name MyService --version 2.0.0.0 -o ${TMPDIR:-/tmp}/verify-silent
 
   # Differential + Avalonia
   python3 .claude/scripts/generate.py --strategy differential --framework avalonia-semiursa \
-    --project-name CrossApp --version 3.1.0.0 -o /tmp/verify-diff
+    --project-name CrossApp --version 3.1.0.0 -o ${TMPDIR:-/tmp}/verify-diff
 
   # Verify output is valid
-  for f in $(find /tmp/verify-oss /tmp/verify-silent /tmp/verify-diff -name "*.cs" -o -name "*.json"); do
+  for f in $(find ${TMPDIR:-/tmp}/verify-oss ${TMPDIR:-/tmp}/verify-silent ${TMPDIR:-/tmp}/verify-diff -name "*.cs" -o -name "*.json"); do
     [ -s "$f" ] || { echo "❌ Empty: $f"; exit 1; }
     file "$f" | grep -q "UTF-8\|ASCII\|text" || { echo "❌ Non-text: $f"; exit 1; }
   done

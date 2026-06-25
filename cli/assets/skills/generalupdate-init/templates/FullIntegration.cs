@@ -2,6 +2,7 @@ using GeneralUpdate.Core;
 using GeneralUpdate.Core.Configuration;
 using GeneralUpdate.Core.Download;
 using GeneralUpdate.Core.Event;
+using GeneralUpdate.Core.Models;
 
 /// <summary>
 /// GeneralUpdate 完整集成示例 — 包含所有配置选项和事件监听
@@ -13,7 +14,7 @@ using GeneralUpdate.Core.Event;
 /// - 错误处理
 /// - Upgrade 进程配置
 ///
-/// 针对 NuGet v10.5.0-beta.6
+/// 针对 NuGet v10.5.0-rc.1
 /// </summary>
 public static class FullIntegration
 {
@@ -110,7 +111,7 @@ public static class FullIntegration
 
     private static void OnProgress(object? sender, ProgressEventArgs e)
     {
-        Console.WriteLine($"[进度] {(e.Progress != null ? $"下载: {e.Progress.Percentage:F0}%" : e.DiffProgress != null ? $"差分: {e.DiffProgress.Percentage:F0}%" : "")}");
+        Console.WriteLine($"[进度] {(e.Progress != null ? $"下载: {e.Progress.Percentage:F0}%" : e.DiffProgress != null ? $"差分: {e.DiffProgress.Value.Completed}/{e.DiffProgress.Value.Total}" : "")}");
     }
 }
 

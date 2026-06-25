@@ -8,12 +8,12 @@ using GeneralUpdate.Core.Download;
 /// 适用于应用体积大（>100MB）或带宽受限的场景。
 /// 仅传输变动的文件部分，节省 60-90% 带宽。
 ///
-/// v10.5.0-beta.6 通过 UseDiffPipeline(Action{DiffPipelineBuilder}) 配置差分。
+/// v10.5.0-rc.1 通过 UseDiffPipeline(Action{DiffPipelineBuilder}) 配置差分。
 ///
 /// NuGet:
 ///   dotnet add package GeneralUpdate.Core
 ///
-/// ⚠️ 注意：GeneralUpdate.Core v10.5.0-beta.6 已内置差分支持，
+/// ⚠️ 注意：GeneralUpdate.Core v10.5.0-rc.1 已内置差分支持，
 /// 无需额外安装 GeneralUpdate.Differential 包。
 /// </summary>
 public static class DifferentialStrategy

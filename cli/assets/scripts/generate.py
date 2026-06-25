@@ -4,7 +4,7 @@
 GeneralUpdate Code Generator — generates production-ready C# integration code.
 Usage: python3 scripts/generate.py --framework wpf --strategy oss --output ./Generated
 
-Supports 288 combinations: 4 scenes × 6 strategies × 6 UI frameworks × 2 Bowl
+Supports 336 combinations: 4 scenes × 6 strategies × 7 UI frameworks × 2 Bowl
 
 Combinations:
   Scenes:    None, UpgradeOnly, MainOnly, Both
@@ -13,11 +13,12 @@ Combinations:
   Bowl:      yes, no
 """
 import argparse
+import json
 import os
+import re
 import sys
 from pathlib import Path
 from string import Template
-import json
 
 SCRIPT_DIR = Path(__file__).parent
 TEMPLATES_DIR = SCRIPT_DIR / "generate" / "templates"
@@ -45,7 +46,7 @@ STRATEGIES = {
         "name": "Differential Update",
         "slug": "differential",
         "description": "Delta patch update to save bandwidth (BSDIFF/HDiffPatch)",
-        "warning": "差分包大小建议不超过 2GB，避免 BSDIFF 整数溢出（v10.5.0-beta.6 已修复 #514）。",
+        "warning": "差分包大小建议不超过 2GB，避免 BSDIFF 整数溢出（v10.5.0-rc.1 已修复 #514）。",
     },
     "cvp": {
         "name": "Cross-Version CVP",
@@ -91,7 +92,7 @@ def render(template_text, variables):
     def replace_conditional(match):
         key = match.group(1)
         content = match.group(2)
-        if variables.get(key, False) and str(variables.get(key, "")).lower() in ("true", "yes", "1", key):
+        if variables.get(key, False) and str(variables.get(key, "")).lower() in ("true", "yes", "1"):
             return content
         return ""
 
@@ -105,7 +106,7 @@ def render(template_text, variables):
             return content
         return ""
 
-    result = re.sub(r"\{\{(\^)(\w+)\}\}(.*?)\{\{/\2\}\}", replace_negative, result, flags=re.DOTALL)
+    result = re.sub(r"\{\{\^(\w+)\}\}(.*?)\{\{/\1\}\}", replace_negative, result, flags=re.DOTALL)
 
     return result
 
@@ -115,15 +116,6 @@ def generate_bootstrap(strategy, framework, with_bowl, scenes, variables):
     templ = load_template("Bootstrap.cs.template")
 
     listener_blocks = []
-
-    # Always include basic listeners
-    listener_names = ["MultiDownloadStatistics", "MultiDownloadCompleted",
-                      "MultiDownloadError", "MultiAllDownloadCompleted", "Exception"]
-
-    if framework != "console":
-        listener_names = ["MultiDownloadStatistics", "MultiDownloadCompleted",
-                          "MultiDownloadError", "MultiDownloadCompleted",
-                          "MultiAllDownloadCompleted", "Exception"]
 
     if framework == "console":
         # Console just writes to stdout
@@ -183,7 +175,7 @@ def generate_issue_warnings(strategy, variables):
   - H4: OSS 不区分 Main/Upgrade 更新包，接受此行为
   - H5: Upgrade.exe 必须放在 update/ 子目录
   - L7: 示例代码中 OSS endpoint/bucket 写死，建议用环境变量
-  - M13: OssClient.AppType 值 3-4 在 v10.5.0-beta.6 中可用""",
+  - M13: OssClient.AppType 值 3-4 在 v10.5.0-rc.1 中可用""",
         "silent": """⚠️ 静默更新特有已知问题:
   - H2: 无限升级循环 — 确保 manifest.json 版本号正确
   - M19: 静默通知可能不尊重系统的免打扰设置
@@ -245,6 +237,12 @@ def generate(args):
     framework = args.framework
     with_bowl = args.bowl
     scenes = args.scenes
+
+    # Validate scenes
+    VALID_SCENES = {"None", "UpgradeOnly", "MainOnly", "Both"}
+    if scenes not in VALID_SCENES:
+        print(f"❌ Invalid --scenes value '{scenes}'. Must be one of: {', '.join(sorted(VALID_SCENES))}")
+        sys.exit(1)
 
     output_dir = Path(args.output)
     project_name = args.project_name or "MyApp"
@@ -315,8 +313,6 @@ def generate(args):
 
 
 if __name__ == "__main__":
-    import re  # needed for template rendering
-
     parser = argparse.ArgumentParser(description="GeneralUpdate Code Generator")
     parser.add_argument("--framework", "-f", choices=list(UI_FRAMEWORKS.keys()), default="wpf-原生",
                         help="Target UI framework")

@@ -118,7 +118,7 @@ await new GeneralUpdateBootstrap()
 ### 编译验证
 - [ ] `dotnet build` 无错误
 - [ ] 无 `MissingMethodException` 的风险（检查所有方法名是否存在于 v10.4.6）
-- [ ] 无 `CS0433` 类型冲突（v10.5.0-beta.6 中 Core + Bowl 无冲突，可同时引用）
+- [ ] 无 `CS0433` 类型冲突（v10.5.0-rc.1 中 Core + Bowl 无冲突，可同时引用）
 
 ### 架构验证
 - [ ] 项目已拆分为 Client + Upgrade 两个独立项目

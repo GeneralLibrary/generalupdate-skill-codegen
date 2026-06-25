@@ -4,8 +4,8 @@
 
 覆盖 50+ 真实 Issue 发现的已知问题，提供即用型代码生成 + 深度故障排查。
 
-> 当前版本：0.0.2-beta.1 — 针对 NuGet `GeneralUpdate.Core 10.5.0-beta.6`
-> 兼容性：`v10.5.0-beta.6`（NuGet 最新预览版）
+> 当前版本：0.0.2-beta.1 — 针对 NuGet `GeneralUpdate.Core 10.5.0-rc.1`
+> 兼容性：`v10.5.0-rc.1`（NuGet 最新预览版）
 > **所有模板已通过 `dotnet build` 编译验证（0 errors）。**
 
 ---
@@ -121,7 +121,7 @@
 > - 使用 Bowl：**只引用** `GeneralUpdate.Bowl`（它传递依赖 Core，两者不能同时引用）
 > - 差分功能已内嵌在 Core 中，**无需额外引用** `GeneralUpdate.Differential`
 
-> ⚠️ **API 说明**：v10.5.0-beta.6 采用 `UpdateRequest` 配置系统，支持可编程 `Option`、`IUpdateHooks` 生命周期钩子、`SetSource()` 零配置入口等新特性。详情请查看 BUGS.md。
+> ⚠️ **API 说明**：v10.5.0-rc.1 采用 `UpdateRequest` 配置系统，支持可编程 `Option`、`IUpdateHooks` 生命周期钩子、`SetSource()` 零配置入口等新特性。详情请查看 BUGS.md。
 
 详见 [BUGS.md](BUGS.md)。
 

@@ -4,7 +4,7 @@
 
 Covers 50+ known issues discovered from real GitHub/Gitee feedback, providing production-ready code generation and deep troubleshooting.
 
-> Version: 0.0.2-beta.1 (2026-06-16) — targets NuGet `GeneralUpdate.Core 10.5.0-beta.6`
+> Version: 0.0.2-beta.1 (2026-06-16) — targets NuGet `GeneralUpdate.Core 10.5.0-rc.1`
 
 ---
 
@@ -119,7 +119,7 @@ All skill content is derived from real-world sources:
 > - With Bowl: reference **only** `GeneralUpdate.Bowl` (it transitively includes Core — the two cannot coexist)
 > - Differential types are already embedded in Core, **no need** for `GeneralUpdate.Differential`
 
-> ⚠️ **API Surface**: v10.5.0-beta.6 introduces the new `UpdateRequest` config system and adds programmable `Option`, `IUpdateHooks`, `IStrategy`, and other extension points.
+> ⚠️ **API Surface**: v10.5.0-rc.1 introduces the new `UpdateRequest` config system and adds programmable `Option`, `IUpdateHooks`, `IStrategy`, and other extension points.
 
 See [BUGS.md](BUGS.md) for the full audit trail.
 

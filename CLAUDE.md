@@ -11,7 +11,7 @@ GeneralUpdate Skill CodeGen is a **Claude Code skill suite** for integrating [Ge
 When the user asks about GeneralUpdate or .NET auto-update:
 
 1. **Root SKILL.md** is the entry point — read it first for the developer roadmap
-2. **5 sub-skills** each have their own SKILL.md with step-by-step workflow
+2. **7 sub-skills** each have their own SKILL.md with step-by-step workflow
 3. **Use the search engine** for troubleshooting (BM25, Python):
    ```bash
    python3 .claude/skills/generalupdate-troubleshoot/scripts/search.py "<symptom>" --domain issue

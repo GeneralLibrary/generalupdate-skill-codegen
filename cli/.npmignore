@@ -1,0 +1,9 @@
+# .npmignore — overrides root .gitignore for npm publish
+# Do NOT ignore dist/ — it's the built CLI output
+!dist/
+!dist/**
+# Source maps and tests not needed in package
+*.tsbuildinfo
+src/
+__pycache__/
+*.pyc

@@ -3,8 +3,12 @@ using System.Text.Json;
 using GeneralUpdate.Core;
 using GeneralUpdate.Core.Configuration;
 using GeneralUpdate.Core.Download;
-using Common.Avalonia.Models;
 
+// NOTE: 命名空间可根据项目结构调整，例如：
+//   WPF:     namespace MyApp.Services;
+//   Avalonia: namespace Common.Avalonia.Services;
+//   WinForms: namespace MyApp.Services;
+//   MAUI:     namespace MyApp.Services;
 namespace Common.Avalonia.Services;
 
 /// <summary>
@@ -14,7 +18,7 @@ namespace Common.Avalonia.Services;
 /// 覆盖全部 UI 状态：Idle → Checking → FoundUpdate → Downloading → Paused
 /// → DownloadError → Applying → Success / Failed → RollingBack
 ///
-/// ⚠️ 针对 NuGet v10.5.0-beta.6 API。
+/// ⚠️ 针对 NuGet v10.5.0-rc.1 API。
 /// Configinfo → UpdateRequest 替换，命名空间更新。
 /// </summary>
 public class RealDownloadService : IDownloadService

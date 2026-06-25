@@ -1,7 +1,7 @@
 import { writeFile } from 'node:fs/promises';
 import type { Release } from '../types/index.js';
 
-const REPO_OWNER = 'JusterZhu';
+const REPO_OWNER = 'GeneralLibrary';
 const REPO_NAME = 'generalupdate-skill-codegen';
 const API_BASE = 'https://api.github.com';
 

@@ -3,7 +3,7 @@ name: generalupdate-advanced
 description: |
   Reference guide for GeneralUpdate internal architecture — Pipeline, middleware,
   Strategy, Differential engine, Bowl crash monitor, FileTree, blacklist, and AOT.
-  Covers all extension points available in v10.5.0-beta.6 including Pipeline, Hooks, Bowl, AOT, and DiffPipeline.
+  Covers all extension points available in v10.5.0-rc.1 including Pipeline, Hooks, Bowl, AOT, and DiffPipeline.
   Triggers on: "extension points", "custom hooks", "Bowl", "crash dump", "IPC",
   "named pipe", "shared memory", "custom strategy", "download pipeline",
   "SSL policy", "auth provider", "custom download", "extension management",
@@ -24,8 +24,8 @@ allowed-tools: "Read, Write, Edit, Glob"
 
 涵盖扩展点架构、Pipeline 管道、差分引擎、Bowl 崩溃守护、事件系统、文件系统工具等。
 
-> ⚠️ **API 版本说明**：本指南基于 **NuGet v10.5.0-beta.6**。
-> 以下功能在 v10.5.0-beta.6 中全部**可用**：
+> ⚠️ **API 版本说明**：本指南基于 **NuGet v10.5.0-rc.1**。
+> 以下功能在 v10.5.0-rc.1 中全部**可用**：
 > - ✅ `IUpdateHooks` 生命周期钩子（`Hooks<T>()`）
 > - ✅ `IStrategy` 自定义策略注入（`Strategy<T>()`）
 > - ✅ `SilentPollOrchestrator` 静默轮询器（`Option.Silent`）
@@ -65,7 +65,7 @@ allowed-tools: "Read, Write, Edit, Glob"
 
 ---
 
-## 1. Pipeline 管道系统（v10.5.0-beta.6 可用）
+## 1. Pipeline 管道系统（v10.5.0-rc.1 可用）
 
 GeneralUpdate 使用 Pipeline 管道模式处理更新包的校验、解压、补丁应用。
 
@@ -100,7 +100,7 @@ await new PipelineBuilder(context)
 
 ---
 
-## 2. 策略系统（v10.5.0-beta.6 可用）
+## 2. 策略系统（v10.5.0-rc.1 可用）
 
 GeneralUpdate 内置三种平台策略，通过 `IStrategy` 接口实现：
 
@@ -115,7 +115,7 @@ GeneralUpdate 内置三种平台策略，通过 `IStrategy` 接口实现：
 
 ---
 
-## 3. Bowl 崩溃守护（v10.5.0-beta.6）
+## 3. Bowl 崩溃守护（v10.5.0-rc.1）
 
 Bowl 是一个崩溃监控组件，通过 `MonitorParameter` 配置。
 
@@ -157,11 +157,11 @@ Console.WriteLine($"Result: Success={result.Success}, Restored={result.Restored}
 | `DumpType` | DumpType | Mini / Full | Full |
 | `OnCrash` | delegate | 崩溃回调 | null |
 
-> ⚠️ NuGet v10.5.0-beta.6 中 Bowl 和 Core **无类型冲突**，可以同时引用。
+> ⚠️ NuGet v10.5.0-rc.1 中 Bowl 和 Core **无类型冲突**，可以同时引用。
 
 ---
 
-## 4. EventManager 事件系统（v10.5.0-beta.6 可用）
+## 4. EventManager 事件系统（v10.5.0-rc.1 可用）
 
 EventManager 是一个全局单例，提供事件的发布和订阅：
 
@@ -188,7 +188,145 @@ EventManager.Instance.Dispose();
 
 ---
 
-## 5. 文件系统工具（v10.5.0-beta.6 可用）
+## 4.5 IUpdateHooks 生命周期钩子（v10.5.0-rc.1 可用）
+
+通过 `IUpdateHooks` 接口可以拦截更新流程的各个阶段：
+
+```csharp
+using GeneralUpdate.Core;
+using GeneralUpdate.Core.Hooks;
+
+// 实现自定义 Hooks
+public class MyCustomHooks : IUpdateHooks
+{
+    public async Task<bool> OnBeforeUpdateAsync(HookContext ctx)
+    {
+        Console.WriteLine($"[Hooks] 更新前检查: {ctx.CurrentVersion} → {ctx.TargetVersion}");
+        return true; // 返回 false 取消本次更新
+    }
+
+    public async Task OnDownloadCompletedAsync(DownloadContext ctx)
+    {
+        Console.WriteLine($"[Hooks] 下载完成: {ctx.AssetName} ({ctx.TotalBytes} bytes)");
+    }
+
+    public async Task OnAfterUpdateAsync(HookContext ctx)
+    {
+        Console.WriteLine($"[Hooks] 更新完成: {ctx.CurrentVersion} → {ctx.TargetVersion}");
+    }
+
+    public async Task OnUpdateErrorAsync(HookContext ctx, Exception ex)
+    {
+        Console.WriteLine($"[Hooks] 更新失败: {ex.Message}");
+    }
+
+    public async Task OnBeforeStartAppAsync(HookContext ctx)
+    {
+        Console.WriteLine($"[Hooks] 即将启动: {ctx.InstallPath}");
+    }
+}
+
+// 注册 Hooks
+await new GeneralUpdateBootstrap()
+    .SetConfig(config)
+    .Hooks<MyCustomHooks>()
+    .LaunchAsync();
+```
+
+内置实现：
+- `NoOpUpdateHooks`（默认，空操作）
+- `UnixPermissionHooks`（Linux/macOS 设置可执行权限：`chmod +x`）
+
+> 📁 完整模板：`templates/CustomHooks.cs`
+
+---
+
+## 4.6 自定义 SSL 策略 & HTTP 认证（v10.5.0-rc.1 可用）
+
+### ISslValidationPolicy — 自定义 SSL 证书验证
+
+```csharp
+using GeneralUpdate.Core;
+using GeneralUpdate.Core.Security;
+
+// 开发环境：接受所有证书（仅测试用！）
+public class DevelopmentSslPolicy : ISslValidationPolicy
+{
+    public bool ValidateCertificate(
+        System.Net.Security.SslPolicyErrors errors,
+        System.Security.Cryptography.X509Certificates.X509Certificate2? certificate,
+        System.Security.Cryptography.X509Certificates.X509Chain? chain)
+    {
+        return true; // ⚠️ 生产环境不要这样做！
+    }
+}
+
+// 注册 SSL 策略
+await new GeneralUpdateBootstrap()
+    .SetConfig(config)
+    .SetOption(Option.SslValidationPolicy, new DevelopmentSslPolicy())
+    .LaunchAsync();
+```
+
+### IHttpAuthProvider — 自定义 HTTP 认证
+
+```csharp
+using GeneralUpdate.Core;
+using GeneralUpdate.Core.Security;
+
+// Bearer Token 认证提供者
+public class BearerAuthProvider : IHttpAuthProvider
+{
+    private readonly string _token;
+
+    public BearerAuthProvider(string token)
+    {
+        _token = token;
+    }
+
+    public async Task AuthenticateAsync(HttpRequestMessage request, CancellationToken ct = default)
+    {
+        request.Headers.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
+        await Task.CompletedTask;
+    }
+}
+
+// 注册认证提供者
+await new GeneralUpdateBootstrap()
+    .SetConfig(config)
+    .SetOption(Option.HttpAuthProvider, new BearerAuthProvider("your-jwt-token"))
+    .LaunchAsync();
+```
+
+---
+
+## 4.7 NamedPipe IPC 参考实现
+
+GeneralUpdate 内置的 IPC 机制使用加密文件传递。如果需要更高性能的进程间通信，可以参考以下 NamedPipe 实现：
+
+> 📁 完整模板：`templates/NamedPipeIPC.cs`
+>
+> ⚠️ v10.4.6 稳定版中 IPC 不可替换。NamedPipe 替换方案需要 v10.5.0-beta.2+ 开发分支。
+
+```csharp
+// 基本用法（详情见 NamedPipeIPC.cs 模板）
+var ipc = new NamedPipeIpcProvider();
+
+// 服务端（Client 进程 — 发送参数）
+var pipeName = await ipc.ServerWaitAsync(processId, timeoutMs: 30_000);
+await ipc.SendAsync(new { InstallPath = "...", Version = "2.0.0.0" });
+
+// 客户端（Upgrade 进程 — 接收参数）
+await ipc.ClientConnectAsync(pipeName);
+var data = await ipc.ReceiveAsync<UpdateArgs>();
+```
+
+> ⚠️ **安全注意**：NamedPipe 无内置加密，如有安全需求，建议在上层自行添加 AES 加密或使用 SSL/TLS 隧道。Windows 上可通过 ACL 限制管道访问。
+
+---
+
+## 5. 文件系统工具（v10.5.0-rc.1 可用）
 
 ### BlackList（黑名单）
 
@@ -217,7 +355,7 @@ var snapshot = tree.CreateSnapshot(@"C:\Program Files\MyApp");
 
 ---
 
-## 6. 差分引擎（v10.5.0-beta.6 可用，无需额外安装包）
+## 6. 差分引擎（v10.5.0-rc.1 可用，无需额外安装包）
 
 差分类型已内嵌在 `GeneralUpdate.Core` 中，**无需额外**安装 `GeneralUpdate.Differential` 包。
 
@@ -270,7 +408,7 @@ var dirtyMatcher = new DefaultDirtyMatcher();  // 或实现 IDirtyMatcher
 
 ## 7. AOT / NativeAOT 兼容性
 
-GeneralUpdate.Core v10.5.0-beta.6 支持 .NET Native AOT（`net8.0` 和 `net10.0`）：
+GeneralUpdate.Core v10.5.0-rc.1 支持 .NET Native AOT（`net8.0` 和 `net10.0`）：
 
 ```xml
 <PropertyGroup>
@@ -313,29 +451,29 @@ var result = GeneralDrivelution.InstallDriver(driverPath);
 
 | 主题 | 可用性 | 参考 |
 |------|--------|------|
-| Pipeline 管道 | ✅ v10.5.0-beta.6 | `GeneralUpdate.Core.Pipeline` |
-| 策略系统 | ✅ v10.5.0-beta.6 | `GeneralUpdate.Core.Strategy` |
-| FileTree | ✅ v10.5.0-beta.6 | `GeneralUpdate.Core.FileSystem` |
-| BlackList | ✅ v10.5.0-beta.6 | `UpdateRequest.Files/Formats/Directories` → `ToBlackPolicy()` |
+| Pipeline 管道 | ✅ v10.5.0-rc.1 | `GeneralUpdate.Core.Pipeline` |
+| 策略系统 | ✅ v10.5.0-rc.1 | `GeneralUpdate.Core.Strategy` |
+| FileTree | ✅ v10.5.0-rc.1 | `GeneralUpdate.Core.FileSystem` |
+| BlackList | ✅ v10.5.0-rc.1 | `UpdateRequest.Files/Formats/Directories` → `ToBlackPolicy()` |
 | 差分引擎 | ✅ 内嵌 Core | `DiffPipelineBuilder` / `DiffPipeline` |
-| AOT | ✅ v10.5.0-beta.6 | `JsonSerializerContext` 子类 |
-| EventManager | ✅ v10.5.0-beta.6 | `GeneralUpdate.Core.Event` |
+| AOT | ✅ v10.5.0-rc.1 | `JsonSerializerContext` 子类 |
+| EventManager | ✅ v10.5.0-rc.1 | `GeneralUpdate.Core.Event` |
 | Bowl 崩溃守护 | ⚠️ 基础类型 | `GeneralUpdate.Bowl.Bowl` |
-| IUpdateHooks | ✅ v10.5.0-beta.6 | `GeneralUpdate.Core.Hooks` — `Hooks<T>()` |
-| 自定义 Strategy 注入 | ✅ v10.5.0-beta.6 | `Strategy<T>()` |
+| IUpdateHooks | ✅ v10.5.0-rc.1 | `GeneralUpdate.Core.Hooks` — `Hooks<T>()` |
+| 自定义 Strategy 注入 | ✅ v10.5.0-rc.1 | `Strategy<T>()` |
 | IPC 替换接口 | ❌ 暂不支持 | 使用 NamedPipe 替代方案 |
-| SilentPollOrchestrator | ✅ v10.5.0-beta.6 | `Option.Silent` + `SetOption()` |
-| Option 系统 | ✅ v10.5.0-beta.6 | `SetOption<T>(Option<T>, T)` |
+| SilentPollOrchestrator | ✅ v10.5.0-rc.1 | `Option.Silent` + `SetOption()` |
+| Option 系统 | ✅ v10.5.0-rc.1 | `SetOption<T>(Option<T>, T)` |
 
 ---
 
 ## ✅ 高级定制验证清单
 
 ### Bowl 崩溃守护
-- [ ] 如果用 Bowl：项目中同时引用 `GeneralUpdate.Core` 和 `GeneralUpdate.Bowl`（v10.5.0-beta.6 无冲突）
+- [ ] 如果用 Bowl：项目中同时引用 `GeneralUpdate.Core` 和 `GeneralUpdate.Bowl`（v10.5.0-rc.1 无冲突）
 - [ ] `MonitorParameter` 的 `ProcessNameOrId` 与实际进程名匹配
 - [ ] `TargetPath` 设置为应用安装根目录，非子目录
-- [ ] `WorkModel` 根据场景选择 Correct（Normal/Upgrade）
+- [ ] `WorkModel` 根据场景正确选择（Normal=主进程 / Upgrade=升级进程）
 - [ ] `FailDirectory` 有写入权限
 - [ ] Linux/macOS 无此功能（Bowl 仅 Windows）
 

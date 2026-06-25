@@ -1,6 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Common.Avalonia.Models;
 
 namespace Client.Avalonia.ViewModels;
 
@@ -194,15 +193,29 @@ public partial class EnhancedDownloadViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 将操作调度到 UI 线程（框架适配）
-    /// 在 WPF 中使用 Application.Current.Dispatcher
-    /// 在 Avalonia 中使用 Avalonia.Threading.Dispatcher.UIThread
-    /// 在 WinForms 中使用 Control.BeginInvoke
-    /// 在 MAUI 中使用 MainThread.BeginInvokeOnMainThread
+    /// 将操作调度到 UI 线程（框架适配）。
+    /// 通过静态属性注入平台特定的 Dispatcher：
+    ///   - WPF:        UIDispatcher = action => Application.Current.Dispatcher.Invoke(action)
+    ///   - Avalonia:    UIDispatcher = action => Avalonia.Threading.Dispatcher.UIThread.Post(action)
+    ///   - WinForms:    UIDispatcher = action => { var ctx = SynchronizationContext.Current; ctx?.Post(_ => action(), null); }
+    ///   - MAUI:        UIDispatcher = action => MainThread.BeginInvokeOnMainThread(action)
+    ///   - Console:     UIDispatcher = action => action()  （无需调度）
+    ///
+    /// 在应用启动时设置一次：
+    ///   EnhancedDownloadViewModel.UIDispatcher = action => Application.Current.Dispatcher.Invoke(action);
     /// </summary>
+    public static Action<Action> UIDispatcher { get; set; } = action =>
+    {
+        // 默认：尝试使用 SynchronizationContext（WinForms 兼容）
+        var ctx = SynchronizationContext.Current;
+        if (ctx != null)
+            ctx.Post(_ => action(), null);
+        else
+            action(); // 控制台/测试环境直接执行
+    };
+
     private static void Dispatch(Action action)
     {
-        // 框架自动适配 — 在对应的 UI 项目中替换为正确的 Dispatcher
-        action();
+        UIDispatcher(action);
     }
 }

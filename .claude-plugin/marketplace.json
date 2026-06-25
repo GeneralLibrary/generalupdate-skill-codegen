@@ -12,7 +12,7 @@
     {
       "name": "generalupdate-skill",
       "source": "./",
-      "description": "Complete GeneralUpdate (.NET auto-update) integration skill suite. Generates dual-project scaffolding, full-state update UI (6 frameworks), 6 update strategies decision tree (Client-Server/OSS/Silent/Differential/CVP/Push), advanced extension points (Bowl crash daemon, IPC replacement, AOT), BM25-powered troubleshooting search (50+ known issues), v9.x→v10 migration guide, and 14-point security audit matrix. All templates target NuGet v10.5.0-beta.6.",
+      "description": "Complete GeneralUpdate (.NET auto-update) integration skill suite. Generates dual-project scaffolding, full-state update UI (6 frameworks), 6 update strategies decision tree (Client-Server/OSS/Silent/Differential/CVP/Push), advanced extension points (Bowl crash daemon, IPC replacement, AOT), BM25-powered troubleshooting search (50+ known issues), v9.x→v10 migration guide, and 14-point security audit matrix. All templates target NuGet v10.5.0-rc.1.",
       "version": "0.0.2-beta.1",
       "author": {
         "name": "JusterZhu"
