@@ -5,15 +5,15 @@
     "name": "JusterZhu"
   },
   "metadata": {
-    "description": ".NET auto-update skill suite — 7 skills for GeneralUpdate: scaffolding, UI, strategy, advanced, troubleshooting (50+ issues), migration, and security audit",
-    "version": "0.0.2-beta.1"
+    "description": ".NET auto-update skill suite — 8 skills for GeneralUpdate: scaffolding, UI, strategy, advanced, troubleshooting (50+ issues), migration, security audit, and mobile (Avalonia.Android & MAUI.Android)",
+    "version": "0.0.3-beta.1"
   },
   "plugins": [
     {
       "name": "generalupdate-skill",
       "source": "./",
-      "description": "Complete GeneralUpdate (.NET auto-update) integration skill suite. Generates dual-project scaffolding, full-state update UI (6 frameworks), 6 update strategies decision tree (Client-Server/OSS/Silent/Differential/CVP/Push), advanced extension points (Bowl crash daemon, IPC replacement, AOT), BM25-powered troubleshooting search (50+ known issues), v9.x→v10 migration guide, and 14-point security audit matrix. All templates target NuGet v10.5.0-rc.1.",
-      "version": "0.0.2-beta.1",
+      "description": "Complete GeneralUpdate (.NET auto-update) integration skill suite for desktop and mobile. Generates dual-project scaffolding, full-state update UI (6 frameworks), 6 update strategies decision tree (Client-Server/OSS/Silent/Differential/CVP/Push), advanced extension points (Bowl crash daemon, IPC replacement, AOT), mobile auto-update for Avalonia.Android & MAUI.Android, BM25-powered troubleshooting search (50+ known issues), v9.x→v10 migration guide, and 14-point security audit matrix. All templates target NuGet v10.5.0-rc.1.",
+      "version": "0.0.3-beta.1",
       "author": {
         "name": "JusterZhu"
       },

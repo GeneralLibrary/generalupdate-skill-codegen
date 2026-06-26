@@ -11,7 +11,7 @@ GeneralUpdate Skill CodeGen is a **Claude Code skill suite** for integrating [Ge
 When the user asks about GeneralUpdate or .NET auto-update:
 
 1. **Root SKILL.md** is the entry point — read it first for the developer roadmap
-2. **7 sub-skills** each have their own SKILL.md with step-by-step workflow
+2. **8 sub-skills** each have their own SKILL.md with step-by-step workflow
 3. **Use the search engine** for troubleshooting (BM25, Python):
    ```bash
    python3 .claude/skills/generalupdate-troubleshoot/scripts/search.py "<symptom>" --domain issue
@@ -36,7 +36,10 @@ generalupdate-skill-codegen/
 │   │   ├── generalupdate-ui/          ← Update UI windows
 │   │   ├── generalupdate-strategy/    ← 6 strategy decision tree
 │   │   ├── generalupdate-advanced/    ← Bowl, IPC, AOT, Pipeline
-│   │   └── generalupdate-troubleshoot/ ← 50+ known issues + search engine
+│   │   ├── generalupdate-troubleshoot/ ← 50+ known issues + search engine
+│   │   ├── generalupdate-migration/   ← v9.x→v10 migration guide
+│   │   ├── generalupdate-security-audit/ ← Security audit matrix
+│   │   └── generalupdate-mobile/      ← Avalonia.Android & MAUI.Android auto-update integration
 │   └── scripts/
 │       └── generate.py               ← Parameterized code generator (336 combinations)
 │

@@ -4,7 +4,7 @@
 
 Covers 50+ known issues discovered from real GitHub/Gitee feedback, providing production-ready code generation and deep troubleshooting.
 
-> Version: 0.0.2-beta.1 (2026-06-16) — targets NuGet `GeneralUpdate.Core 10.5.0-rc.1`
+> Version: 0.0.3-beta.1 (2026-06-26) — targets NuGet `GeneralUpdate.Core 10.5.0-rc.1`
 
 ---
 
