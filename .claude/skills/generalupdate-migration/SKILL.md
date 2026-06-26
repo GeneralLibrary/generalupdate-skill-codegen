@@ -2,7 +2,7 @@
 name: generalupdate-migration
 description: |
   Guide developers through migrating GeneralUpdate from older versions to the
-  latest stable API (v10.4.6). Covers v9.x → v10 and dev-branch (v10.5.0-beta.x)
+  latest API (v10.5.0-rc.1). Covers v9.x → v10 and dev-branch (v10.5.0-rc.1)
   → stable (v10.4.6) migration paths. Detects breaking API changes, deprecated
   types, and provides automated migration scripts.
   Triggers on: "migrate", "migration", "upgrade from v9", "upgrade from v10.5",
@@ -27,10 +27,10 @@ Helps developers migrate from older versions of GeneralUpdate to the latest stab
 
 帮助开发者从旧版本 GeneralUpdate 迁移到最新稳定版 API（v10.4.6）。
 
-> **Target version: NuGet v10.4.6 stable**
-> The dev-branch (v10.5.0-beta.x) API is fundamentally different from the stable release.
-> **目标版本：NuGet v10.4.6 稳定版**
-> 开发分支（v10.5.0-beta.2）API 与稳定版有根本性差异。
+> **Target version: NuGet v10.5.0-rc.1**
+> The dev-branch (v10.5.0-rc.1) API differs from the stable release (v10.4.6).
+> **目标版本：NuGet v10.5.0-rc.1**
+> 开发分支（v10.5.0-rc.1）API 与稳定版（v10.4.6）有根本性差异。
 
 ---
 
@@ -44,7 +44,7 @@ Collect the following information before recommending a migration path. Accurate
 ### Current State / 当前状态
 
 - Current GeneralUpdate version / 当前 GeneralUpdate 版本: ______
-    （v9.x / v10.0-10.3 / v10.5.0-beta.x / Unknown / 不确定）
+    （v9.x / v10.0-10.3 / v10.5.0-rc.1 / Unknown / 不确定）
 - Current .NET version / 当前 .NET 版本: ______
 - UI framework / UI 框架: ______
 - Using Bowl? / 是否使用了 Bowl: ______（Yes/No / 是/否）
@@ -116,13 +116,13 @@ await new GeneralUpdateBootstrap()
 | Single-process direct update / 单进程直接更新 | Client + Upgrade dual-process / Client + Upgrade 双进程 | Must create a separate Upgrade project / 必须创建独立 Upgrade 项目 |
 | N/A | `generalupdate.manifest.json` | Must be included in initial release / 必须随首发版本发布 |
 
-### Path B: v10.5.0-beta.x (Dev-Branch) to v10.4.6 Stable / 路径 B：v10.5.0-beta.x (开发分支) → v10.4.6 稳定版
+### Path B: v10.5.0-rc.1 (Dev-Branch) to v10.4.6 Stable / 路径 B：v10.5.0-rc.1 (开发分支) → v10.4.6 稳定版
 
 If you are already using dev-branch APIs (such as `IUpdateHooks`, the `Option` system), rolling back to the stable release requires rewriting. Dev-branch APIs are experimental and have no direct stable equivalents — the table below maps each to a workable alternative.
 
 如果你已经在用开发分支的 API（如 `IUpdateHooks`、`Option` 系统），回退到稳定版需要重写。开发分支 API 是实验性的，在稳定版中没有直接对应 — 下表将每个 API 映射到可行的替代方案。
 
-| Dev-Branch API (v10.5.0-beta.x) | Stable Alternative (v10.4.6) | Handling / 处理方式 |
+| Dev-Branch API (v10.5.0-rc.1) | Stable Alternative (v10.4.6) | Handling / 处理方式 |
 |-------------------------------|---------------------|---------|
 | `new Option()` / `SetOption()` | Does not exist / 不存在 | Use `Configinfo` properties directly instead / 改用 `Configinfo` 属性直接设置 |
 | `.Hooks<T>()` / `IUpdateHooks` | Does not exist / 不存在 | Remove Hooks references; implement equivalent logic in event listeners / 去除 Hooks 引用；在事件监听中做等价逻辑 |
