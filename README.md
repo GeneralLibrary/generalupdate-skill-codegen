@@ -4,7 +4,7 @@
 
 Covers 50+ known issues discovered from real GitHub/Gitee feedback, providing production-ready code generation and deep troubleshooting.
 
-> **Current Version: 0.0.2-beta.1** — targets NuGet `GeneralUpdate.Core 10.5.0-rc.1`
+> **Current Version: 0.0.3-beta.1** — targets NuGet `GeneralUpdate.Core 10.5.0-rc.1`
 > Compatibility: `v10.5.0-rc.1` (NuGet latest preview)
 > All templates verified via `dotnet build` (0 errors).
 
@@ -128,6 +128,13 @@ See [BUGS.md](BUGS.md) for the full audit trail.
 ---
 
 ## Version History
+
+### 0.0.3-beta.1 — 2026-06-26
+
+- Added `generalupdate-mobile` skill: full mobile auto-update integration for Avalonia.Android & MAUI.Android
+- All 8 sub-skills now fully bilingual (English + Chinese)
+- Root SKILL.md bilingualized with mobile entry points in roadmap and decision tree
+- Universal checklist and anti-patterns now cover both desktop and mobile scenarios
 
 ### 0.0.2-beta.1 — 2026-06-16
 
